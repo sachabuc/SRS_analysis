@@ -1,0 +1,66 @@
+function [dx, dy] = find_shift_fft_norm(I_ref, I)
+
+
+%% phase correlation 
+    % F1 = fft2(I_ref);
+    % F2 = fft2(I);
+    % 
+    % R = F1 .* conj(F2);
+    % Rnorm = R ./ abs(R + eps); % normalisation
+    % 
+    % 
+    % r = ifft2(Rnorm);
+    % 
+    % [val_max, idx] = max(r(:));
+    % [ypeak, xpeak] = ind2sub(size(r), idx);
+    % 
+    % figure
+    % plot(r(:))
+    % title('Cross-Correlation')
+    % hold on
+    % plot(idx,val_max,'or')
+    % hold off
+    % text(idx*1.05,val_max,'Maximum')
+    % 
+    % [Nx, Ny] = size(I_ref);
+    % 
+    % dx = xpeak - Ny;
+    % dy = ypeak - Nx;
+
+%% Amplitude correlation (version normalisée)
+    % Normalisation des images
+
+    % I_norm = (I - mean(I(:))) / std(I(:));
+    % I_ref_norm = (I_ref - mean(I_ref(:))) / std(I_ref(:));
+
+    I_norm = I ;
+    I_ref_norm = I_ref;
+
+    % Corrélation croisée
+    x1_s=40;
+    x1_e=120;
+    x2_s=50;
+    x2_e=130;
+    
+    C = xcorr2(I_norm(x1_s:x1_e,x2_s:x2_e), I_ref_norm(x1_s:x1_e,x2_s:x2_e));
+
+    figure();
+    imagesc(I_norm(x1_s:x1_e,x2_s:x2_e));
+
+    % Trouver le maximum
+    [val_max, idx] = max(C(:));
+    [ypeak, xpeak] = ind2sub(size(C), idx);
+
+    figure
+    plot(C(:))
+    title('Cross-Correlation (normalisée)')
+    hold on
+    plot(idx, val_max, 'or')
+    hold off
+    text(idx*1.05, val_max, 'Maximum')
+
+    % Calcul du décalage (shift)
+    dx = xpeak - size(I_ref, 2);
+    dy = ypeak - size(I_ref, 1);
+    
+end

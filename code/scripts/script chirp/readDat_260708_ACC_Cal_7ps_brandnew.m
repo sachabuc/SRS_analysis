@@ -1,0 +1,422 @@
+
+%% Variables needed for running the code on its own
+
+clear all;
+close all;
+
+% ---- Matlab files function -------------------------------------------
+
+% addpath('D:\MATLAB')
+% addpath('D:\MATLAB\CHIRP')
+% addpath('D:\MATLAB\model_carbonate_lsqcurvefit')
+% addpath('D:\MATLAB\MesFonctions')
+
+addpath('C:\Users\sacha.bucourt\Documents\MATLAB\MesFonctions')
+addpath('C:\Users\sacha.bucourt\Documents\MATLAB\fonctions_banque_spectre')
+addpath('C:\Users\sacha\OneDrive\Documents\FRESNEL\MATLAB\fonctions_banque_spectre')
+addpath('C:\Users\sacha.bucourt\Documents\MATLAB\model_carbonate_lsqcurvefit')
+addpath('C:\Users\sacha.bucourt\Documents\MATLAB\CHIRP\')
+addpath('C:\Users\sacha.bucourt\Documents\MATLAB\model_carbonate_lsqnonneg')
+
+% addpath('D:\MATLAB')
+% addpath('D:\MATLAB\CHIRP')
+% addpath('D:\MATLAB\model_carbonate_lsqcurvefit')
+% addpath('D:\MATLAB\MesFonctions')
+
+
+%% ======================================================================
+%  1. PARAMETRAGE -- A COMPLETER
+
+ 
+% ---- 1.1 Acquisition / chargement des donnees (LOADSRSIMAGESTACK) -----
+
+main_dir = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\16-25-59_ACC_Cal_7ps'
+% main_dir='D:\CHIRP\260708\16-25-59_ACC_Cal_7ps'
+
+sub_dir  = '';
+sub_dir_save = [main_dir '/extracted_data/' sub_dir];
+
+
+n_depart = 3; % 3 = saute '.' et '..', 4 si dossier cache supplementaire
+n_ch=1;
+ 
+wavelengths =[928.6,929.1,929.5,929.8,930.2,930.6,931.1,928,927.6, ... 
+  927.2,926.8,926.4,926,925.5,928.3];  % nm, ordre d'acquisition (pas trie)
+
+wavelengths_2ps  = [927,927.5,928,928.3,928.6,929.1,929.4,929.6,929.8,930.4, ...
+                930.8,931.1,931.5,931.8,932.5,932.9,926.4,926,925.6, ...
+                925.2,924.8,924,923];
+
+pompe = 1031;  % nm, longueur d'onde de la pompe
+wavenumber = 1e7 ./ wavelengths - 1e7 ./ pompe;   % cm^-1
+
+wavenumber_2ps=1e7 ./ wavelengths_2ps - 1e7 ./ pompe;
+
+fwhm_mesure = 5; %fwhm mesuré de la calcite
+fwhm_calcite = 3.5; %fwhm réel de la calcite
+[f_calc, fwhm_inst] = deconvolve(fwhm_mesure, fwhm_calcite, 0);
+% fwhm_inst  = 10;   % ps
+ 
+% ---- 1.2 Pretraitement (soustraction de fond) --------------------------
+
+%Coordonnées ROI background dont l'intensité des piexels est moyenné puis 
+%soustrait au reste des pixels 
+
+x1_s = 90; % ligne start 
+x1_e = 95; % ligne end
+x2_s = 75; % column start
+x2_e = 80; % column end
+
+% noise study on line / column : 
+
+wi= 4; %wanumber number wi
+idl = 125; idc=97;  %index line/column
+xl_s=100; xl_e=125; xc_s=109; xc_e=125; %sart/end line/column
+ 
+% ---- 1.3 Modele theorique des phases (MODEL_CARBONATE_PHASES) ---------
+ 
+use_CAL   = true;        % Calcite
+use_ARA   = false;        % Aragonite
+use_VAT   = false;       % Vaterite
+use_ACC   = true;        % Carbonate de calcium amorphe
+use_CCHH  = false;       % Monohydrocalcite hydratee (CCHH)
+use_MHC   = false;       % Monohydrocalcite (MHC)
+ 
+% ---- 1.4 Initialisation lineaire (INIT_PIXEL_AMPLITUDES) --------------
+R2_min          = 0.5;   % R^2 minimal pour valid_pixel (diagnostic seulement,
+                          % ne filtre aucun pixel a ce stade)
+threshold_sigma = 2;     % facteur x bruit sous lequel une amplitude initiale
+                          % est mise a 0 (bruit estime par residu pour
+                          % l'instant -- a remplacer par le bruit substrat,
+                          % cf. schema)
+ 
+% ---- 1.5 Fit non lineaire (FIT_PIXEL_PHASES) ---------------------------
+% Un booleen par phase, dans l'ordre CAL, ARA, VAT, ACC, CCHH, MHC
+nu_is_variable    = [true false false true false false];  % position libre ?
+FWHM_is_variable  = [true false false true false false];  % largeur libre ?
+ 
+% Bornes absolues (cm^-1) par phase, dans l'ordre CAL, ARA, VAT, ACC, CCHH, MHC
+% -- la meme borne s'applique a toutes les raies d'une phase (ex : les 3
+% raies de VAT partagent [nu_LB(3) nu_UB(3)]). Ignore pour une phase dont
+% nu_is_variable/FWHM_is_variable est false.
+nu_LB   = [1084.5, 1084, 1073, 1073,  1097, 1066];   % cm^-1
+nu_UB   = [1086.5, 1086.5, 1093, 1082,  1102, 1070];   % cm^-1
+FWHM_LB = [fwhm_inst    ,fwhm_inst    , fwhm_inst    , 20, fwhm_inst    , fwhm_inst     ];   % cm^-1
+FWHM_UB = [fwhm_inst + 4,fwhm_inst + 4, fwhm_inst + 6, 40, fwhm_inst + 4, fwhm_inst + 4 ];   % cm^-1
+ 
+lineshape_type  = 'gaussian';    % 'gaussian' pour l'instant ('lorentzian' a venir)
+ci_alpha        = 0.05;          % niveau pour l'IC sur chaque amplitude (0.05 -> IC 95%)
+
+% ---- Comparer au 2ps -----------------------------------------
+shift_row = -2;
+shift_col = -2;
+
+path2phase_model_2ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\14-55-09_ACC_Cal - Copie\extracted_data\phase_model';
+path2ref_spectra_2ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\14-55-09_ACC_Cal - Copie\extracted_data\ref_spectra';
+
+% path2phase_model_2ps ='C:\Users\sacha\OneDrive\Documents\FRESNEL\CHIRP\260708\14-55-09_ACC_Cal - copie\extracted_data\phase_model.mat';
+% path2ref_spectra_2ps ='C:\Users\sacha\OneDrive\Documents\FRESNEL\CHIRP\260708\14-55-09_ACC_Cal - copie\extracted_data\ref_spectra.mat';
+
+phase_model_2ps = load(path2phase_model_2ps); 
+ref_spectra_2ps = load(path2ref_spectra_2ps);
+
+
+% ---- 1.6 Segmentation / quantification (SEGMENT_CARBONATE_PHASES) -----
+R2_min_final            = 0.3;   % R^2 minimal pour garder un pixel (filtre reel, ici)
+threshold_sigma_final   = 1;     % facteur x noise_map pour compter un point "au-dessus du bruit"
+min_points_above_noise  = 1;     % nb minimal de points au-dessus du bruit pour garder le pixel
+mixed_margin            = 1;   % ratio 2eme/1ere amplitude au-dela duquel un pixel est "mixte"
+alpha_dominance         = 1;
+
+phase2plot = [1 4]; % 1=CAL, 2=ARA, 3=VAT, 4=ACC, 5=CCHH, 6=MHC
+nbr_pix_per_phase = [30 90]; %number of pixel corresponding to phase 
+%mentionned in "phase2plot"
+
+
+
+% ---- 1.7 Affichage ------------------------------------------------------
+load_pixel_fit = false; % si pixel_fit a déjà été calculé 
+pixel_fit_file = 'data/pixel_fit.mat';
+
+do_noise_study = true;
+do_lsqnonneg_treatment = false; 
+
+display_intensity_maps = true;
+display_figures = true;    % figures de controle a chaque etape
+
+display_fit_stat = true;
+display_R2_stat = true; 
+
+
+
+
+
+%% 2. EXECUTION DU PIPELINE
+
+% ---- 2.1 Chargement ----------------------------------------------------
+[imgs, acq] = loadSRSImageStack(main_dir, sub_dir, n_depart, wavenumber);
+
+
+%% ---- background substraction --------------------------------------- 
+
+I_raw = squeeze(imgs);
+
+for ii = 1:size(I_raw,3)
+
+    % estimation du fond
+    ROI = I_raw(x1_s:x1_e, x2_s:x2_e, ii);
+    I_bckg(ii) = median(ROI(:));   % mieux que mean
+
+    % soustraction
+    I_corr(:,:,ii) = I_raw(:,:,ii) - I_bckg(ii);
+
+    fprintf("wn = %d,noise = %f", I_raw(:,:,ii))
+
+
+    % (optionnel)filtrage spatial 
+    % I_corr(:,:,ii) = medfilt2(I_corr(:,:,ii), [3 3]);
+
+end
+
+global_noise = std ()
+
+noise_map = global_noise * ones(n_y, n_x);
+
+% I_std = zeros(size(I_raw,1),size(I_raw,2));
+% for x = 1:size(I_raw,1)
+%     for y = 1:size(I_raw,2)
+%         I_std(x,y) = std(I_raw(x,y,:));
+%     end
+% end
+% 
+% figure(92);
+% imagesc(I_std);colorbar;caxis([0,5]);
+
+if do_noise_study 
+    [fit_params, mean_noise] = noise_study(I_corr, idl, idc, wi, xl_s, xl_e, xc_s, xc_e);
+end
+
+figure(100);
+imagesc(sum(I_raw,3));
+colorbar;
+colormap(gray); % Optionnel : pour une meilleure visualisation
+
+% Ajout du rectangle pour le ROI
+hold on;
+rectangle('Position', [x2_s, x1_s, x2_e - x2_s, x1_e - x1_s], ...
+          'EdgeColor', 'r', ...
+          'LineWidth', 2, ...
+          'LineStyle', '-');
+% Ajout des lignes idl et idc si do_noise_study est vrai
+if do_noise_study
+    % Ligne horizontale pour idl (uniquement entre x2_s et x2_e)
+    line([xl_s, xl_e], [idl, idl], 'Color', 'g', 'LineWidth', 1.5, 'LineStyle', '--');
+
+    % Ligne verticale pour idc (uniquement entre x1_s et x1_e)
+    line([idc, idc], [xc_s, xc_e], 'Color', 'b', 'LineWidth', 1.5, 'LineStyle', '--');
+end
+
+hold off;
+
+
+%% ---- Display main wavenumber images ---------------------------------
+
+if display_intensity_maps 
+
+    % figure(101); imagesc(sum(I_corr,3)); colorbar;
+    %Afficher images SRS 
+    n1 = 8; 
+    n2 = 6;
+    n3 = 2;
+    n4 = 3; 
+    % n5 = 5;
+    I1 = I_corr(:,:,n1); % ACC Chira
+    I2 = I_corr(:,:,n2); % inf ACC 
+    I3 = I_corr(:,:,n3); % Calcite
+    I4 = I_corr(:,:,n4); % ACC 
+    % I5 = I_corr(:,:,n5); % fluo 2
+    
+    figure(102); clf;
+    Imax = 10;
+    Imin= -10;
+    
+    subplot(2,3,1);
+    imagesc(I1); caxis([Imin Imax]); colorbar;
+    title('ACC Chahira (I1)');
+    
+    
+    subplot(2,3,3);
+    imagesc(I2); caxis([Imin Imax]); colorbar;
+    title('inf ACC (I2)');
+    
+    
+    subplot(2,3,2);
+    imagesc(I3); caxis([Imin 300]); colorbar;
+    title('Calcite (I3)');
+    hold on;
+    
+    
+    subplot(2,3,4);
+    imagesc(I4); caxis([Imin Imax]); colorbar;
+    title('ACC (I4)');
+    
+    
+        subplot(2,3,5);
+    imagesc(I4-I3); caxis([-5 5]); colorbar;
+    title('I4-I3)');
+    
+    subplot(2,3,6);
+    imagesc(I4-I1); caxis([-5 5]); colorbar;
+    title('I4-I1');  
+    
+    sgtitle('Map ACC + Calcite', 'FontSize', 12, 'FontWeight', 'bold');
+
+end
+
+%% ---- 2.3 Modele theorique ----------------------------------------
+
+[phase_model] = model_carbonate_phases( ...
+          fwhm_inst, ... %fwhm_inst
+          true, ... %use_CAL
+          false, ... %use_ARA
+          false, ... %use_VAT
+          true, ... %use_ACC
+          false, ... %use_CCHH
+          false, ... %use_MHC
+          true);
+
+%% ---- 2.4 Initialisation lineaire --------------------------------
+
+pixel_data = init_pixel_amplitudes( ...
+          I_corr, phase_model, wavenumber, ...
+          R2_min, threshold_sigma, true);
+
+
+%% ---- 2.5 Fit non lineaire ----------------------------------------
+
+pixel_fit = fit_pixel_phases( ...
+    I_corr, phase_model, wavenumber, pixel_data, ...
+    nu_is_variable, FWHM_is_variable, fwhm_inst, ...
+    nu_LB, nu_UB, FWHM_LB, FWHM_UB, ...
+    lineshape_type, ci_alpha, display_figures);
+
+%% ---- 2.6 Segmentation / quantification -----------------------------------
+noise_map = reshape([pixel_data.noise], size(pixel_data));
+
+% [phase_map, composition_map] = segment_carbonate_phases( ...
+%     I_corr, pixel_fit, phase_model, noise_map, ...
+%     R2_min_final, threshold_sigma_final, min_points_above_noise, ...
+%     mixed_margin, display_figures);
+
+
+[phase_map, composition_map] = segment_carbonate_phases_bis( ...
+          I_corr, pixel_fit, phase_model, noise_map, ...
+          R2_min_final, threshold_sigma_final, min_points_above_noise, ...
+          alpha_dominance, display_figures);
+
+%% --------- Phases spectra ------------------
+
+ref_spectra = plot_phase_reference_spectra( ...
+          I_corr, wavenumber, pixel_fit, phase_map, phase_model, ...
+          phase2plot, nbr_pix_per_phase,fwhm_inst,false);
+
+
+ref_spectra_shifted = extract_shifted_reference_spectra( ...
+          ref_spectra_2ps,wavenumber_2ps, I_corr, wavenumber,...
+          phase_model, shift_row, shift_col, fwhm_inst, pixel_fit, ...
+          false, false);
+
+
+
+%ref_spectra = plot_phase_reference_spectra( ...
+          % I_corr, wavenumber, pixel_fit, phase_map, phase_model, ...
+          % phase_idx, n_top, tau_fwhm, show_theoretical)
+
+%ref_spectra_shifted = extract_shifted_reference_spectra( ...
+%           ref_spectra, I_corr_B, wavenumber_B, phase_model, ...
+%           shift_row, shift_col, tau_fwhm_B, pixel_fit_B, ...
+%           show_theoretical, display_figures)
+
+%% ----------- Display Fit Stat ---------------------------------
+
+if display_fit_stat 
+    display_reference_statistics(ref_spectra, fwhm_inst)
+end 
+
+%% --- Stat on R² -------------------------------------------------
+
+if display_R2_stat
+
+    stats = analyze_R2(pixel_fit,phase_model,display_figures);
+    
+    
+    fprintf('R² moyen   = %.3f\n', stats.R2.mean);
+    fprintf('R² médian  = %.3f\n', stats.R2.median);
+    fprintf('R² std     = %.3f\n', stats.R2.std);
+    
+    fprintf('A_total moyen = %.3f\n', stats.A_total.mean);
+    fprintf('A_total std   = %.3f\n', stats.A_total.std);
+
+end
+
+%% ----- traitement lsqnonneg ---------------------------------------
+
+if do_lsqnonneg_treatment 
+
+    min_points_bckg = 3;
+    residual_sigma_max = 10;
+    
+    
+    [phase_map, A_maps, ratio_maps] = ...
+        map_carbonate_phases( ...
+        I_corr, ...            % stack d'images
+        wavenumber, ...        % nombres d'onde
+        n_ch, ...              % canal
+        fwhm_inst, ...          % FWHM réponse instrumentale
+        true, ...              % ACC
+        false, ...             % CCHH
+        false, ...             % MHC
+        false, ...             % Vaterite
+        false, ...             % Aragonite
+        true, ...              % Calcite
+        threshold_sigma, ...   % seuil bruit = 3 sigma
+        min_points_bckg,...    %min_points_bckg
+        0.5, ...               % seuil ACC/Calcite
+        true,  ...     
+        sub_dir_save,...
+        R2_min, ...
+        residual_sigma_max);   
+    
+    
+    results = analyze_carbonate_phase_spectra( ...
+        I_corr,...
+        phase_map,...
+        wavenumber,...
+        n_ch,...
+        fwhm_inst,...
+        threshold_sigma,...
+        min_points_bckg,...
+        true,...          
+        R2_min, ...
+        residual_sigma_max);
+end
+%% ---------SAVE ----------------------------------------
+
+% Sauvegarder une structure
+% saveDataOrImage(myStruct, 'results/structures', 'Name', 'my_struct');
+
+% Sauvegarder une image en PNG
+% saveDataOrImage(myImage, 'results/images', 'Name', 'my_image', 'Format', 'png');
+
+% Sauvegarder une image en MAT (pour conserver les données brutes)
+% saveDataOrImage(myImage, 'results/images', 'Name', 'my_image_raw', 'Format', 'mat');
+
+saveDataOrImage(phase_model, sub_dir_save, 'Name','phase_model');
+saveDataOrImage(pixel_fit, sub_dir_save, 'Name','pixel_fit');
+saveDataOrImage(ref_spectra, sub_dir_save, 'Name','ref_spectra');
+
+
+
+
+
+
