@@ -1,5 +1,6 @@
 function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
+
     % Chemin des dossiers
     this_dir     = fileparts(mfilename('fullpath'));
     project_root = fileparts(fileparts(this_dir));
@@ -22,6 +23,9 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     if ~exist(params.results_dir, 'dir')
         mkdir(params.results_dir);
     end
+
+    params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data,'pixel_fit');
 
     % Chemins pour les données à comparer
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
@@ -102,7 +106,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.priority_min_fraction = [0 0 0 0.3 0 0];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
+    params.load_pixel_fit = true;
     params.pixel_fit_file = 'data/pixel_fit.mat';
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
@@ -110,6 +114,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.display_intensity_maps = true;
     params.display_figures = true;
     params.plot_ref_spectra = true;
+    params.plot_pixel_fits = true;
     params.display_fit = true;
     params.compare_acquisition = false;
     params.display_fit_stat = true;

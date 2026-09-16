@@ -1,11 +1,15 @@
-function params = parameters_260715_corals_2ps()
+function params = parameters_260713_corals_7ps_ter()
 
     % Chemin des dossiers
     this_dir     = fileparts(mfilename('fullpath'));
     project_root = fileparts(fileparts(this_dir));
 
-    day_folder_data = '260715';
-    folder_data = '14-15-43_coral_2ps';
+    day_folder_data = '260713';
+    folder_data = '14-58-29_coral_7ps_ter';
+
+    % Data to compare 
+    day_folder_data_2compare = '';
+    folder_data_2compare = '';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -17,7 +21,7 @@ function params = parameters_260715_corals_2ps()
     if ~exist(params.results_dir, 'dir')
         mkdir(params.results_dir);
     end
-    
+
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data,'pixel_fit');
 
@@ -36,15 +40,15 @@ function params = parameters_260715_corals_2ps()
     % Paramètres d'acquisition
     params.n_depart = 3;
     params.n_ch = 1;
-    params.wavelengths = [927.2,927.5,927.7,928.1,928.5,929.1,929.6,930.2,931.1,...
-            926.7,926.3,925.8];
-    params.wavelengths_7ps = [928.6,929.1,929.5,929.8,930.2,930.6,931.1,928,927.6, ... 
-  927.2,926.8,926.4,926,925.5,928.3];
+    params.wavelengths = [927.2,927.6,928.1,928.3,928.7,929.1,929.5,...
+        929.9,930.4,931,926.9,926.5,926.2,925.8];
+    params.wavelengths_7ps = [928.3,928.7,929.1,929.5,929.9,930.3,931,928.1,...
+        927.8,927.5,927.2,926.7,926.3,925.8];
     params.pompe = 1031;
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 11.1;
+    params.fwhm_mesure = 5;
     params.fwhm_ref = 3.5;
 
     % Paramètres de prétraitement
@@ -84,10 +88,11 @@ function params = parameters_260715_corals_2ps()
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
+ 
     % Paramètres de segmentation
-    params.R2_min_final = 0.5;
-    params.threshold_sigma_final = 1;
-    params.min_points_above_noise = 1;
+    params.R2_min_final = 0.8;
+    params.threshold_sigma_final = 6;
+    params.min_points_above_noise = 2;
     params.alpha_dominance = 10;
     params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
@@ -104,6 +109,7 @@ function params = parameters_260715_corals_2ps()
     % Paramètres d'action
     params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
+
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.compare_acquisition = false;
