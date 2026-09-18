@@ -24,6 +24,9 @@ function params = parameters_260715_corals_7ps()
         mkdir(params.results_dir);
     end
 
+    params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data,'pixel_fit');
+
     % Chemins pour les données à comparer
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
@@ -58,10 +61,11 @@ function params = parameters_260715_corals_7ps()
     params.xc_s = 109; params.xc_e = 125;
       
     % Paramètres d'affichage (pour plot_srs_images)
-    params.ni = [8, 6, 2, 3]; % [n1, n2, n3, n4]
+    params.ni = [5, 8, 12, 4]; % [n1, n2, n3, n4]
     params.Imin = -10;
     params.Imax = 10;
-    params.diff_ranges = [-5, 5];
+    params.diff_min = -5;
+    params.diff_min = 5;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -91,25 +95,24 @@ function params = parameters_260715_corals_7ps()
     params.path2ref_spectra_7ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\16-25-59_ACC_Cal_7ps\extracted_data\ref_spectra';
 
     % Paramètres de segmentation
-    params.R2_min_final = 0.5;
-    params.threshold_sigma_final = 1;
-    params.min_points_above_noise = 1;
+    params.R2_min_final = 0.9;
+    params.threshold_sigma_final = 4;
+    params.min_points_above_noise = 2;
     params.alpha_dominance = 10;
     params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
     params.phase2plot = [2 4];
-    params.nbr_pix_per_phase = [30 90];
+    params.nbr_pix_per_phase = [30 30];
     params.priority_phases =       [false false false params.use_ACC false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
-    params.pixel_fit_file = 'data/pixel_fit.mat';
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
-    params.display_intensity_maps = true;
+    params.display_intensity_maps = false;
     params.display_figures = true;
     params.plot_ref_spectra = true;
     params.display_fit = true;

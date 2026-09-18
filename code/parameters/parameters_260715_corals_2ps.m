@@ -4,8 +4,13 @@ function params = parameters_260715_corals_2ps()
     this_dir     = fileparts(mfilename('fullpath'));
     project_root = fileparts(fileparts(this_dir));
 
+    % Data 
     day_folder_data = '260715';
     folder_data = '14-15-43_coral_2ps';
+
+    % Data to compare 
+    day_folder_data_2compare = '';
+    folder_data_2compare = '';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -59,7 +64,8 @@ function params = parameters_260715_corals_2ps()
     params.ni = [8, 6, 2, 3]; % [n1, n2, n3, n4]
     params.Imin = -10;
     params.Imax = 10;
-    params.diff_ranges = [-5, 5];
+    params.diff_min = -5;
+    params.diff_min = 5;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -85,17 +91,17 @@ function params = parameters_260715_corals_2ps()
     params.ci_alpha = 0.5;
 
     % Paramètres de segmentation
-    params.R2_min_final = 0.5;
-    params.threshold_sigma_final = 1;
-    params.min_points_above_noise = 1;
+    params.R2_min_final = 0.7;
+    params.threshold_sigma_final = 4;
+    params.min_points_above_noise = 2;
     params.alpha_dominance = 10;
     params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
     params.phase2plot = [2 4];
-    params.nbr_pix_per_phase = [30 90];
+    params.nbr_pix_per_phase = [30 30];
     params.priority_phases =       [false false false params.use_ACC false false];
-    params.priority_min_fraction = [0 0 0 1 0 0];
+    params.priority_min_fraction = [0 0 0 0.3 0 0];
 
     % Paramètres de décalage
     params.shift_row = 2;

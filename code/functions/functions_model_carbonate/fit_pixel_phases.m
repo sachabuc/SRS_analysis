@@ -238,15 +238,6 @@ disp('lsqcurvefit ended')
 
 pixel_fit = reshape(pixel_fit_lin, n_y, n_x);
 
-%% ================================================================
-% 4. Affichage
-%% ================================================================
-
-if display_figures
-    plotFitMaps(pixel_fit, phase_model, active_idx);
-
-    
-end
 
 end
 

@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260713_corals_7ps_ter();
+params = parameters_260708_14_55_09_ACC_CAL_copie();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -47,10 +47,10 @@ end
 %                               params.wi, params.idl, params.idc);
 
 %% 5. Affichage des images principales
-if params.display_intensity_maps
-    plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
-        params.titles, params.diff_ranges)
-end
+% if params.display_intensity_maps
+%     plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
+%         params.titles, params.diff_min,params.diff_min);
+% end
 
 %% 6. Modèle théorique des phases
 [phase_model] = model_carbonate_phases(...
@@ -75,6 +75,16 @@ else
         params.nu_LB, params.nu_UB, params.FWHM_LB, params.FWHM_UB, ...
         params.lineshape_type, params.ci_alpha, params.display_figures);
 end
+
+
+
+if params.display_figures
+
+    active_idx = find([phase_model.use]);
+    plotFitMaps(pixel_fit, phase_model, active_idx);
+
+    
+end
 %% 9. Segmentation / quantification
 [phase_map, composition_map] = segment_carbonate_phases(...
     I_corr, pixel_fit, phase_model, noise_map, ...
@@ -87,7 +97,8 @@ end
 %% 10. Affichage des spectres de référence
 ref_spectra = plot_phase_reference_spectra(...
     I_corr, params.wavenumber, pixel_fit, phase_map, phase_model, ...
-    params.phase2plot, params.nbr_pix_per_phase, fwhm_instr, params.display_fit);
+    params.phase2plot, params.nbr_pix_per_phase, fwhm_instr,...
+    true,'',params.methode_ref_spectra,params.priority_phases,sum(I_corr,3));
 
 if params.plot_pixel_fits
     plot_pixel_fits_from_ref_spectra( ...
@@ -96,6 +107,12 @@ if params.plot_pixel_fits
 end
 
 %% 11. Comparaison avec les spectres 7ps
+
+ref_roi = compare_spectrums( ...
+          I_corr, params.wavenumber, phase_model, phase_map, ...
+          params.roi1, params.roi1_phase_idx, params.roi2, ...
+          params.roi2_phase_idx,fwhm_instr, 500);
+
 if params.compare_acquisition 
     ref_spectra_7ps = load(params.path2ref_spectra_7ps);
     ref_spectra_shifted = extract_shifted_reference_spectra(...
@@ -139,5 +156,7 @@ end
     %saveDataOrImage(myImage, 'results/images', 'Name', 'my_image', 'Format', 'png');
 
 saveDataOrImage(phase_model, params.results_dir, 'Name', 'phase_model');
-saveDataOrImage(pixel_fit, params.results_dir, 'Name', 'pixel_fit');
 saveDataOrImage(ref_spectra, params.results_dir, 'Name', 'ref_spectra');
+if ~params.load_pixel_fit
+    saveDataOrImage(pixel_fit, params.results_dir, 'Name', 'pixel_fit');
+end

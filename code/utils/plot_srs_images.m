@@ -1,4 +1,4 @@
-function plot_srs_images(I_corr, ni, Imin, Imax, titles, diff_ranges)
+function plot_srs_images(I_corr, ni, Imin, Imax, titles, diff_min,diff_max)
     % PLOT_SRS_IMAGES - Affiche des images SRS dans une figure avec subplots.
     %   I_corr : Stack d'images 3D (H x W x N).
     %   ni : Vecteur de 4 éléments [n1, n2, n3, n4] (numéros des images).
@@ -14,9 +14,7 @@ function plot_srs_images(I_corr, ni, Imin, Imax, titles, diff_ranges)
     if nargin < 5 || isempty(titles)
         titles = {'Image 1', 'Image 2', 'Image 3', 'Image 4'};
     end
-    if nargin < 6 || isempty(diff_ranges)
-        diff_ranges = [-5, 5];
-    end
+
 
     % Extraire les images
     I1 = I_corr(:,:,ni(1));
@@ -74,14 +72,14 @@ function plot_srs_images(I_corr, ni, Imin, Imax, titles, diff_ranges)
     % Subplot 5: I4 - I3
     subplot(2,3,5);
     imagesc(I4 - I3);
-    caxis(diff_ranges);
+    caxis([diff_min diff_max]);
     colorbar;
     title('I4 - I3');
 
     % Subplot 6: I4 - I1
     subplot(2,3,6);
     imagesc(I4 - I1);
-    caxis(diff_ranges);
+    caxis([diff_min diff_max]);
     colorbar;
     title('I4 - I1');
 

@@ -1,6 +1,5 @@
 function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
-
     % Chemin des dossiers
     this_dir     = fileparts(mfilename('fullpath'));
     project_root = fileparts(fileparts(this_dir));
@@ -67,7 +66,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.ni = [8, 6, 2, 3]; % [n1, n2, n3, n4]
     params.Imin = -10;
     params.Imax = 10;
-    params.diff_ranges = [-5, 5];
+    params.diff_min = -5;
+    params.diff_min = 5;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -103,7 +103,17 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.phase2plot = [1 4];
     params.nbr_pix_per_phase = [30 90];
     params.priority_phases =       [false false false true false false];
-    params.priority_min_fraction = [0 0 0 0.3 0 0];
+    params.priority_min_fraction = [0 0 0 1 0 0];
+    params.methode_ref_spectra = '';
+
+    params.roi1 = [75 80 100 105]; %[row_start row_end col_start col_end]
+    params.roi2 = [25 33 60 70]; %[row_start row_end col_start col_end]
+
+    params.roi1_phase_idx = params.phase2plot(1);
+    params.roi2_phase_idx = params.phase2plot(2);
+
+    params.shift_row = 2;
+    params.shift_col = 2;
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
@@ -121,7 +131,5 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.display_R2_stat = false;
 
     % Paramètres de décalage
-    params.shift_row = 2;
-    params.shift_col = 2;
 
 end

@@ -7,35 +7,25 @@ function plotReferenceSpectra(ref_spectra, wavenumber, show_theoretical)
 
     colors = lines(numel(ref_spectra));
 
-    wavenumber_dense = linspace(min(wavenumber), max(wavenumber), 2000);
-
-
     for i = 1:numel(ref_spectra)
-
-
         rs = ref_spectra(i);
-
         if rs.n_used == 0
             continue
         end
 
-        upper = rs.sum_spectrum + rs.std_spectrum*rs.n_requested;
-        lower = rs.sum_spectrum - rs.std_spectrum*rs.n_requested;
+        upper = rs.mean_spectrum + rs.std_spectrum;
+        lower = rs.mean_spectrum - rs.std_spectrum;
         fill([wavenumber, fliplr(wavenumber)], [upper, fliplr(lower)], ...
              colors(i,:), 'FaceAlpha', 0.15, 'EdgeColor', 'none', ...
              'HandleVisibility', 'off');
 
-        plot(wavenumber, rs.sum_spectrum, '-x', 'Color', colors(i,:), ...
-             'LineWidth', 1.5, 'DisplayName', ...
-             sprintf('%s (n=%d, R^2 >= %.3f)', rs.name, rs.n_used, rs.R2_worst_used));
+        plot(wavenumber, rs.mean_spectrum, '-', 'Color', colors(i,:), ...
+             'LineWidth', 2.5, 'DisplayName', ...
+             sprintf('%s (n=%d, tri=%s, R^2 >= %.3f)', rs.name, rs.n_used, rs.selection_method, rs.R2_worst_used));
 
-        % --- Modele theorique ---
         if show_theoretical
-    
-            plot(rs.wavenumber_theoretical, rs.theoretical_spectrum*rs.n_requested, '--', ...
-                 'Color', colors(i,:), ...
-                 'LineWidth', 1.5, ...
-                 'DisplayName', sprintf('%s (theorique)', rs.name));
+            plot(wavenumber, rs.theoretical_spectrum, '--', 'Color', colors(i,:), ...
+                 'LineWidth', 1.5, 'DisplayName', sprintf('%s (theorique)', rs.name));
         end
     end
 
