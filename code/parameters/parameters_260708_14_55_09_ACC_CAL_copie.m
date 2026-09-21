@@ -116,7 +116,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.shift_col = 2;
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
+    params.load_pixel_fit = false;
     params.pixel_fit_file = 'data/pixel_fit.mat';
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;

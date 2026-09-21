@@ -1,0 +1,245 @@
+function ref_roi = compare_spectrums( ...
+          I_corr, wavenumber, phase_model, phase_map, ...
+          roi1, roi1_phase_idx, roi2, roi2_phase_idx, ...
+          fwhm_instr, n_theoretical_points, save_path, ...
+          delta_nu, fwhm_bounds)
+%COMPARE_ROI_TO_THEORETICAL_MODEL Ajuste (lsqcurvefit) le spectre moyen
+%de deux regions d'interet (ROI) sur un modele a une seule raie, avec
+%AMPLITUDE, POSITION (nu) ET LARGEUR (FWHM) LIBRES en plus du fond
+%(4 parametres). Affiche les deux ROI sur UN SEUL graphe (avec bande
+%+/- 1 ecart-type), normalise par rapport a la courbe theorique ajustee
+%la plus haute des deux -- avec nu/FWHM ajustes indiques dans la
+%legende. Affiche aussi les deux ROI positionnees sur la carte de
+%segmentation (phase_map.label), avec un colormap neutre (gris) pour
+%que les ROI -- tracees dans des couleurs vives et contrastantes --
+%restent bien visibles quel que soit le label dessous.
+%
+%   ref_roi = COMPARE_ROI_TO_THEORETICAL_MODEL(I_corr, wavenumber, ...
+%       phase_model, phase_map, roi1, roi1_phase_idx, roi2, ...
+%       roi2_phase_idx, fwhm_instr, n_theoretical_points, save_path, ...
+%       delta_nu, fwhm_bounds)
+%
+%   Pour chaque ROI, le spectre moyen est ajuste par :
+%       I(wavenumber) = A * G(wavenumber; nu, sigma_eff) + fond
+%       sigma_eff = sqrt(fwhm2sigma(FWHM)^2 + fwhm2sigma(fwhm_instr)^2)
+%   via lsqcurvefit, avec A (>=0), nu, FWHM (>=0) et le fond LIBRES.
+%   Contrairement a la version precedente, la phase n'a plus besoin
+%   d'avoir ete active dans MODEL_CARBONATE_PHASES (phase_model(k).nu et
+%   .FWHM(1) servent uniquement de point de depart) -- suppose une phase
+%   a UNE SEULE raie (erreur explicite sinon ; VAT, par exemple, n'est
+%   pas geree ici).
+%
+%   ENTREES
+%     I_corr            : cube hyperspectral [n_y x n_x x n_wn]
+%     wavenumber          : nombres d'onde (cm^-1), pas necessairement
+%                         tries (retries ici, I_corr reordonne pareil)
+%     phase_model          : structure issue de MODEL_CARBONATE_PHASES
+%                         (utilise .nu(1), .FWHM(1) comme point de depart)
+%     phase_map            : structure issue de SEGMENT_CARBONATE_PHASES
+%                         (utilise .label, uniquement pour l'affichage)
+%     roi1                 : [row_start row_end col_start col_end] --
+%                         region majoritairement cristalline
+%     roi1_phase_idx         : index de la phase cristalline presente
+%                         dans roi1 (CAL ou ARA selon votre echantillon)
+%     roi2                 : [row_start row_end col_start col_end] --
+%                         region majoritairement ACC
+%     roi2_phase_idx         : index de la phase presente dans roi2
+%     fwhm_instr             : FWHM de la reponse instrumentale de cette
+%                         acquisition -- stocke tel quel pour tracabilite
+%                         ET utilise pour reconstruire sigma_eff a chaque
+%                         evaluation du fit (le FWHM ajuste etant
+%                         intrinseque, pas convolue)
+%     n_theoretical_points     : nombre de points de la grille fine pour
+%                         le modele theorique (defaut 500)
+%     save_path             : chemin .mat pour sauvegarder ref_roi (ex :
+%                         'ref_roi_tau2ps.mat'), ou '' pour ne pas
+%                         sauvegarder (defaut '')
+%     delta_nu              : demi-largeur (cm^-1) de l'intervalle
+%                         [nu0-delta_nu, nu0+delta_nu] autorise pour nu
+%                         (defaut 3)
+%     fwhm_bounds            : [facteur_min facteur_max] appliques a
+%                         FWHM0 pour les bornes de FWHM, ex [0.5 2]
+%                         (defaut [0.5 2])
+%
+%   SORTIE
+%     ref_roi : structure [1x2], une entree par ROI :
+%                 .name, .phase_idx, .roi, .fwhm_instr
+%                 .mean_spectrum, .std_spectrum             (sur wavenumber)
+%                 .A_fit, .nu_fit, .FWHM_fit, .background_fit, .R2, .resnorm
+%                 .wavenumber_theoretical, .theoretical_spectrum_fit
+%                                                          (grille fine)
+%                 .peak_height_fit                          (max de la
+%                                                          courbe ajustee,
+%                                                          sert de base a
+%                                                          la normalisation
+%                                                          commune)
+
+if nargin < 10 || isempty(n_theoretical_points), n_theoretical_points = 500; end
+if nargin < 11, save_path = ''; end
+if nargin < 12 || isempty(delta_nu),     delta_nu = 3;        end
+if nargin < 13 || isempty(fwhm_bounds),  fwhm_bounds = [0.5 2]; end
+
+%% ================================================================
+% 1. Mise en forme
+
+if ndims(I_corr) == 4
+    I_corr = squeeze(I_corr);
+end
+
+[wavenumber, sort_idx] = sort(wavenumber(:).');
+I_corr = I_corr(:,:,sort_idx);
+
+[n_y, n_x, ~] = size(I_corr);
+
+assert(numel(roi1) == 4 && numel(roi2) == 4, ...
+    'roi1 et roi2 doivent etre [row_start row_end col_start col_end].');
+
+checkROI(roi1, n_y, n_x, 'roi1');
+checkROI(roi2, n_y, n_x, 'roi2');
+
+wavenumber_theo = linspace(min(wavenumber), max(wavenumber), n_theoretical_points);
+
+% Couleurs des ROI : rouge et cyan, deux teintes saturees et eloignees
+% l'une de l'autre, choisies pour rester visibles sur un fond en niveaux
+% de gris ET sur les courbes de spectres.
+colors_roi = [1 0 0; 0 0.8 0.8];
+
+%% ================================================================
+% 2. Extraction + fit lsqcurvefit (A, nu, FWHM, fond), pour chaque ROI
+
+ref_roi(1) = buildRoiEntry(I_corr, wavenumber, wavenumber_theo, phase_model, ...
+    roi1, roi1_phase_idx, fwhm_instr, delta_nu, fwhm_bounds);
+ref_roi(2) = buildRoiEntry(I_corr, wavenumber, wavenumber_theo, phase_model, ...
+    roi2, roi2_phase_idx, fwhm_instr, delta_nu, fwhm_bounds);
+
+%% ================================================================
+% 3. Affichage : les deux ROI sur UN SEUL graphe, normalisation commune
+
+norm_factor = max([ref_roi.peak_height_fit]);
+
+figure('Color', 'white', 'Position', [100 100 1050 700]);
+hold on;
+
+for j = 1:2
+    upper = (ref_roi(j).mean_spectrum + ref_roi(j).std_spectrum) / norm_factor;
+    lower = (ref_roi(j).mean_spectrum - ref_roi(j).std_spectrum) / norm_factor;
+    fill([wavenumber, fliplr(wavenumber)], [upper, fliplr(lower)], colors_roi(j,:), ...
+         'FaceAlpha', 0.15, 'EdgeColor', 'none', 'HandleVisibility', 'off');
+
+    plot(wavenumber, ref_roi(j).mean_spectrum / norm_factor, '-o', 'Color', colors_roi(j,:), ...
+         'MarkerFaceColor', colors_roi(j,:), 'MarkerSize', 4, 'LineWidth', 2, ...
+         'DisplayName', sprintf('%s : donnees (ROI, +/- 1 std)', ref_roi(j).name));
+
+    plot(ref_roi(j).wavenumber_theoretical, ref_roi(j).theoretical_spectrum_fit / norm_factor, '--', ...
+         'Color', colors_roi(j,:), 'LineWidth', 1.5, ...
+         'DisplayName', sprintf('%s : fit (A=%.3g, \\nu=%.2f, FWHM=%.2f, R^2=%.3f)', ...
+         ref_roi(j).name, ref_roi(j).A_fit, ref_roi(j).nu_fit, ref_roi(j).FWHM_fit, ref_roi(j).R2));
+end
+
+xlabel('Wavenumber (cm^{-1})', 'FontSize', 12);
+ylabel('Intensite normalisee (/ pic theorique ajuste le plus eleve)', 'FontSize', 12);
+title('Comparaison ROI cristalline vs ACC, meme echelle (nu/FWHM libres)', 'FontSize', 13);
+legend('Location', 'best');
+grid on; box on; set(gca, 'FontSize', 11);
+
+%% ================================================================
+% 4. Affichage : ROI sur la carte de segmentation (colormap neutre)
+
+figure('Color', 'white','Position', [100 100 700 650]);
+imagesc(phase_map.label); axis image; colorbar;
+% colormap(gca, gray);
+clim([0, numel(phase_model)+2]);
+hold on;
+
+drawROI(roi1, colors_roi(1,:), ref_roi(1).name);
+drawROI(roi2, colors_roi(2,:), ref_roi(2).name);
+
+xlabel('Colonne', 'FontSize', 12);
+ylabel('Ligne', 'FontSize', 12);
+title('ROI positionnees sur la segmentation (label)', 'FontSize', 13);
+legend('Location', 'best');
+hold off;
+
+%% ================================================================
+% 5. Sauvegarde (optionnelle)
+
+if ~isempty(save_path)
+    save(save_path, 'ref_roi');
+    fprintf('ref_roi sauvegarde dans %s\n', save_path);
+end
+
+end
+
+
+%% ====================================================================
+%  FONCTIONS LOCALES
+%% ====================================================================
+
+function checkROI(roi, n_y, n_x, roi_name)
+    assert(roi(1) >= 1 && roi(2) <= n_y && roi(1) <= roi(2), ...
+        '%s : lignes hors bornes ou mal ordonnees (1..%d).', roi_name, n_y);
+    assert(roi(3) >= 1 && roi(4) <= n_x && roi(3) <= roi(4), ...
+        '%s : colonnes hors bornes ou mal ordonnees (1..%d).', roi_name, n_x);
+end
+
+function entry = buildRoiEntry(I_corr, wavenumber, wavenumber_theo, phase_model, roi, k, fwhm_instr, delta_nu, fwhm_bounds)
+    sub_cube = I_corr(roi(1):roi(2), roi(3):roi(4), :);
+    [ry, rx, rw] = size(sub_cube);
+    flat = reshape(permute(sub_cube, [3 1 2]), rw, ry*rx).';
+    mean_spec = mean(flat, 1);
+    std_spec  = std(flat, 0, 1);
+
+    assert(numel(phase_model(k).nu) == 1, ...
+        ['compare_roi_to_theoretical_model suppose une phase a une seule raie ' ...
+         '(phase_model(%d) en a %d) -- non gere ici.'], k, numel(phase_model(k).nu));
+
+    nu0   = phase_model(k).nu(1);
+    FWHM0 = phase_model(k).FWHM(1);
+    sigma_inst = fwhm2sigma(fwhm_instr);
+
+    % --- Fit lsqcurvefit : A, nu, FWHM, fond tous libres -----------------
+    model_fun = @(x, xdata) x(1) * gaussianArea(xdata, x(2), ...
+        sqrt(fwhm2sigma(x(3))^2 + sigma_inst^2)) + x(4);
+
+    x0 = [max(mean_spec), nu0, FWHM0, 0];
+    lb = [0,     nu0-delta_nu, fwhm_bounds(1)*FWHM0, -Inf];
+    ub = [Inf,   nu0+delta_nu, fwhm_bounds(2)*FWHM0,  Inf];
+
+    opts = optimoptions('lsqcurvefit', 'Display', 'off');
+    [x_fit, resnorm] = lsqcurvefit(model_fun, x0, wavenumber, mean_spec, lb, ub, opts);
+
+    A_fit          = x_fit(1);
+    nu_fit         = x_fit(2);
+    FWHM_fit       = x_fit(3);
+    background_fit = x_fit(4);
+
+    SS_tot = sum((mean_spec - mean(mean_spec)).^2);
+    R2 = 1 - resnorm/max(SS_tot, eps);
+
+    sigma_eff_fit = sqrt(fwhm2sigma(FWHM_fit)^2 + sigma_inst^2);
+    theo_spec_fit = A_fit * gaussianArea(wavenumber_theo, nu_fit, sigma_eff_fit) + background_fit;
+
+    entry.name                    = phase_model(k).name;
+    entry.phase_idx                = k;
+    entry.roi                      = roi;
+    entry.fwhm_instr                = fwhm_instr;
+    entry.mean_spectrum            = mean_spec;
+    entry.std_spectrum             = std_spec;
+    entry.A_fit                    = A_fit;
+    entry.nu_fit                   = nu_fit;
+    entry.FWHM_fit                 = FWHM_fit;
+    entry.background_fit           = background_fit;
+    entry.R2                       = R2;
+    entry.resnorm                  = resnorm;
+    entry.wavenumber_theoretical    = wavenumber_theo;
+    entry.theoretical_spectrum_fit  = theo_spec_fit;
+    entry.peak_height_fit          = max(theo_spec_fit);
+end
+
+function drawROI(roi, color, label_text)
+    row_start = roi(1); row_end = roi(2);
+    col_start = roi(3); col_end = roi(4);
+    rectangle('Position', [col_start, row_start, col_end-col_start, row_end-row_start], ...
+              'EdgeColor', color, 'LineWidth', 2.5, 'LineStyle', '-');
+    plot(NaN, NaN, '-', 'Color', color, 'LineWidth', 2.5, 'DisplayName', label_text);
+end
