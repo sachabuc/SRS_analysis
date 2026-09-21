@@ -151,7 +151,8 @@ grid on; box on; set(gca, 'FontSize', 11);
 % % colormap(gca, gray);
 % clim([0, numel(phase_model)+2]);
 % hold on;
-
+ref_roi(1).roi
+ref_roi(2).roi
 plotSegmentation_ROI(phase_map, phase_model, active_idx, ...
     phase_colors,colors_roi,ref_roi,sub_dir_save,exportgraphics_segm_roi);
 

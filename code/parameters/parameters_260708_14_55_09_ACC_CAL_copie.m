@@ -19,6 +19,9 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.results_dir = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data);
 
+    params.figures_dir = fullfile(project_root, 'results', 'figures', ...
+    day_folder_data,folder_data);
+
     if ~exist(params.results_dir, 'dir')
         mkdir(params.results_dir);
     end
@@ -106,8 +109,14 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.priority_min_fraction = [0 0 0 1 0 0];
     params.methode_ref_spectra = '';
 
+
+    
+    
     params.roi1 = [75 80 100 105]; %[row_start row_end col_start col_end]
     params.roi2 = [25 33 60 70]; %[row_start row_end col_start col_end]
+
+    params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
+    params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
 
     params.roi1_phase_idx = params.phase2plot(1);
     params.roi2_phase_idx = params.phase2plot(2);
@@ -116,8 +125,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.shift_col = 2;
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
-    params.pixel_fit_file = 'data/pixel_fit.mat';
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
@@ -130,6 +138,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
-    % Paramètres de décalage
+    %sauvegarde
+    params.exportgraphics_segm_roi = true;
 
 end

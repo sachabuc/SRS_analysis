@@ -2,7 +2,8 @@ function [phase_map, composition_map] = segment_carbonate_phases( ...
           I_corr, pixel_fit, phase_model, noise_map, ...
           R2_min, threshold_sigma_noise, min_points_above_noise, ...
           alpha_dominance, dominance_phases, ...
-          priority_phases, priority_min_fraction, display_figures)
+          priority_phases, priority_min_fraction, display_figures, ...
+          phase_colors)
 %SEGMENT_CARBONATE_PHASES Filtre les pixels peu fiables et construit la
 %carte de phase dominante + composition, a partir du fit non-lineaire.
 %
@@ -10,7 +11,7 @@ function [phase_map, composition_map] = segment_carbonate_phases( ...
 %       pixel_fit, phase_model, noise_map, R2_min, ...
 %       threshold_sigma_noise, min_points_above_noise, alpha_dominance, ...
 %       dominance_phases, priority_phases, priority_min_fraction, ...
-%       display_figures)
+%       display_figures, phase_colors)
 %
 %   FILTRAGE (deux criteres independants, un pixel doit passer les deux)
 %     - R2 >= R2_min                (qualite du fit non-lineaire)
@@ -76,6 +77,14 @@ function [phase_map, composition_map] = segment_carbonate_phases( ...
 %                                 priority_phases(k) = false. Par defaut
 %                                 ([] ou omis) : 0 partout.
 %     display_figures            : booleen
+%     phase_colors                : [n_phases x 3] RGB, une couleur par
+%                                 phase (meme ordre que phase_model),
+%                                 pour la carte de segmentation. [] ou
+%                                 omis : couleurs generees automatiquement,
+%                                 bien separees en teinte (HSV) et stables
+%                                 par phase (CAL garde toujours la meme
+%                                 couleur, quel que soit le sous-ensemble
+%                                 de phases actives d'un run a l'autre).
 %
 %   SORTIES
 %     phase_map : structure [n_y x n_x] :
@@ -97,6 +106,7 @@ if nargin < 9  || isempty(dominance_phases),      dominance_phases = [phase_mode
 if nargin < 10 || isempty(priority_phases),       priority_phases = false(1, n_phases);   end
 if nargin < 11 || isempty(priority_min_fraction), priority_min_fraction = zeros(1, n_phases); end
 if nargin < 12 || isempty(display_figures),       display_figures = true;                 end
+if nargin < 13,                                    phase_colors = [];                      end
 
 %% ================================================================
 % 0. Mise en forme / verifications
@@ -200,39 +210,13 @@ phase_map.label                = label_map;
 %% ================================================================
 
 if display_figures
-    plotSegmentation(phase_map, composition_map, phase_model, active_idx, label_ambiguous);
+    plotSegmentation(phase_map, composition_map, phase_model, active_idx, phase_colors);
 end
 
 end
 
 
-%% ====================================================================
-%  FONCTION LOCALE
-%% ====================================================================
 
-function plotSegmentation(phase_map, composition_map, phase_model, active_idx, label_ambiguous)
-% Carte de segmentation (categorielle) + une carte de fraction par phase
-% active.
 
-    n_active = numel(active_idx);
-    n_maps   = 1 + n_active;
-    n_cols   = ceil(sqrt(n_maps));
-    n_rows   = ceil(n_maps/n_cols);
 
-    figure('Color','white','Position',[100 100 1300 850]);
 
-    subplot(n_rows, n_cols, 1);
-    imagesc(phase_map.label); axis image; colorbar;
-    clim([0, label_ambiguous]);
-    title('Segmentation (label)', 'FontSize', 11);
-    % 0 = exclu, 1..n_phases = phase, n_phases+1 = aucune amplitude > 0, label_ambiguous = ambigu
-
-    for a = 1:n_active
-        k = active_idx(a);
-        subplot(n_rows, n_cols, 1+a);
-        imagesc(composition_map(:,:,k)); axis image; colorbar;
-        clim([0 1]);
-        title(sprintf('Fraction : %s', phase_model(k).name), 'FontSize', 11);
-    end
-
-end
