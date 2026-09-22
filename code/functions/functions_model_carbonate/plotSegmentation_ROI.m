@@ -84,17 +84,17 @@ function plotSegmentation_ROI(phase_map,  phase_model, active_idx,...
     
     cb.TickLabels = [{'Exclu'},{phase_model(active_idx).name}];
     
-    title('Segmentation (label)', 'FontSize', 11);
+    title('Segmentation map with ROIs', 'FontSize', 11);
     % Export vectoriel
 
-    if exportgraphics_segm_roi
-        if ~exist(sub_dir_save, 'dir')
-            mkdir(sub_dir_save);
-        end
-        
-        plot2svg( ...
-            fullfile(sub_dir_save, 'segmentation.svg'), ...
-            gcf);
-    end
+%     if exportgraphics_segm_roi
+%         if ~exist(sub_dir_save, 'dir')
+%             mkdir(sub_dir_save);
+%         end
+%         
+%         plot2svg( ...
+%             fullfile(sub_dir_save, 'segmentation.svg'), ...
+%             gcf);
+%     end
 
 end

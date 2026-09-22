@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260708_14_55_09_ACC_CAL_copie();
+params = parameters_260708_14_55_09_ACC_CAL_copie_7ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -108,12 +108,20 @@ end
 
 %% 11. Comparaison avec les spectres 7ps
 
-ref_roi = compare_spectrums( ...
+if params.ref_roi_compare
+    loaded_data = load(params.path2ref_roi_compare);
+    ref_roi_compare = loaded_data.ref_roi;
+end
+
+ref_roi = compare_spectrums_double( ...
           I_corr, params.wavenumber, phase_model, phase_map, ...
           params.roi1, params.roi1_phase_idx, params.roi2, ...
           params.roi2_phase_idx,fwhm_instr,active_idx,...
           params.phase_colors, params.colors_roi,params.figures_dir,...
-          params.exportgraphics_segm_roi,500,params.results_dir);
+          params.exportgraphics_segm_roi,ref_roi_compare, params.ref_roi_compare,...
+          500,params.results_dir);
+
+saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
 
 if params.compare_acquisition 
     ref_spectra_7ps = load(params.path2ref_spectra_7ps);

@@ -1,0 +1,6 @@
+function checkROI(roi, n_y, n_x, roi_name)
+    assert(roi(1) >= 1 && roi(2) <= n_y && roi(1) <= roi(2), ...
+        '%s : lignes hors bornes ou mal ordonnees (1..%d).', roi_name, n_y);
+    assert(roi(3) >= 1 && roi(4) <= n_x && roi(3) <= roi(4), ...
+        '%s : colonnes hors bornes ou mal ordonnees (1..%d).', roi_name, n_x);
+end

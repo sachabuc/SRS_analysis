@@ -1,4 +1,4 @@
-function params = parameters_260708_14_55_09_ACC_CAL_copie()
+function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
 
     % Chemin des dossiers
     this_dir     = fileparts(mfilename('fullpath'));
@@ -6,11 +6,11 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Data 
     day_folder_data = '260708';
-    folder_data = '';
+    folder_data = '16-25-59_ACC_Cal_7ps';
 
     % Data to compare 
-    day_folder_data_2compare = '';
-    folder_data_2compare = '';
+    day_folder_data_2compare = '260708';
+    folder_data_2compare = '14-55-09_ACC_Cal_Copie';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -28,10 +28,10 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'pixel_fit');
+    day_folder_data_2compare,folder_data_2compare,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi_compare');
+    day_folder_data_2compare,folder_data_2compare,'ref_roi');
 
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
@@ -49,16 +49,16 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     % Paramètres d'acquisition
     params.n_depart = 3;
     params.n_ch = 1;
-    params.wavelengths = [927, 927.5, 928, 928.3, 928.6, 929.1, 929.4, 929.6, 929.8, 930.4, ...
+    params.wavelengths = [928.6, 929.1, 929.5, 929.8, 930.2, 930.6, 931.1, 928, 927.6, ...
+                               927.2, 926.8, 926.4, 926, 925.5, 928.3];
+    params.wavelengths_7ps = [927, 927.5, 928, 928.3, 928.6, 929.1, 929.4, 929.6, 929.8, 930.4, ...
                            930.8, 931.1, 931.5, 931.8, 932.5, 932.9, 926.4, 926, 925.6, ...
                            925.2, 924.8, 924, 923];
-    params.wavelengths_7ps = [928.6, 929.1, 929.5, 929.8, 930.2, 930.6, 931.1, 928, 927.6, ...
-                               927.2, 926.8, 926.4, 926, 925.5, 928.3];
     params.pompe = 1031;
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 14.3;
+    params.fwhm_mesure = 4.5;
     params.fwhm_ref = 3.5;
 
     % Paramètres de prétraitement
@@ -114,8 +114,6 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.methode_ref_spectra = 'amplitude';
 
 
-    
-    
     params.shift_row = 0;
     params.shift_col = 0;
     
@@ -142,7 +140,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.ref_roi_compare = true; 
+    params.ref_roi_compare = true;
     params.compare_acquisition = false;
     params.display_fit_stat = true;
     params.display_R2_stat = false;

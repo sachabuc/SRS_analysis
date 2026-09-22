@@ -6,7 +6,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Data 
     day_folder_data = '260708';
-    folder_data = '';
+    folder_data = '14-55-09_ACC_Cal_Copie';
 
     % Data to compare 
     day_folder_data_2compare = '';
@@ -26,16 +26,12 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
         mkdir(params.results_dir);
     end
 
-    % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data,'pixel_fit');
 
-    params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi_compare');
-
+    % Chemins pour les données à comparer
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
-
     params.path2ref_spectra_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_spectra');
 
@@ -116,13 +112,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     
     
-    params.shift_row = 0;
-    params.shift_col = 0;
-    
-    params.roi1 = [75+params.shift_row 80+params.shift_row...
-        100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [22+params.shift_row 30+params.shift_row...
-        60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [75 80 100 105]; %[row_start row_end col_start col_end]
+    params.roi2 = [25 33 60 70]; %[row_start row_end col_start col_end]
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
@@ -130,7 +121,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.roi1_phase_idx = params.phase2plot(1);
     params.roi2_phase_idx = params.phase2plot(2);
 
-
+    params.shift_row = 2;
+    params.shift_col = 2;
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
@@ -142,7 +134,6 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.ref_roi_compare = true; 
     params.compare_acquisition = false;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
