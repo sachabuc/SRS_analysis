@@ -15,7 +15,7 @@ if nargin < 3 || isempty(n_depart)
 end
  
 %% get all the contents in the directory
-full_dir = [main_dir '/' sub_dir];
+full_dir = [main_dir '/'];
 cntnt    = dir(full_dir);
 n_cntnt  = length(cntnt);
  
@@ -294,13 +294,10 @@ acq.OPO_set_wavelength      = OPO_set_wavelength;
 acq.OPO_power                = OPO_power;
 
 %% Sauvegarder squeeze(imgs) en .mat dans un sous-dossier
-if ~exist('sub_dir_save', 'var')
-    sub_dir_save = 'squeeze_imgs'; % Nom par défaut du sous-dossier
-end
 
 % Créer le sous-dossier s'il n'existe pas
-if ~exist(sub_dir_save, 'dir')
-    mkdir(sub_dir_save);
+if ~exist(sub_dir)
+    mkdir(sub_dir);
 end
 
 % Sauvegarder squeeze(imgs) en .mat
@@ -308,7 +305,7 @@ squeeze_imgs = squeeze(imgs);
 [wavenumber, sort_idx] = sort(wavenumber(:).');
 squeeze_imgs = squeeze_imgs(:,:,sort_idx);
 
-save(fullfile(sub_dir_save, 'squeeze_imgs.mat'), 'squeeze_imgs');
-fprintf('squeeze(imgs) sauvegardé dans %s/squeeze_imgs.mat\n', sub_dir_save);
+save(sub_dir, 'squeeze_imgs');
+fprintf('squeeze(imgs) sauvegardé dans %s/squeeze_imgs.mat\n', sub_dir);
  
 end

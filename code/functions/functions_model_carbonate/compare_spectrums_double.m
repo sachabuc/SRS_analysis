@@ -3,7 +3,7 @@ function ref_roi = compare_spectrums_double( ...
           roi1, roi1_phase_idx, roi2, roi2_phase_idx, ...
           fwhm_instr,active_idx, phase_colors, colors_roi,...
           sub_dir_save,exportgraphics_segm_roi,ref_roi_compare, compare_plots,...
-          n_theoretical_points, save_path, delta_nu, fwhm_bounds)
+          noise_global,n_theoretical_points, save_path, delta_nu, fwhm_bounds)
 %COMPARE_ROI_TO_THEORETICAL_MODEL Ajuste (lsqcurvefit) le spectre moyen
 %de deux regions d'interet (ROI) sur un modele a une seule raie, avec
 %AMPLITUDE, POSITION (nu) ET LARGEUR (FWHM) LIBRES en plus du fond
@@ -76,14 +76,17 @@ function ref_roi = compare_spectrums_double( ...
 %                                                          commune)
 if nargin < 15 || isempty(compare_plots), compare_plots = false; end
 if nargin < 16 || isempty(ref_roi_compare), ref_roi_compare = ''; end  
-if nargin < 17 || isempty(n_theoretical_points), n_theoretical_points = 500; end
-if nargin < 18, save_path = ''; end
-if nargin < 19 || isempty(delta_nu),     delta_nu = 5;        end
-if nargin < 20 || isempty(fwhm_bounds),  fwhm_bounds = [0.5 2]; end
+if nargin < 18 || isempty(n_theoretical_points), n_theoretical_points = 500; end
+if nargin < 19, save_path = ''; end
+if nargin < 20 || isempty(delta_nu),     delta_nu = 5;        end
+if nargin < 21 || isempty(fwhm_bounds),  fwhm_bounds = [0.5 2]; end
 
 
 %% ================================================================
 % 1. Mise en forme
+
+phase_name_1 = phase_model(roi1_phase_idx).name;
+phase_name_2 = phase_model(roi2_phase_idx).name;
 
 if ndims(I_corr) == 4
     I_corr = squeeze(I_corr);
@@ -111,10 +114,10 @@ wavenumber_theo = linspace(min(wavenumber), max(wavenumber), n_theoretical_point
 % 2. Extraction + fit lsqcurvefit (A, nu, FWHM, fond), pour chaque ROI
 
 ref_roi(1) = buildRoiEntry(I_corr, wavenumber, wavenumber_theo, phase_model, ...
-    roi1, 1, roi1_phase_idx, fwhm_instr, delta_nu, fwhm_bounds,  ... 
+    roi1, roi1_phase_idx, 1, fwhm_instr, delta_nu, fwhm_bounds,  ... 
     colors_roi(1,:),false, false);
 ref_roi(2) = buildRoiEntry(I_corr, wavenumber, wavenumber_theo, phase_model, ...
-    roi2, 4, roi2_phase_idx, fwhm_instr, delta_nu, fwhm_bounds, ... 
+    roi2, roi2_phase_idx, 2, fwhm_instr, delta_nu, fwhm_bounds, ... 
     colors_roi(2,:),false, false);
 
 %buildRoiEntry( ...
@@ -123,114 +126,503 @@ ref_roi(2) = buildRoiEntry(I_corr, wavenumber, wavenumber_theo, phase_model, ...
 %     nu_is_variable, FWHM_is_variable)
 
 %% ================================================================
-% 3. Affichage : les deux ROI sur UN SEUL graphe, normalisation commune
+% COMPARISON ACC / CAL : 2 ps vs 7 ps
+%
+% Convention :
+%   - ACC       = bleu
+%   - Calcite   = orange
+%   - 2 ps      = ligne pleine
+%   - 7 ps      = ligne tiretée
+%
+% Panneaux :
+%   (a) Spectres normalisés par la calcite
+%   (b) Rapport ACC / Calcite
+%   (c) SNR ACC et Calcite
+%
+% Hypothèses :
+%   ref_roi(1)           = ACC, 2 ps
+%   ref_roi(2)           = Calcite, 2 ps
+%   ref_roi_compare(1)   = ACC, 7 ps
+%   ref_roi_compare(2)   = Calcite, 7 ps
+%
+% Les structures doivent contenir :
+%   .mean_spectrum
+%   .wavenumber
+%
+% Pour le SNR, si .SNR existe, il est utilisé directement.
+% Sinon, le SNR est calculé à partir de .mean_spectrum et
+% .std_spectrum.
+%% ================================================================
+
+% clearvars -except ref_roi ref_roi_compare wavenumber compare_plots ...
+%     noise_global phase_name_1 phase_name_2 phase_map phase_model active_idx
+
+%% -------------------- PARAMETRES -------------------------------
+
+% Indices des phases
+idx_CAL = 1;
+idx_ACC = 2;
+
+% Couleurs
+color_CAL = [0.0000 0.4470 0.7410];
+color_ACC = [0.8500 0.3250 0.0980];
+
+% Style des acquisitions
+lineStyle_ref     = '--';    % 7 ps
+lineStyle_compare = '-';   % 2 ps
+
+% Largeur des courbes
+lineWidth = 2.0;
+
+% Taille des marqueurs
+markerSize_ACC = 6;
+markerSize_CAL = 6;
+% Affichage des marqueurs
+show_markers = true;
+
+% Si true, affiche les valeurs ACC/Cal directement sur le panneau b
+show_ratio_values = true;
+
+% Si true, affiche les valeurs SNR sur le panneau c
+show_SNR_values = true;
+
+% Limites spectrales optionnelles
+% Exemple : xlim([1060 1110])
+use_xlim = false;
+xlim_values = [1060 1110];
+
+%% ---------------- VERIFICATION DES DONNEES ---------------------
+
+assert(numel(ref_roi) >= 2, ...
+    'ref_roi doit contenir au moins ACC et Calcite.');
+
+assert(numel(ref_roi_compare) >= 2, ...
+    'ref_roi_compare doit contenir au moins ACC et Calcite.');
+
+%% ================================================================
+% 1. EXTRACTION DES SPECTRES
+% ================================================================
+
+acc_ref = ref_roi(idx_ACC).mean_spectrum(:);
+cal_ref = ref_roi(idx_CAL).mean_spectrum(:);
+
+acc_comp = ref_roi_compare(idx_ACC).mean_spectrum(:);
+cal_comp = ref_roi_compare(idx_CAL).mean_spectrum(:);
+
+% Wavenumbers
+wn_ref = ref_roi(idx_ACC).wavenumber(:);
+wn_comp = ref_roi_compare(idx_ACC).wavenumber(:);
+
+% Vérification
+assert(numel(wn_ref) == numel(acc_ref), ...
+    'Le wavenumber et le spectre ACC 7 ps n''ont pas la même taille.');
+
+assert(numel(wn_ref) == numel(cal_ref), ...
+    'Le wavenumber et le spectre Calcite 7 ps n''ont pas la même taille.');
+
+assert(numel(wn_comp) == numel(acc_comp), ...
+    'Le wavenumber et le spectre ACC 2 ps n''ont pas la même taille.');
+
+assert(numel(wn_comp) == numel(cal_comp), ...
+    'Le wavenumber et le spectre Calcite 2 ps n''ont pas la même taille.');
+
+%% ================================================================
+% 2. SOUSTRACTION DU MINIMUM
+%
+% Chaque spectre commence à 0.
+%% ================================================================
+
+acc_ref_0 = acc_ref - min(acc_ref);
+cal_ref_0 = cal_ref - min(cal_ref);
+
+acc_comp_0 = acc_comp - min(acc_comp);
+cal_comp_0 = cal_comp - min(cal_comp);
+
+%% ================================================================
+% 3. NORMALISATION PAR LA CALCITE DE CHAQUE ACQUISITION
+%
+% IMPORTANT :
+%
+% ACC 2 ps / max(Calcite 2 ps)
+% Calcite 2 ps / max(Calcite 2 ps)
+%
+% ACC 7 ps / max(Calcite 7 ps)
+% Calcite 7 ps / max(Calcite 7 ps)
+
+cal_max_ref = max(cal_ref_0);
+cal_max_comp = max(cal_comp_0);
+
+if cal_max_ref <= 0
+    error('Maximum de la calcite 7 ps <= 0.');
+end
+
+if cal_max_comp <= 0
+    error('Maximum de la calcite 2 ps <= 0.');
+end
+
+acc_ref_norm = acc_ref_0 / cal_max_ref;
+cal_ref_norm = cal_ref_0 / cal_max_ref;
+
+acc_comp_norm = acc_comp_0 / cal_max_comp;
+cal_comp_norm = cal_comp_0 / cal_max_comp;
+
+%% ================================================================
+% 4. RAPPORT ACC / CALCITE
+%
+% On utilise les amplitudes après soustraction du minimum.
+%
+% R = max(ACC) / max(Calcite)
+%
+% C'est exactement le rapport des hauteurs relatives conservé
+% par la normalisation précédente.
+%% ================================================================
+
+A_ACC_ref = max(acc_ref_0);
+A_CAL_ref = max(cal_ref_0);
+
+A_ACC_comp = max(acc_comp_0);
+A_CAL_comp = max(cal_comp_0);
+
+ratio_ref = A_ACC_ref / A_CAL_ref;
+ratio_comp = A_ACC_comp / A_CAL_comp;
+
+ratio_values = [ratio_ref ratio_comp];
+
+%% ================================================================
+% 5. CALCUL / EXTRACTION DU SNR
+% ================================================================
+
+SNR_ACC_ref = getSNR(ref_roi(idx_ACC));
+SNR_CAL_ref = getSNR(ref_roi(idx_CAL));
+
+SNR_ACC_comp = getSNR(ref_roi_compare(idx_ACC));
+SNR_CAL_comp = getSNR(ref_roi_compare(idx_CAL));
+
+SNR_values = [
+    SNR_ACC_ref   SNR_ACC_comp;
+    SNR_CAL_ref   SNR_CAL_comp
+];
+
+%% ================================================================
+% 6. FIGURE
+% ================================================================
 
 
-figure('Color', 'white', 'Position', [100 100 1050 700]);
+%% ================================================================
+% PANEL A — SPECTRES
+% ================================================================
+
+figure( ...
+    'Color', 'white', ...
+    'Position', [100 100 1100 850]);
+
 hold on;
 
-%% =========================
-% Couleurs
-% ==========================
+% ---------- 7 ps ----------
+if show_markers
+    plot(wn_ref, acc_ref_norm, ...
+        'Color', color_ACC, ...
+        'LineStyle', lineStyle_ref, ...
+        'LineWidth', lineWidth, ...
+        'Marker', '*', ...
+        'MarkerSize', markerSize_ACC, ...
+        'DisplayName', sprintf('%s — 7 ps',phase_name_2));
+else
+    plot(wn_ref, acc_ref_norm, ...
+        'Color', color_ACC, ...
+        'LineStyle', lineStyle_ref, ...
+        'LineWidth', lineWidth, ...
+        'DisplayName', sprintf('%s — 7 ps',phase_name_2));
+end
 
-% Spectres de référence : ACC / Calcite
-colors_ref = [
-    0.0000 0.4470 0.7410;   % bleu
-    0.8500 0.3250 0.0980   % orange
-];
+plot(wn_ref, cal_ref_norm, ...
+    'Color', color_CAL, ...
+    'LineStyle', lineStyle_ref, ...
+    'LineWidth', lineWidth, ...
+    'Marker', 'x', ...
+    'MarkerSize', markerSize_CAL, ...
+    'DisplayName', sprintf('%s — 7 ps',phase_name_1));
 
-% Spectres de comparaison
-colors_compare = [
-    0.4940 0.1840 0.5560;   % violet
-    0.4660 0.6740 0.1880    % vert
-];
+% ---------- 2 ps ----------
+if show_markers
+    plot(wn_comp, acc_comp_norm, ...
+        'Color', color_ACC, ...
+        'LineStyle', lineStyle_compare, ...
+        'LineWidth', lineWidth, ...
+        'Marker', '*', ...
+        'MarkerSize', markerSize_ACC, ...
+        'DisplayName', sprintf('%s — 2 ps',phase_name_2));
+else
+    plot(wn_comp, acc_comp_norm, ...
+        'Color', color_ACC, ...
+        'LineStyle', lineStyle_compare, ...
+        'LineWidth', lineWidth, ...
+        'DisplayName', sprintf('%s — 2 ps',phase_name_2));
+end
 
+plot(wn_comp, cal_comp_norm, ...
+    'Color', color_CAL, ...
+    'LineStyle', lineStyle_compare, ...
+    'LineWidth', lineWidth, ...
+    'Marker', 'x', ...
+    'MarkerSize', markerSize_CAL, ...
+    'DisplayName', sprintf('%s — 2 ps',phase_name_1));
 
-%% =========================
-% Normalisation commune ACC + Calcite
-% ==========================
+% Calcite = 1
+yline(1, ':', ...
+    'Color', [0.4 0.4 0.4], ...
+    'LineWidth', 1.2, ...
+    'HandleVisibility', 'off');
 
-% Récupération des deux spectres
-spec1 = ref_roi(1).mean_spectrum(:);
-spec2 = ref_roi(2).mean_spectrum(:);
+grid on;
+xlabel('Raman shift (cm^{-1})');
+ylabel('Normalized intensity');
 
-% Minimum commun
-min_common = min([spec1; spec2]);
+title(sprintf('(a) %s and %s spectra',phase_name_2,phase_name_1));
 
-% Maximum commun
-max_common = max([spec1; spec2]);
+legend( ...
+    'Location', 'northeast', ...
+    'Box', 'off');
 
-% Normalisation avec les mêmes valeurs pour les deux
-spec1_norm = (spec1 - min_common) / max_common;
-spec2_norm = (spec2 - min_common) / max_common;
+set(gca, ...
+    'FontSize', 12, ...
+    'LineWidth', 1, ...
+    'TickDir', 'out');
 
+if use_xlim
+    xlim(xlim_values);
+end
 
-%% =========================
-% Tracé ACC + Calcite
-% ==========================
+%% ================================================================
+% PANEL B — ACC / CALCITE
+% ================================================================
 
-plot(wavenumber(:), spec1_norm, ...
-    '-o', ...
-    'Color', colors_ref(1,:), ...
-    'MarkerFaceColor', colors_ref(1,:), ...
-    'MarkerSize', 4, ...
-    'LineWidth', 2, ...
-    'DisplayName', ref_roi(1).name);
+figure( ...
+    'Color', 'white', ...
+    'Position', [100 100 1100 850]);
 
-plot(wavenumber(:), spec2_norm, ...
-    '-o', ...
-    'Color', colors_ref(2,:), ...
-    'MarkerFaceColor', colors_ref(2,:), ...
-    'MarkerSize', 4, ...
-    'LineWidth', 2, ...
-    'DisplayName', ref_roi(2).name);
+tiledlayout(2,1, ...
+    'TileSpacing', 'compact', ...
+    'Padding', 'compact');
 
+nexttile;
+hold on;
+box on;
 
-%% =========================
-% Spectres de comparaison
-% ==========================
+x_ratio = [1 2];
 
-if compare_plots
+b = bar(x_ratio, ratio_values, ...
+    0.55, ...
+    'FaceColor', 'flat');
 
-    for p = 1:numel(ref_roi_compare)
+% Même couleur pour les deux acquisitions
+b.CData(1,:) = color_ACC;
+b.CData(2,:) = color_ACC;
 
-        % Spectre
-        spectrum = ref_roi_compare(p).mean_spectrum(:);
+% Ligne horizontale éventuellement utile
+yline(1, ':', ...
+    'Color', [0.4 0.4 0.4], ...
+    'LineWidth', 1.2, ...
+    'HandleVisibility', 'off');
 
-        % Normalisation avec le même max/min que ACC + Calcite
-        spectrum_norm = (spectrum - min_common) / max_common;
+set(gca, ...
+    'XTick', x_ratio, ...
+    'XTickLabel', {'7 ps', '2 ps'}, ...
+    'FontSize', 12, ...
+    'LineWidth', 1, ...
+    'TickDir', 'out');
 
-        % Tracé
-        plot(ref_roi_compare(p).wavenumber(:), ...
-            spectrum_norm, ...
-            '-o', ...
-            'Color', colors_compare(p,:), ...
-            'MarkerFaceColor', colors_compare(p,:), ...
-            'MarkerSize', 4, ...
-            'LineWidth', 2, ...
-            'DisplayName', ref_roi_compare(p).name);
+ylabel(sprintf('%s / %s',phase_name_2,phase_name_1));
+
+title(sprintf('(b) Relative %s-to-%s signal',phase_name_2,phase_name_1));
+
+if show_ratio_values
+    for i = 1:2
+        text( ...
+            x_ratio(i), ...
+            ratio_values(i), ...
+            sprintf(' %.2f', ratio_values(i)), ...
+            'VerticalAlignment', 'bottom', ...
+            'HorizontalAlignment', 'center', ...
+            'FontSize', 11);
     end
 end
 
+%% ================================================================
+% PANEL C — SNR
+% ================================================================
 
-%% =========================
-% Mise en forme
-% ==========================
-
-xlabel('Wavenumber (cm^{-1})', 'FontSize', 12);
-ylabel('Normalized intensity', 'FontSize', 12);
-
-title('Comparison of ACC and calcite spectra', ...
-      'FontSize', 13);
-
-legend('Location', 'best', 'Box', 'off');
-
-grid on;
+nexttile;
+hold on;
 box on;
 
+% Organisation :
+%
+%       7 ps     2 ps
+% ACC
+% Cal
+
+x = [1 2];
+
+bar_width = 0.32;
+
+% ACC
+bar( ...
+    x - bar_width/2, ...
+    SNR_values(1,:), ...
+    bar_width, ...
+    'FaceColor', color_ACC, ...
+    'EdgeColor', 'none', ...
+    'DisplayName', sprintf('%s',phase_name_2));
+
+% Calcite
+bar( ...
+    x + bar_width/2, ...
+    SNR_values(2,:), ...
+    bar_width, ...
+    'FaceColor', color_CAL, ...
+    'EdgeColor', 'none', ...
+    'DisplayName', sprintf('%s',phase_name_1));
+
+% Ligne SNR = noise_global
+yline(noise_global, '--', ...
+    'Color', [0.4 0.4 0.4], ...
+    'LineWidth', 1.2, ...
+    'DisplayName', sprintf('SNR = %.2f', noise_global));
+
 set(gca, ...
-    'FontSize', 11, ...
-    'LineWidth', 1);
+    'XTick', x, ...
+    'XTickLabel', {'7 ps', '2 ps'}, ...
+    'FontSize', 12, ...
+    'LineWidth', 1, ...
+    'TickDir', 'out');
+
+xlabel('Acquisition');
+ylabel('SNR');
+
+title('(c) Signal-to-noise ratio');
+
+legend( ...
+    'Location', 'northwest', ...
+    'Box', 'off');
+
+if show_SNR_values
+
+    % ACC
+    for i = 1:2
+        text( ...
+            x(i) - bar_width/2, ...
+            SNR_values(1,i), ...
+            sprintf(' %.1f', SNR_values(1,i)), ...
+            'VerticalAlignment', 'bottom', ...
+            'HorizontalAlignment', 'center', ...
+            'FontSize', 10);
+    end
+
+    % Calcite
+    for i = 1:2
+        text( ...
+            x(i) + bar_width/2, ...
+            SNR_values(2,i), ...
+            sprintf(' %.1f', SNR_values(2,i)), ...
+            'VerticalAlignment', 'bottom', ...
+            'HorizontalAlignment', 'center', ...
+            'FontSize', 10);
+    end
+
+end
+
+%% ================================================================
+% 7. AFFICHAGE DES RESULTATS DANS LA CONSOLE
+% ================================================================
+
+fprintf('\n');
+fprintf('====================================================\n');
+fprintf('       COMPARISON %s / %s — 7 ps vs 2 ps\n',phase_name_2,phase_name_1);
+fprintf('====================================================\n');
+
+fprintf('\n %s / %s:\n',phase_name_2,phase_name_1);
+fprintf('  7 ps : %.4f\n', ratio_ref);
+fprintf('  2 ps : %.4f\n', ratio_comp);
+
+fprintf('\nEvolution du rapport : %.2f %%\n', ...
+    100 * (ratio_comp/ratio_ref - 1));
+
+fprintf('\nSNR %s:\n',phase_name_2);
+fprintf('  7 ps : %.2f\n', SNR_ACC_ref);
+fprintf('  2 ps : %.2f\n', SNR_ACC_comp);
+
+fprintf('\nSNR %s:\n',phase_name_1);
+fprintf('  7 ps : %.2f\n', SNR_CAL_ref);
+fprintf('  2 ps : %.2f\n', SNR_CAL_comp);
+
+fprintf('\n====================================================\n');
+
+
+%% ================================================================
+% FONCTION LOCALE — EXTRACTION / CALCUL DU SNR
+% ================================================================
+
+function SNR = getSNR(entry)
+
+    % --------------------------------------------------------------
+    % CAS 1 : le SNR est déjà présent dans la structure
+    % --------------------------------------------------------------
+
+    if isfield(entry, 'SNR') && ~isempty(entry.SNR)
+
+        SNR = entry.SNR;
+
+        return;
+
+    end
+
+    % --------------------------------------------------------------
+    % CAS 2 : SNR calculé à partir de mean_spectrum/std_spectrum
+    %
+    % SNR = amplitude du signal / bruit
+    %
+    % Ici :
+    %   signal = max(mean spectrum - minimum)
+    %   noise  = moyenne du std_spectrum
+    %
+    % Cette définition peut être remplacée par ton estimation
+    % de bruit spécifique si tu en as déjà une.
+    % --------------------------------------------------------------
+
+    if isfield(entry, 'mean_spectrum') && ...
+            isfield(entry, 'std_spectrum')
+
+        spectrum = entry.mean_spectrum(:);
+        noise = entry.std_spectrum(:);
+
+        signal = max(spectrum - min(spectrum));
+
+        noise_value = mean(noise, 'omitnan');
+
+        if noise_value > 0
+            SNR = signal / noise_value;
+        else
+            SNR = NaN;
+        end
+
+        return;
+
+    end
+
+    % --------------------------------------------------------------
+    % Si aucune information disponible
+    % --------------------------------------------------------------
+
+    warning( ...
+        'Impossible de calculer le SNR pour %s.', ...
+        getEntryName(entry));
+
+    SNR = NaN;
+
+end
+
+
 
 
 %% ================================================================
@@ -256,7 +648,130 @@ end
 
 end
 
+%% ================================================================
+% PETITE FONCTION UTILITAIRE POUR LE NOM
+%% ================================================================
 
+function name = getEntryName(entry)
+
+    if isfield(entry, 'name')
+        name = char(entry.name);
+    else
+        name = 'ROI inconnue';
+    end
+
+end
+
+
+% %% ================================================================
+% % 3. Affichage : les deux ROI sur UN SEUL graphe, normalisation commune
+% 
+% 
+% figure('Color', 'white', 'Position', [100 100 1050 700]);
+% hold on;
+% 
+% %% =========================
+% % Couleurs
+% % ==========================
+% 
+% % Spectres de référence : ACC / Calcite
+% colors_ref = [
+%     0.0000 0.4470 0.7410;   % bleu
+%     0.8500 0.3250 0.0980   % orange
+% ];
+% 
+% % Spectres de comparaison
+% colors_compare = [
+%     0.4940 0.1840 0.5560;   % violet
+%     0.4660 0.6740 0.1880    % vert
+% ];
+% 
+% 
+% %% =========================
+% % Normalisation commune ACC + Calcite
+% % ==========================
+% 
+% % Récupération des deux spectres
+% spec1 = ref_roi(1).mean_spectrum(:);
+% spec2 = ref_roi(2).mean_spectrum(:);
+% 
+% % Minimum commun
+% min_common = min([spec1; spec2]);
+% 
+% % Maximum commun
+% max_common = max([spec1; spec2]);
+% 
+% % Normalisation avec les mêmes valeurs pour les deux
+% spec1_norm = (spec1 - min_common) / max_common;
+% spec2_norm = (spec2 - min_common) / max_common;
+% 
+% 
+% %% =========================
+% % Tracé ACC + Calcite
+% % ==========================
+% 
+% plot(wavenumber(:), spec1_norm, ...
+%     '-o', ...
+%     'Color', colors_ref(1,:), ...
+%     'MarkerFaceColor', colors_ref(1,:), ...
+%     'MarkerSize', 4, ...
+%     'LineWidth', 2, ...
+%     'DisplayName', ref_roi(1).name);
+% 
+% plot(wavenumber(:), spec2_norm, ...
+%     '-o', ...
+%     'Color', colors_ref(2,:), ...
+%     'MarkerFaceColor', colors_ref(2,:), ...
+%     'MarkerSize', 4, ...
+%     'LineWidth', 2, ...
+%     'DisplayName', ref_roi(2).name);
+% 
+% 
+% %% =========================
+% % Spectres de comparaison
+% % ==========================
+% 
+% if compare_plots
+% 
+%     for p = 1:numel(ref_roi_compare)
+% 
+%         % Spectre
+%         spectrum = ref_roi_compare(p).mean_spectrum(:);
+% 
+%         % Normalisation avec le même max/min que ACC + Calcite
+%         spectrum_norm = (spectrum - min_common) / max_common;
+% 
+%         % Tracé
+%         plot(ref_roi_compare(p).wavenumber(:), ...
+%             spectrum_norm, ...
+%             '-o', ...
+%             'Color', colors_compare(p,:), ...
+%             'MarkerFaceColor', colors_compare(p,:), ...
+%             'MarkerSize', 4, ...
+%             'LineWidth', 2, ...
+%             'DisplayName', ref_roi_compare(p).name);
+%     end
+% end
+% 
+% 
+% %% =========================
+% % Mise en forme
+% % ==========================
+% 
+% xlabel('Wavenumber (cm^{-1})', 'FontSize', 12);
+% ylabel('Normalized intensity', 'FontSize', 12);
+% 
+% title('Comparison of ACC and calcite spectra', ...
+%       'FontSize', 13);
+% 
+% legend('Location', 'best', 'Box', 'off');
+% 
+% grid on;
+% box on;
+% 
+% set(gca, ...
+%     'FontSize', 11, ...
+%     'LineWidth', 1);
 
 
 

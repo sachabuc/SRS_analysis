@@ -14,7 +14,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
-    params.sub_dir = '';
+    params.sub_dir = fullfile(project_root, 'data', 'processed', 'data_chirp', ...
+        day_folder_data, folder_data);
 
     params.results_dir = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data);
@@ -28,7 +29,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
 
     % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data_2compare,folder_data_2compare,'pixel_fit');
+    day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_roi');
@@ -111,7 +112,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.nbr_pix_per_phase = [30 90];
     params.priority_phases =       [false false false true false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
-    params.methode_ref_spectra = 'amplitude';
+    params.methode_ref_spectra = '';
 
 
     params.shift_row = 0;

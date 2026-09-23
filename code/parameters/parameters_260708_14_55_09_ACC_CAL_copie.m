@@ -6,7 +6,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Data 
     day_folder_data = '260708';
-    folder_data = '';
+    folder_data = '14-55-09_ACC_Cal_Copie';
 
     % Data to compare 
     day_folder_data_2compare = '';
@@ -14,7 +14,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
-    params.sub_dir = '';
+    params.sub_dir = fullfile(project_root, 'data', 'processed', 'data_chirp', ...
+        day_folder_data, folder_data);
 
     params.results_dir = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data);
@@ -111,7 +112,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.nbr_pix_per_phase = [30 90];
     params.priority_phases =       [false false false true false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
-    params.methode_ref_spectra = 'amplitude';
+    params.methode_ref_spectra = '';
 
 
     
@@ -142,7 +143,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.ref_roi_compare = true; 
+    params.ref_roi_compare = false; 
     params.compare_acquisition = false;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
