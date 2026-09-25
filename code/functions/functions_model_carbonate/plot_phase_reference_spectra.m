@@ -150,15 +150,18 @@ for i = 1:n_req
     k = phase_idx(i);
  
     pool = find(phase_map.label == k);
- 
+
+    
     ref_spectra(i).phase_idx   = k;
     ref_spectra(i).name        = phase_model(k).name;
     ref_spectra(i).n_requested = n_top(i);
     ref_spectra(i).fwhm_instr    = fwhm_instr;
+    ref_spectra(i).wavenumber  = wavenumber;
  
     if isempty(pool)
         warning('plot_phase_reference_spectra:emptyPool', ...
             'Aucun pixel avec la phase %s comme dominante -- ignoree.', phase_model(k).name);
+                      
         ref_spectra(i).n_used               = 0;
         ref_spectra(i).R2_worst_used         = NaN;
         ref_spectra(i).mean_spectrum         = nan(1, n_wn);

@@ -91,8 +91,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [true false false true false false];
-    params.FWHM_is_variable = [true false false true false false];
+    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1, 3, 20, 3, 3];
@@ -108,15 +108,12 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.dominance_phases = [false false false true false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
-    params.phase2plot = [1 4];
     params.nbr_pix_per_phase = [30 90];
     params.priority_phases =       [false false false true false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
     params.methode_ref_spectra = '';
 
-
-    
-    
+    % Paramètres spectres ROI 
     params.shift_row = 0;
     params.shift_col = 0;
     
@@ -135,7 +132,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = false;
+    params.calcul_fwhm_instr = true;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;

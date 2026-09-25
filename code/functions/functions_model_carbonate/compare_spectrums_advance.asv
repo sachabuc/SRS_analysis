@@ -617,7 +617,7 @@ plotSegmentation_ROI( ...
 %% ================================================================
 % 9. Display stat
 
-fprintf('\nCompare_spectrums_advance STATS\n');
+fprintf('Compare_spectrums_advance');
 
     for i = 1:numel(ref_roi)
 

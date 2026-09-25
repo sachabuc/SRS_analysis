@@ -1,4 +1,4 @@
-function ref_roi = compare_spectrums_advance( ...
+function ref_roi = spectrums_advance( ...
           I_corr,wavenumber, phase_model, phase_map, ...
           roi1, roi2,fwhm_instr,active_idx, phase_colors, colors_roi,...
           sub_dir_save,exportgraphics_segm_roi,...
@@ -69,31 +69,50 @@ if ndims(I_corr) == 4
 end
 
 % Tri spectral
-[wavenumber, sort_idx] = sort(wavenumber(:).');
+[wavenumber, sort_idx] = sort(wavenumber(:));
 I_corr = I_corr(:,:,sort_idx);
 
 [n_y, n_x, n_wn] = size(I_corr);
-
-assert(numel(roi1) == 4 && numel(roi2) == 4, ...
-    'roi1 et roi2 doivent etre [row_start row_end col_start col_end].');
-
-checkROI(roi1, n_y, n_x, 'roi1');
-checkROI(roi2, n_y, n_x, 'roi2');
-
-assert(numel(active_idx) == 2, ...
-    'active_idx doit contenir deux indices de phase.');
-
-assert(isfield(params,'nu_LB') && ...
-       isfield(params,'nu_UB') && ...
-       isfield(params,'FWHM_LB') && ...
-       isfield(params,'FWHM_UB'), ...
-       ['params doit contenir : nu_LB, nu_UB, ', ...
-        'FWHM_LB et FWHM_UB.']);
 
 wavenumber_theo = linspace( ...
     min(wavenumber), ...
     max(wavenumber), ...
     n_theoretical_points);
+
+
+%% ------------------------------------------------------------
+% Gestion du nombre de ROI
+%
+% roi1 obligatoire
+% roi2 optionnel : [] signifie qu'un seul ROI est utilisé
+
+assert(numel(roi1) == 4, ...
+    'roi1 doit etre [row_start row_end col_start col_end].');
+
+checkROI(roi1, n_y, n_x, 'roi1');
+
+has_roi2 = ~isempty(roi2);
+
+if has_roi2
+    assert(numel(roi2) == 4, ...
+        'roi2 doit etre [row_start row_end col_start col_end].');
+    checkROI(roi2, n_y, n_x, 'roi2');
+end
+
+n_roi = 1 + has_roi2;
+
+%% ------------------------------------------------------------
+% Vérification des phases
+
+assert(numel(active_idx) >= n_roi, ...
+    'active_idx doit contenir au moins autant de phases que de ROI.');
+
+active_idx = active_idx(1:n_roi);
+
+assert(size(colors_roi,1) >= n_roi, ...
+    'colors_roi doit contenir au moins une couleur par ROI.');
+
+colors_roi = colors_roi(1:n_roi,:);
 
 
 %% ================================================================
@@ -168,9 +187,13 @@ opts = optimoptions( ...
 %   Le fit est ensuite réalisé UNE SEULE FOIS sur cette somme.
 
 
-roi_list = {roi1, roi2};
+if has_roi2
+    roi_list = {roi1, roi2};
+else
+    roi_list = {roi1};
+end
 
-for j = 1:2
+for j = 1:n_roi
 
     roi = roi_list{j};
 
@@ -482,12 +505,9 @@ end
 %
 % Le maximum théorique le plus élevé sert de référence.
 
-norm_factor = max([ ...
-    ref_roi(1).peak_height_fit, ...
-    ref_roi(2).peak_height_fit]);
+norm_factor = max([ref_roi.peak_height_fit]);
 
-
-for j = 1:2
+for j = 1:n_roi
     ref_roi(j).norm_factor = norm_factor;
 end
 
@@ -510,7 +530,7 @@ figure( ...
 hold on;
 
 
-for j = 1:2
+for j = 1:n_roi
 
     %% ------------------------------------------------------------
     % Bande ± 1 sigma
@@ -548,13 +568,13 @@ for j = 1:2
     plot( ...
         wavenumber, ...
         ref_roi(j).mean_spectrum / norm_factor, ...
-        '-o', ...
+        'o', ...
         'Color',colors_roi(j,:), ...
         'MarkerFaceColor',colors_roi(j,:), ...
         'MarkerSize',4, ...
         'LineWidth',2, ...
         'DisplayName',sprintf( ...
-            '%s : moyenne ROI', ...
+            '%s : moyenne ROI +/- std', ...
             ref_roi(j).name));
 
     
@@ -630,7 +650,6 @@ fprintf('\nCompare_spectrums_advance STATS\n');
 
         %% Amplitudes de toutes les phases
 
-    fprintf('\nAmplitude des phases :\n');
     
     for k = 1:numel(active_idx)
     
@@ -653,8 +672,8 @@ fprintf('\nCompare_spectrums_advance STATS\n');
     
                 for p = 1:numel(nu_j)
     
-                    fprintf('  Phase %s : Raie %s : nu = %.4f cm^-1\n', ...
-                        phase_model(j).name, phase_model(j).name, nu_j(p));
+                    fprintf('  Phase %s : Raie %d : nu = %.4f cm^-1\n', ...
+                        phase_model(j).name, p, nu_j(p));
     
                 end
     
@@ -676,8 +695,8 @@ fprintf('\nCompare_spectrums_advance STATS\n');
     
                 for p = 1:numel(FWHM_j)
     
-                    fprintf('  Phase %s : FWHM %s : FWHM = %.4f cm^-1\n', ...
-                        phase_model(j).name, phase_model(j).name, FWHM_j(p));
+                    fprintf('  Phase %s : FWHM %d : FWHM = %.4f cm^-1\n', ...
+                        phase_model(j).name, p, FWHM_j(p));
     
                 end
     
