@@ -9,26 +9,34 @@ function params = parameters_260715_corals_2ps()
     folder_data = '14-15-43_coral_2ps';
 
     % Data to compare 
-    day_folder_data_2compare = '';
-    folder_data_2compare = '';
+    day_folder_data_2compare = '260715';
+    folder_data_2compare = '15-04-42_coral_7ps';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
-    params.sub_dir = '';
+    params.sub_dir = fullfile(project_root, 'data', 'processed', 'data_chirp', ...
+        day_folder_data, folder_data);
 
     params.results_dir = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data);
+
+    params.figures_dir = fullfile(project_root, 'results', 'figures', ...
     day_folder_data,folder_data);
 
     if ~exist(params.results_dir, 'dir')
         mkdir(params.results_dir);
     end
-    
+
+    % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data,'pixel_fit');
 
-    % Chemins pour les données à comparer
+    params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data,'ref_roi');
+
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
+
     params.path2ref_spectra_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_spectra');
 
@@ -79,7 +87,7 @@ function params = parameters_260715_corals_2ps()
     % Paramètres d'initialisation linéaire
     params.R2_init = 0.5;
     params.threshold_sigma_init = 1;
-
+    
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
@@ -99,29 +107,44 @@ function params = parameters_260715_corals_2ps()
     params.detection_method = 'significance';
     params.threshold_A = 10;
     params.phase2plot = [2 4];
-    params.nbr_pix_per_phase = [30 30];
+    params.nbr_pix_per_phase = [10 10];
     params.priority_phases =       [false false false params.use_ACC false false];
-    params.priority_min_fraction = [0 0 0 0.3 0 0];
+    params.priority_min_fraction = [0 0 0 1 0 0];
+    params.methode_ref_spectra = 'amplitude';
 
     % Paramètres de décalage
-    params.shift_row = 2;
-    params.shift_col = 2;
+    params.shift_row = 0;
+    params.shift_col = 0;
 
-    % Paramètres d'action
+    params.roi1 = [56+params.shift_row 58+params.shift_row...
+    82+params.shift_col 84+params.shift_col]; 
+    params.roi2 = [121+params.shift_row 123+params.shift_row...
+    71+params.shift_col 73+params.shift_col];
+
+    params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
+    params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
+
+
+    params.nu_interval = [1075 1095];
+
+    % Paramètres d'affichage
     params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
-    params.compare_acquisition = false;
-
-    % Paramètres d'affichage
     params.display_intensity_maps = true;
     params.display_figures = true;
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
+    params.ref_roi_compare = false; 
+    params.do_ref_roi_compare = true;
+    params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
+
+    %sauvegarde
+    params.exportgraphics_segm_roi = false;
 
 
 end

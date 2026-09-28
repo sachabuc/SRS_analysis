@@ -82,14 +82,14 @@ end
 %% ================================================================
 % 2. Decalage + extraction, pour chaque phase de ref_spectra
  
-n_req = numel(ref_spectra.data);
+n_req = numel(ref_spectra);
 ref_spectra_shifted(n_req).phase_idx = [];   % preallocation implicite
  
 for i = 1:n_req
-    k = ref_spectra.data(i).phase_idx;
+    k = ref_spectra(i).phase_idx;
  
-    row_orig = ref_spectra.data(i).row;
-    col_orig = ref_spectra.data(i).col;
+    row_orig = ref_spectra.row(i);
+    col_orig = ref_spectra.col(i);
  
     row_new = row_orig + shift_row;
     col_new = col_orig + shift_col;
@@ -101,8 +101,8 @@ for i = 1:n_req
     col_new = col_new(valid);
  
     ref_spectra_shifted(i).phase_idx     = k;
-    ref_spectra_shifted(i).name          = ref_spectra.data(i).name;
-    ref_spectra_shifted(i).n_requested           = ref_spectra.data(i).n_requested;
+    ref_spectra_shifted(i).name          = ref_spectra.name(i);
+    ref_spectra_shifted(i).n_requested           = ref_spectra.n_requested(i);
     ref_spectra_shifted(i).tau_fwhm       = fwhm_inst_B;
     ref_spectra_shifted(i).row_original    = row_orig;
     ref_spectra_shifted(i).col_original    = col_orig;
@@ -110,7 +110,7 @@ for i = 1:n_req
  
     if isempty(row_new)
         warning('extract_shifted_reference_spectra:noValidPixels', ...
-            'Phase %s : tous les pixels decales tombent hors de l''image B.', ref_spectra.data(i).name);
+            'Phase %s : tous les pixels decales tombent hors de l''image B.', ref_spectra.name(i));
         ref_spectra_shifted(i).n_used              = 0;
         ref_spectra_shifted(i).row                  = [];
         ref_spectra_shifted(i).col                  = [];
@@ -199,7 +199,7 @@ for i = 1:n_req
     % if n_dropped > 0
     %     warning('extract_shifted_reference_spectra:pixelsDropped', ...
     %         'Phase %s : %d pixel(s) decale(s) hors de l''image B, ignores.', ...
-    %         ref_spectra(i).name, n_dropped);
+    %         ref_spectra.name(i), n_dropped);
     % end
 end
  
@@ -207,7 +207,7 @@ end
 % 3. Affichage : spectre original (A) vs spectre transfere (B)
  
 if display_figures
-    plotShiftedComparison(ref_spectra.data, ref_spectra_shifted, ...
+    plotShiftedComparison(ref_spectra, ref_spectra_shifted, ...
         wavenumber_2ps,wavenumber_B);
 end
  

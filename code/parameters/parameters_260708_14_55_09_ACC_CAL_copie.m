@@ -125,9 +125,6 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
 
-    params.roi1_phase_idx = params.phase2plot(1);
-    params.roi2_phase_idx = params.phase2plot(2);
-
 
 
     % Paramètres d'affichage

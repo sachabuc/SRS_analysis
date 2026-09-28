@@ -32,7 +32,7 @@ function params = parameters_260527_13_05_52_vaterite_7ps()
     day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi_compare');
+    day_folder_data,folder_data,'ref_roi');
 
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
@@ -116,17 +116,19 @@ function params = parameters_260527_13_05_52_vaterite_7ps()
     
     % params.roi2 = [75+params.shift_row 80+params.shift_row...
     %     100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi1 = [66+params.shift_row 69+params.shift_row...
-        113+params.shift_col 116+params.shift_col]; %[row_start row_end col_start col_end]
+%     params.roi1 = [66+params.shift_row 69+params.shift_row...
+%         113+params.shift_col 116+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [19+params.shift_row 21+params.shift_row...
+        52+params.shift_col 54+params.shift_col]; 
     params.roi2 = [];
 
-    params.colors_roi = [0.8500, 0.3250, 0.0980;0, 0.4470, 0.7410];
-    params.phase_colors = [0.4660, 0.6740, 0.1880];
+    params.colors_roi = [0.8500, 0.1250, 0.0980;0 0.4470, 0.7410];
+    params.phase_colors = [0.8500, 0.1250, 0.0980];
 
     params.nu_interval = [min(params.wavenumber) max(params.wavenumber)];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

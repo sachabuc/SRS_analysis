@@ -1,7 +1,7 @@
 function ref_spectra = plot_phase_reference_spectra( ...
-          I_corr, wavenumber, pixel_fit, phase_map, phase_model, ...
+          params,I_corr, wavenumber, pixel_fit, phase_map, phase_model, ...
           phase_idx, n_top, fwhm_instr, show_theoretical, save_path, ...
-          methode, priority_phases, background_image, n_theoretical_points)
+          methode, priority_phases, n_theoretical_points)
 %PLOT_PHASE_REFERENCE_SPECTRA Spectre moyen (top-N par R^2 ou par
 %amplitude) pour chaque phase demandee, avec superposition optionnelle
 %du modele theorique, et enregistrement des parametres de fit pour
@@ -108,11 +108,10 @@ function ref_spectra = plot_phase_reference_spectra( ...
 %                     .nu_target_mean/.std, .FWHM_target_mean/.std
 %                     .background_values, .background_mean/.std
  
-if nargin < 9  || isempty(show_theoretical),     show_theoretical = true; end
-if nargin < 10 || isempty(save_path),            save_path = '';          end
-if nargin < 11 || isempty(methode),              methode = 'R2';          end
-if nargin < 12 || isempty(priority_phases),      priority_phases = false(1, numel(phase_model)); end
-if nargin < 13,                                  background_image = [];   end
+if nargin < 10  || isempty(show_theoretical),     show_theoretical = true; end
+if nargin < 11 || isempty(save_path),            save_path = '';          end
+if nargin < 12 || isempty(methode),              methode = 'R2';          end
+if nargin < 13 || isempty(priority_phases),      priority_phases = false(1, numel(phase_model)); end
 if nargin < 14 || isempty(n_theoretical_points), n_theoretical_points = 500; end
  
 assert(numel(phase_idx) == numel(n_top), 'phase_idx et n_top doivent avoir la meme longueur.');
@@ -264,14 +263,8 @@ end
 % 3. Affichage
  
 plotReferenceSpectra(ref_spectra, wavenumber, show_theoretical);
- 
-if ~isempty(background_image)
-    plotCombinedPixelImage(ref_spectra, background_image);
-else
-    warning('plot_phase_reference_spectra:noBackgroundImage', ...
-        'background_image non fourni -- carte des pixels selectionnes (combined_pixel_image) non affichee.');
-end
- 
+plotCombinedPixelImage(ref_spectra, I_corr, wavenumber, params);
+
 %% ================================================================
 % 4. Sauvegarde (optionnelle)
  
@@ -301,36 +294,111 @@ function frac = fractionForPhase(pf, active_idx, k)
     end
 end
  
- 
-function plotCombinedPixelImage(ref_spectra, background_image)
-% Image en niveaux de gris de l'echantillon (background_image), avec les
-% pixels selectionnes par phase superposes en couleur -- une couleur par
-% phase, meme ordre/palette que PLOTREFERENCESPECTRA pour rester
-% coherent visuellement entre les deux figures.
- 
-    figure('Color', 'white', 'Position', [100 100 900 800]);
- 
-    imagesc(background_image); axis image; colormap(gca, gray);
+function plotCombinedPixelImage(ref_spectra, I_corr, wavenumber, params)
+% Affiche l'image SRS obtenue en sommant I_corr dans params.nu_interval,
+% avec les pixels de reference selectionnes par phase superposes.
+%
+% Les couleurs des phases sont definies par params.colors_roi.
+
+    %% ============================================================
+    % Parametres
+    % =============================================================
+
+    n_phase = numel(ref_spectra);
+
+    % Couleurs des phases
+    if isfield(params, 'colors_roi') && ...
+            size(params.colors_roi,1) >= n_phase
+
+        colors = params.colors_roi(1:n_phase,:);
+
+    else
+        colors = lines(n_phase);
+    end
+
+    % Intervalle spectral
+    nu_min = params.nu_interval(1);
+    nu_max = params.nu_interval(2);
+
+
+    %% ============================================================
+    % Selection de l'intervalle spectral
+    % =============================================================
+
+    idx_nu = wavenumber >= nu_min & ...
+             wavenumber <= nu_max;
+
+    if ~any(idx_nu)
+        error(['Aucun wavenumber dans l''intervalle [%g %g] cm^{-1}.'], ...
+              nu_min, nu_max);
+    end
+
+
+    %% ============================================================
+    % Somme spectrale par pixel
+    % =============================================================
+
+    % I_corr : [Y x X x Wavenumber]
+    %
+    % I_sum : [Y x X]
+    I_sum = sum(I_corr(:,:,idx_nu), 3, 'omitnan');
+
+
+    %% ============================================================
+    % Affichage
+    % =============================================================
+
+    figure('Color', 'white', ...
+           'Position', [100 100 900 800]);
+
+    imagesc(I_sum);
+    axis image;
+    colormap(parula);
+    colorbar;
+
     hold on;
- 
-    colors = lines(numel(ref_spectra));
- 
-    for i = 1:numel(ref_spectra)
+
+
+    %% ============================================================
+    % Superposition des pixels de reference
+    % =============================================================
+
+    for i = 1:n_phase
+
         rs = ref_spectra(i);
+
         if rs.n_used == 0
             continue
         end
-        plot(rs.col, rs.row, 'o', 'Color', colors(i,:), ...
-             'MarkerFaceColor', colors(i,:), 'MarkerSize', 5, ...
-             'DisplayName', sprintf('%s (n=%d)', rs.name, rs.n_used));
+
+        plot(rs.col, rs.row, 'o', ...
+             'Color', colors(i,:), ...
+             'MarkerFaceColor', colors(i,:), ...
+             'MarkerSize', 5, ...
+             'DisplayName', ...
+             sprintf('%s (n=%d)', rs.name, rs.n_used));
+
     end
- 
+
+
+    %% ============================================================
+    % Mise en forme
+    % =============================================================
+
     xlabel('Colonne', 'FontSize', 12);
     ylabel('Ligne', 'FontSize', 12);
-    title('Pixels de reference selectionnes, sur image de l''echantillon', 'FontSize', 13);
+
+    title(sprintf('Somme SRS [%g ; %g] cm^{-1}', ...
+          nu_min, nu_max), ...
+          'FontSize', 13);
+
     legend('Location', 'best');
+
+    box on;
+    set(gca, 'FontSize', 11);
+
     hold off;
- 
+
 end
 
 function plotReferenceSpectra(ref_spectra, wavenumber, show_theoretical)

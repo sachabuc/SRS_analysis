@@ -1,7 +1,4 @@
-
-
-function params = parameters_260715_corals_7ps()
-    % Chemin des dossiers
+function params = parameters_260715_corals_2ps()
 
     % Chemin des dossiers
     this_dir     = fileparts(mfilename('fullpath'));
@@ -9,11 +6,11 @@ function params = parameters_260715_corals_7ps()
 
     % Data 
     day_folder_data = '260715';
-    folder_data = '15-04-42_coral_7ps';
+    folder_data = '14-15-43_coral_2ps';
 
     % Data to compare 
-    day_folder_data_2compare = '260715';
-    folder_data_2compare = '14-15-43_coral_2ps';
+    day_folder_data_2compare = '';
+    folder_data_2compare = '';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -52,14 +49,15 @@ function params = parameters_260715_corals_7ps()
     % Paramètres d'acquisition
     params.n_depart = 3;
     params.n_ch = 1;
-    params.wavelengths = [927.8,927.2,928.1,928.5,929.1,929.6,930.3,931,927.5,926.8,926.4,925.8];
-    params.wavelengths_7ps = [927.2,927.5,927.7,928.1,928.5,929.1,929.6,930.2,931.1,...
+    params.wavelengths = [927.2,927.5,927.7,928.1,928.5,929.1,929.6,930.2,931.1,...
             926.7,926.3,925.8];
+    params.wavelengths_7ps = [928.6,929.1,929.5,929.8,930.2,930.6,931.1,928,927.6, ... 
+  927.2,926.8,926.4,926,925.5,928.3];
     params.pompe = 1031;
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 4.3;
+    params.fwhm_mesure = 11.1;
     params.fwhm_ref = 3.5;
 
     % Paramètres de prétraitement
@@ -71,7 +69,7 @@ function params = parameters_260715_corals_7ps()
     params.xc_s = 109; params.xc_e = 125;
       
     % Paramètres d'affichage (pour plot_srs_images)
-    params.ni = [5, 8, 12, 4]; % [n1, n2, n3, n4]
+    params.ni = [8, 6, 2, 3]; % [n1, n2, n3, n4]
     params.Imin = -10;
     params.Imax = 10;
     params.diff_min = -5;
@@ -89,7 +87,7 @@ function params = parameters_260715_corals_7ps()
     % Paramètres d'initialisation linéaire
     params.R2_init = 0.5;
     params.threshold_sigma_init = 1;
-
+    
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
@@ -100,20 +98,16 @@ function params = parameters_260715_corals_7ps()
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
-    % Chemins pour les données 7ps
-    params.path2phase_model_7ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\16-25-59_ACC_Cal_7ps\extracted_data\phase_model';
-    params.path2ref_spectra_7ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\16-25-59_ACC_Cal_7ps\extracted_data\ref_spectra';
-
     % Paramètres de segmentation
-    params.R2_min_final = 0.9;
-    params.threshold_sigma_final = 5;
+    params.R2_min_final = 0.7;
+    params.threshold_sigma_final = 4;
     params.min_points_above_noise = 2;
     params.alpha_dominance = 10;
     params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
     params.phase2plot = [2 4];
-    params.nbr_pix_per_phase = [10 10];
+    params.nbr_pix_per_phase = [30 30];
     params.priority_phases =       [false false false params.use_ACC false false];
     params.priority_min_fraction = [0 0 0 0.3 0 0];
     params.methode_ref_spectra = 'amplitude';
@@ -134,7 +128,7 @@ function params = parameters_260715_corals_7ps()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
+    params.load_pixel_fit = false;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
@@ -145,11 +139,12 @@ function params = parameters_260715_corals_7ps()
     params.display_fit = true;
     params.ref_roi_compare = false; 
     params.do_ref_roi_compare = true;
-    params.compare_acquisition = true;
+    params.do_ref_roi_compare = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
     %sauvegarde
     params.exportgraphics_segm_roi = false;
+
 
 end

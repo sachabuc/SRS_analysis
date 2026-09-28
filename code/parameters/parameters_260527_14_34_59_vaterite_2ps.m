@@ -9,8 +9,8 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     folder_data = '14-34-59_vaterite_2ps';
 
     % Data to compare 
-    day_folder_data_2compare = '';
-    folder_data_2compare = '';
+    day_folder_data_2compare = '260527';
+    folder_data_2compare = '13-05-52_vaterite_7ps';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -32,7 +32,7 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi_compare');
+    day_folder_data_2compare,folder_data_2compare,'ref_roi');
 
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
@@ -98,8 +98,8 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     params.ci_alpha = 0.5;
 
     % Paramètres de segmentation
-    params.R2_min_final = 0.5;
-    params.threshold_sigma_final = 1;
+    params.R2_min_final = 0.7;
+    params.threshold_sigma_final = 1.7;
     params.min_points_above_noise = 1;
     params.alpha_dominance = 1;
     params.dominance_phases = [false false false false false false];
@@ -111,19 +111,28 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     params.methode_ref_spectra = 'amplitude';
 
     % Paramètres spectres ROI 
-    params.shift_row = 0;
-    params.shift_col = 0;
+    params.shift_row = -4;
+    params.shift_col = -1;
     
-    params.roi1 = [62+params.shift_row 65+params.shift_row...
-        38+params.shift_col 41+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [62+params.shift_row 65+params.shift_row...
-        112+params.shift_col 116+params.shift_col]; %[row_start row_end col_start col_end]
+%     params.roi1 = [62+params.shift_row 65+params.shift_row...
+%         38+params.shift_col 41+params.shift_col]; %[row_start row_end col_start col_end]
+%     params.roi2 = [62+params.shift_row 65+params.shift_row...
+%         112+params.shift_col 116+params.shift_col]; %[row_start row_end col_start col_end]
+% 
+%     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
+%     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
 
-    params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
-    params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
+    params.roi1 = [19+params.shift_row 21+params.shift_row...
+        52+params.shift_col 54+params.shift_col]; 
+    params.roi2 = [];
+
+    params.colors_roi = [0.8500, 0.1250, 0.0980;0 0.4470, 0.7410];
+    params.phase_colors = [0.8500, 0.1250, 0.0980];
+
+    params.nu_interval = [min(params.wavenumber) max(params.wavenumber)];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
@@ -133,11 +142,11 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     params.plot_pixel_fits = true;
     params.display_fit = true;
     params.ref_roi_compare = false; 
-    params.compare_acquisition = false;
+    params.do_ref_roi_compare = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
     %sauvegarde
-    params.exportgraphics_segm_roi = true;
+    params.exportgraphics_segm_roi = false;
 
 end
