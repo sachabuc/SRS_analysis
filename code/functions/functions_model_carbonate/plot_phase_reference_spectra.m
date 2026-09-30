@@ -149,13 +149,14 @@ for i = 1:n_req
     k = phase_idx(i);
  
     pool = find(phase_map.label == k);
-
+    
     
     ref_spectra(i).phase_idx   = k;
     ref_spectra(i).name        = phase_model(k).name;
     ref_spectra(i).n_requested = n_top(i);
     ref_spectra(i).fwhm_instr    = fwhm_instr;
     ref_spectra(i).wavenumber  = wavenumber;
+    ref_spectra(i).peak_height_phase_fit = 0;
  
     if isempty(pool)
         warning('plot_phase_reference_spectra:emptyPool', ...
@@ -210,22 +211,130 @@ for i = 1:n_req
     std_spec    = std(spectra_sel, 1);
  
     % --- Parametres de fit pour les pixels selectionnes -----------------
-    A_matrix = reshape([pixel_fit(sel).A], n_phases, n_use).';   % [n_use x n_phases]
- 
-    nu_cells   = arrayfun(@(s) s.nu{k},   pixel_fit(sel), 'UniformOutput', false);
-    FWHM_cells = arrayfun(@(s) s.FWHM{k}, pixel_fit(sel), 'UniformOutput', false);
-    nu_target   = cell2mat(nu_cells(:));     % [n_use x n_raies de la phase k]
-    FWHM_target = cell2mat(FWHM_cells(:));   % [n_use x n_raies de la phase k]
- 
-    background_values = arrayfun(@(s) s.background, pixel_fit(sel)).';   % [n_use x 1]
- 
+    A_matrix = reshape([pixel_fit(sel).A], n_phases, n_use).';
+    % A_matrix : [n_use x n_phases]
+
+
+    %% Parametres ajustes de la phase de reference k
+    % Ces variables sont conservees pour remplir ref_spectra
+    % (nu_target_values, FWHM_target_values, etc.)
+
+    nu_cells = arrayfun(@(s) s.nu{k}, ...
+                        pixel_fit(sel), ...
+                        'UniformOutput', false);
+
+    FWHM_cells = arrayfun(@(s) s.FWHM{k}, ...
+                          pixel_fit(sel), ...
+                          'UniformOutput', false);
+
+    nu_target   = cell2mat(nu_cells(:));
+    FWHM_target = cell2mat(FWHM_cells(:));
+
+
+    %% Background ajuste pour chaque pixel
+
+    background_values = arrayfun(@(s) s.background, ...
+                                 pixel_fit(sel)).';
+
+
+    %% Coordonnees des pixels selectionnes
+
     [row_sel, col_sel] = ind2sub([n_y n_x], sel);
- 
+
+
+    %% ================================================================
+    % Reconstruction du spectre theorique COMPLET
+    % a partir des parametres ajustes dans pixel_fit
+    % ================================================================
+
     if show_theoretical
-        theo_spec = mean(A_matrix(:,k)) * phaseModelSpectrum(phase_model(k), wavenumber_theo) ...
-                    + mean(background_values);
+
+        % ------------------------------------------------------------
+        % Background moyen
+        % ------------------------------------------------------------
+
+        theo_spec = mean(background_values, 'omitnan') * ...
+                    ones(size(wavenumber_theo));
+
+
+        % ------------------------------------------------------------
+        % Ajouter successivement TOUTES les phases
+        % ------------------------------------------------------------
+
+        for j = 1:n_phases
+
+            % --------------------------------------------------------
+            % Amplitude moyenne de la phase j
+            % --------------------------------------------------------
+
+            A_mean_j = mean(A_matrix(:,j), 'omitnan');
+
+
+            % --------------------------------------------------------
+            % Parametres ajustes de la phase j
+            % --------------------------------------------------------
+
+            nu_cells_j = arrayfun(@(s) s.nu{j}, ...
+                                  pixel_fit(sel), ...
+                                  'UniformOutput', false);
+
+            FWHM_cells_j = arrayfun(@(s) s.FWHM{j}, ...
+                                    pixel_fit(sel), ...
+                                    'UniformOutput', false);
+
+
+            % Certains pixels peuvent ne pas avoir cette phase
+            valid_j = ~cellfun(@isempty, nu_cells_j) & ...
+                      ~cellfun(@isempty, FWHM_cells_j);
+
+
+            if ~any(valid_j)
+                continue
+            end
+
+
+            % --------------------------------------------------------
+            % Moyenne des parametres ajustes
+            % --------------------------------------------------------
+
+            nu_values_j = cell2mat(nu_cells_j(valid_j));
+            FWHM_values_j = cell2mat(FWHM_cells_j(valid_j));
+
+            nu_mean_j = mean(nu_values_j, 1, 'omitnan');
+            FWHM_mean_j = mean(FWHM_values_j, 1, 'omitnan');
+
+
+            % --------------------------------------------------------
+            % Construire une copie de la phase avec les parametres
+            % ajustes moyens
+            % --------------------------------------------------------
+
+            phase_j = phase_model(j);
+
+            phase_j.nu = nu_mean_j;
+            phase_j.FWHM = FWHM_mean_j;
+
+
+            % --------------------------------------------------------
+            % Spectre theorique de la phase j
+            % --------------------------------------------------------
+
+            G_j = phaseModelSpectrum(phase_j, wavenumber_theo);
+
+
+            % --------------------------------------------------------
+            % Ajouter la contribution de cette phase
+            % --------------------------------------------------------
+
+            theo_spec = theo_spec + A_mean_j * G_j;
+
+
+        end
+
     else
+
         theo_spec = nan(1, n_theoretical_points);
+
     end
  
     ref_spectra(i).n_used                   = n_use;
@@ -251,7 +360,8 @@ for i = 1:n_req
     ref_spectra(i).background_mean          = mean(background_values);
     ref_spectra(i).background_std           = std(background_values);
     ref_spectra(i).n_pool                   = numel(pool);
- 
+
+
     if n_use < n_top(i)
         warning('plot_phase_reference_spectra:poolTooSmall', ...
             'Phase %s : seulement %d pixels disponibles (demande : %d).', ...
@@ -422,7 +532,7 @@ function plotReferenceSpectra(ref_spectra, wavenumber, show_theoretical)
              colors(i,:), 'FaceAlpha', 0.15, 'EdgeColor', 'none', ...
              'HandleVisibility', 'off');
  
-        plot(wavenumber, rs.mean_spectrum, '-o', 'Color', colors(i,:), ...
+        plot(wavenumber, rs.mean_spectrum, 'o', 'Color', colors(i,:), ...
              'MarkerFaceColor', colors(i,:), 'MarkerSize', 4, ...
              'LineWidth', 2, 'DisplayName', ...
              sprintf('%s (n=%d, tri=%s, R^2 >= %.3f)', rs.name, rs.n_used, rs.selection_method, rs.R2_worst_used));

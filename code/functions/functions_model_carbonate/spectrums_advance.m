@@ -331,8 +331,8 @@ for j = 1:n_roi
     %
     % C'EST ICI que le fit est réalisé sur la SOMME du ROI
 
-wavenumber = wavenumber(:);
-sum_spectrum = sum_spectrum(:);
+    wavenumber = wavenumber(:);
+    sum_spectrum = sum_spectrum(:);
 
     [x_fit, resnorm, residual, exitflag, ~, ~, jacobian] = ...
         lsqcurvefit( ...
@@ -496,6 +496,101 @@ sum_spectrum = sum_spectrum(:);
 
     ref_roi(j).norm_factor = ...
         peak_height_fit;
+
+    %% ------------------------------------------------------------
+    % FIT DE LA PHASE CORRESPONDANT AU ROI
+    %
+    % On reconstruit uniquement la composante correspondant
+    % à la phase du ROI, avec les paramètres ajustés.
+    %
+    % Le fit global peut contenir plusieurs phases :
+    %
+    %   background + CAL + ARA + VAT + ACC + ...
+    %
+    % mais ici on extrait uniquement :
+    %
+    %   A_phase * G_phase
+    %
+    % correspondant à ref_roi(j).phase_idx.
+    
+    phase_idx = active_idx(j);
+    
+    A_phase = A_fit(phase_idx);
+    nu_phase = nu_fit{phase_idx};
+    FWHM_phase = FWHM_fit{phase_idx};
+    
+    if isempty(nu_phase) || isempty(FWHM_phase) || A_phase == 0
+    
+        theoretical_phase_fit = ...
+            zeros(size(wavenumber_theo));
+    
+        peak_height_phase_fit = NaN;
+    
+    else
+    
+        % ------------------------------------------------------------
+        % Reconstruction de sigma_eff
+        %
+        % sigma_eff^2 = sigma_phase^2 + sigma_instr^2
+    
+        sigma_instr = fwhm2sigma(fwhm_instr);
+    
+        sigma_phase = fwhm2sigma(FWHM_phase);
+    
+        sigma_eff_phase = sqrt( ...
+            sigma_phase.^2 + sigma_instr.^2);
+    
+    
+        % ------------------------------------------------------------
+        % Reconstruction de la phase avec les paramètres ajustés
+    
+        ratio_phase = phase_model(phase_idx).ratio;
+        ratio_phase = ratio_phase / sum(ratio_phase);
+    
+        G_phase = zeros(size(wavenumber_theo));
+    
+        for p = 1:numel(nu_phase)
+    
+            G_phase = G_phase + ...
+                ratio_phase(p) .* ...
+                gaussianArea( ...
+                    wavenumber_theo, ...
+                    nu_phase(p), ...
+                    sigma_eff_phase(p));
+    
+        end
+    
+    
+        % ------------------------------------------------------------
+        % Composante ajustée de cette phase uniquement
+    
+        theoretical_phase_fit = ...
+            A_phase .* G_phase;
+    
+    
+        % ------------------------------------------------------------
+        % Le fit a été effectué sur la SOMME du ROI.
+        %
+        % Pour comparer avec mean_spectrum, on revient à
+        % l'intensité moyenne par pixel.
+    
+        theoretical_phase_fit = ...
+            theoretical_phase_fit / n_pixels_roi;
+    
+    
+        % ------------------------------------------------------------
+        % Maximum de la composante ajustée
+    
+        peak_height_phase_fit = ...
+            max(theoretical_phase_fit);
+    
+    end
+
+    ref_roi(j).phase_spectrum_fit = ...
+    theoretical_phase_fit;
+
+    ref_roi(j).peak_height_phase_fit = ...
+    peak_height_phase_fit;
 
 end
 

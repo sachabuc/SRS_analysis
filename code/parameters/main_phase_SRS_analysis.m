@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260715_corals_2ps();
+params = parameters_260713_corals_2ps_ter();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -96,43 +96,77 @@ plotFitMaps(pixel_fit, phase_model, active_idx);
 
 
 %% 10. Spectres de référence
-ref_spectra = plot_phase_reference_spectra(...
-    params,I_corr, params.wavenumber, pixel_fit, phase_map, phase_model, ...
-    active_idx, params.nbr_pix_per_phase, fwhm_instr,...
-    true,'',params.methode_ref_spectra,params.priority_phases);
 
-if params.plot_pixel_fits
+if params.do_ref_spectrum_analysis
+
+    ref_spectra = plot_phase_reference_spectra(...
+        params,I_corr, params.wavenumber, pixel_fit, phase_map, phase_model, ...
+        active_idx, params.nbr_pix_per_phase, fwhm_instr,...
+        true,'',params.methode_ref_spectra,params.priority_phases);
+
     plot_pixel_fits_from_ref_spectra( ...
           ref_spectra, I_corr, params.wavenumber, pixel_fit, phase_model, ...
           fwhm_instr, 12);
+
+    if params.compare_2ps_7ps
+
+        loaded_data = load(params.path2ref_spectra_compare);
+        ref_spectra_compare = loaded_data.ref_spectra;
+        plot_compare_ref_roi(ref_spectra_compare,ref_spectra,noise_global) 
+
+
+    end
+
+    if params.display_fit_stat
+        fprintf('\n============================================================\n');
+        fprintf('          STATISTIQUES DES SPECTRES DE REFERENCE\n');
+        fprintf('============================================================\n');
+        display_reference_statistics(ref_spectra, fwhm_instr);
+    
+        if params.compare_2ps_7ps
+            fprintf('\n============================================================\n');
+            fprintf('      STATISTIQUES DES SPECTRES DE REFERENCE SHIFTED\n');
+            fprintf('============================================================\n');
+            display_reference_statistics(ref_spectra_compare, ref_spectra_compare(1).fwhm_instr);
+        end
+    
+    end
+
+    saveDataOrImage(ref_spectra, params.results_dir, 'Name', 'ref_spectra');
+
 end
+
 
 %% 11. Spectres ROI 
 
-ref_roi = spectrums_advance( ...
-    I_corr,params.wavenumber, phase_model, phase_map, ...
-    params.roi1, params.roi2,fwhm_instr, active_idx, ...
-    params.phase_colors, params.colors_roi, params.figures_dir, ...
-    params.exportgraphics_segm_roi, 500, params.results_dir,params);
+if params.do_ref_roi_analysis 
 
+    ref_roi = spectrums_advance( ...
+        I_corr,params.wavenumber, phase_model, phase_map, ...
+        params.roi1, params.roi2,fwhm_instr, active_idx, ...
+        params.phase_colors, params.colors_roi, params.figures_dir, ...
+        params.exportgraphics_segm_roi, 500, params.results_dir,params);
 
-saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
+    I_sum = plot_wavenumber_sum_ROI( ...
+        I_corr, params.wavenumber, params.nu_interval, ...
+        ref_roi, params.colors_roi);
+    
+    
+    if params.compare_2ps_7ps
+    
+        loaded_data = load(params.path2ref_roi_compare);
+        ref_roi_compare = loaded_data.ref_roi;
+        plot_compare_ref_roi(ref_roi_compare,ref_roi,noise_global) 
+    
+    end
 
-%%
-
-I_sum = plot_wavenumber_sum_ROI( ...
-    I_corr, params.wavenumber, params.nu_interval, ...
-    ref_roi, params.colors_roi);
-
-%% 12. Compare
-
-if params.do_ref_roi_compare
-
-    loaded_data = load(params.path2ref_roi_compare);
-    ref_roi_compare = loaded_data.ref_roi;
-    plot_compare_ref_roi(ref_roi_compare,ref_roi,noise_global) 
+    saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
 
 end
+
+
+
+%% 12. Compare
 
 % roi_fits = get_roi_pixel_fits( ...
 %     pixel_fit, ...
@@ -145,33 +179,15 @@ end
 %     I_corr, ...
 %     true);
 
-if params.compare_acquisition 
-    ref_spectra_7ps = load(params.path2ref_spectra_7ps);
-    ref_spectra_shifted = extract_shifted_reference_spectra(...
-        ref_spectra_7ps, params.wavenumber_7ps, I_corr, params.wavenumber, ...
-        phase_model, params.shift_row, params.shift_col, fwhm_instr, pixel_fit, ...
-        false, false);
-end
-%% 12. Statistiques
+% if params.compare_acquisition 
+%     ref_spectra_7ps = load(params.path2ref_spectra_7ps);
+%     ref_spectra_shifted = extract_shifted_reference_spectra(...
+%         ref_spectra_7ps, params.wavenumber_7ps, I_corr, params.wavenumber, ...
+%         phase_model, params.shift_row, params.shift_col, fwhm_instr, pixel_fit, ...
+%         false, false);
+% end
 
-% display_ref_roi_stats(ref_spectra, phase_model, active_idx)
-
-if params.display_fit_stat
-    fprintf('\n============================================================\n');
-    fprintf('          STATISTIQUES DES SPECTRES DE REFERENCE\n');
-    fprintf('============================================================\n');
-    display_reference_statistics(ref_spectra, fwhm_instr);
-
-    if params.compare_acquisition
-        fprintf('\n============================================================\n');
-        fprintf('      STATISTIQUES DES SPECTRES DE REFERENCE SHIFTED\n');
-        fprintf('============================================================\n');
-        display_reference_statistics(ref_spectra_shifted, fwhm_instr);
-    end
-
-end
-
-% 13. Statistiques sur R²
+%% 13. Statistiques sur R²
 if params.display_R2_stat
     stats = analyze_R2(pixel_fit, phase_model, params.display_figures);
 end
@@ -191,5 +207,5 @@ end
     %saveDataOrImage(myImage, 'results/images', 'Name', 'my_image', 'Format', 'png');
 
 saveDataOrImage(phase_model, params.results_dir, 'Name', 'phase_model');
-saveDataOrImage(ref_spectra, params.results_dir, 'Name', 'ref_spectra');
+
 

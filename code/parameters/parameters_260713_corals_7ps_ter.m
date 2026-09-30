@@ -8,35 +8,38 @@ function params = parameters_260713_corals_7ps_ter()
     folder_data = '14-58-29_coral_7ps_ter';
 
     % Data to compare 
-    day_folder_data_2compare = '';
-    folder_data_2compare = '';
+    day_folder_data_2compare = '260713';
+    folder_data_2compare = '13-49-00_coral_2ps_ter';
 
-    params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
+       params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
-    params.sub_dir = '';
+    params.sub_dir = fullfile(project_root, 'data', 'processed', 'data_chirp', ...
+        day_folder_data, folder_data);
 
     params.results_dir = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data);
 
-        params.figures_dir = fullfile(project_root, 'results', 'figures', ...
+    params.figures_dir = fullfile(project_root, 'results', 'figures', ...
     day_folder_data,folder_data);
 
     if ~exist(params.results_dir, 'dir')
         mkdir(params.results_dir);
     end
 
+    params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data,'pixel_fit');
 
     % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi_compare');
+    day_folder_data_2compare,folder_data_2compare,'ref_roi');
 
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
 
-    params.path2ref_spectra_7ps = fullfile(project_root, 'results', 'extracted_data', ...
+    params.path2ref_spectra_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_spectra');
 
     % Chemins des fonctions
@@ -60,8 +63,8 @@ function params = parameters_260713_corals_7ps_ter()
     params.fwhm_ref = 3.5;
 
     % Paramètres de prétraitement
-    params.x1_s = 15; params.x1_e = 30;
-    params.x2_s = 5; params.x2_e = 15;
+    params.x1_s = 6; params.x1_e = 12;
+    params.x2_s = 6; params.x2_e = 12;
     params.wi = 4;
     params.idl = 125; params.idc = 97;
     params.xl_s = 100; params.xl_e = 125;
@@ -98,48 +101,51 @@ function params = parameters_260713_corals_7ps_ter()
 
  
     % Paramètres de segmentation
-    params.R2_min_final = 0.8;
-    params.threshold_sigma_final = 6;
-    params.min_points_above_noise = 2;
-    params.alpha_dominance = 10;
-    params.dominance_phases = [false false false false false false];
-    params.detection_method = 'significance';
-    params.threshold_A = 10;
-    params.nbr_pix_per_phase = [30 90];
+    params.R2_min_final = 0.7;
+    params.threshold_sigma_final = 5;
+    params.min_points_above_noise = 1;
+    params.alpha_dominance = 2;
+    params.dominance_phases = [false false false true false false];
+    params.phase2plot = [2 4];
+    params.nbr_pix_per_phase = [10 10];
     params.priority_phases =       [false false false params.use_ACC false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
+    params.methode_ref_spectra = 'amplitude';
 
     % Paramètres de décalage
-    % params.shift_row = 2;
-    % params.shift_col = 2;
+    params.shift_row = 1;
+    params.shift_col = -2;
 
-    params.shift_row = 0;
-    params.shift_col = 0;
-
-    params.roi1 = [75+params.shift_row 80+params.shift_row...
-        100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [22+params.shift_row 30+params.shift_row...
-        60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [106+params.shift_row 107+params.shift_row...
+    78+params.shift_col 79+params.shift_col]; 
+    params.roi2 = [90+params.shift_row 91+params.shift_row...
+    33+params.shift_col 36+params.shift_col];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
 
-    % Paramètres d'action
-    params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = false;
 
-    params.do_noise_study = true;
-    params.do_lsqnonneg_treatment = false;
-    params.compare_acquisition = false;
+    params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
+    params.load_pixel_fit = true;
+    params.calcul_fwhm_instr = false;
+    params.do_noise_study = true;
+    params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;
     params.display_figures = true;
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
+    params.do_ref_spectrum_analysis = true; 
+    params.do_ref_roi_analysis = true;
+    params.compare_2ps_7ps = true;
+    params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
+
+    %sauvegarde
+    params.exportgraphics_segm_roi = false;
 
 
 end

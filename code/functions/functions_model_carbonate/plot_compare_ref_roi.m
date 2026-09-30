@@ -266,18 +266,27 @@ end
 
 if n_phases == 2
 
+  
     % ------------------------------------------------------------
     % CAS 2 PHASES :
     % rapport phase 2 / phase 1
 
-    A_phase1_ref = max(phase1_ref_0);
-    A_phase2_ref = max(phase2_ref_0);
 
-    A_phase1_comp = max(phase1_comp_0);
-    A_phase2_comp = max(phase2_comp_0);
 
-    ratio_ref = A_phase2_ref / A_phase1_ref;
-    ratio_comp = A_phase2_comp / A_phase1_comp;
+    ratio_ref = ref_roi_compare(2).peak_height_phase_fit ./ ...
+        ref_roi_compare(1).peak_height_phase_fit;
+
+    ratio_comp = ref_roi(2).peak_height_phase_fit ./ ...
+        ref_roi(1).peak_height_phase_fit;
+
+    % A_phase1_ref = max(phase1_ref_0);
+    % A_phase2_ref = max(phase2_ref_0);
+    % 
+    % A_phase1_comp = max(phase1_comp_0);
+    % A_phase2_comp = max(phase2_comp_0);
+    % 
+    % ratio_ref = A_phase2_ref / A_phase1_ref;
+    % ratio_comp = A_phase2_comp / A_phase1_comp;
 
     ratio_values = [ratio_ref ratio_comp];
 

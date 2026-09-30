@@ -1,5 +1,4 @@
 
-
 function params = parameters_260715_corals_7ps()
     % Chemin des dossiers
 
@@ -40,7 +39,7 @@ function params = parameters_260715_corals_7ps()
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
 
-    params.path2ref_spectra_7ps = fullfile(project_root, 'results', 'extracted_data', ...
+    params.path2ref_spectra_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_spectra');
 
     % Chemins des fonctions
@@ -93,39 +92,33 @@ function params = parameters_260715_corals_7ps()
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
-    params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
-    params.FWHM_LB = [1, 1, 3, 20, 3, 3];
-    params.FWHM_UB = [5, 5, 10, 40, 10, 10];
+    params.nu_LB = [1084.5, 1084, 1073, 1072, 1097, 1066];
+    params.nu_UB = [1086.5, 1086.5, 1093, 1076, 1102, 1070];
+    params.FWHM_LB = [1, 1, 3, 27, 3, 3];
+    params.FWHM_UB = [5, 5, 10, 33, 10, 10];
     params.lineshape_type = 'gaussian';
-    params.ci_alpha = 0.5;
-
-    % Chemins pour les données 7ps
-    params.path2phase_model_7ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\16-25-59_ACC_Cal_7ps\extracted_data\phase_model';
-    params.path2ref_spectra_7ps = 'C:\Users\sacha.bucourt\Documents\Data lab\CHIRP\260708\16-25-59_ACC_Cal_7ps\extracted_data\ref_spectra';
+    params.ci_alpha = 2;
 
     % Paramètres de segmentation
-    params.R2_min_final = 0.9;
-    params.threshold_sigma_final = 5;
-    params.min_points_above_noise = 2;
-    params.alpha_dominance = 10;
+    params.R2_min_final = 0.5;
+    params.threshold_sigma_final = 1;
+    params.min_points_above_noise = 1;
+    params.alpha_dominance = 2;
     params.dominance_phases = [false false false false false false];
-    params.detection_method = 'significance';
-    params.threshold_A = 10;
     params.phase2plot = [2 4];
     params.nbr_pix_per_phase = [10 10];
     params.priority_phases =       [false false false params.use_ACC false false];
-    params.priority_min_fraction = [0 0 0 0.3 0 0];
+    params.priority_min_fraction = [0 0 0 1 0 0];
     params.methode_ref_spectra = 'amplitude';
 
     % Paramètres de décalage
     params.shift_row = 0;
     params.shift_col = 0;
 
-    params.roi1 = [56+params.shift_row 58+params.shift_row...
-    82+params.shift_col 84+params.shift_col]; 
-    params.roi2 = [121+params.shift_row 123+params.shift_row...
-    71+params.shift_col 73+params.shift_col];
+    params.roi1 = [56+params.shift_row 57+params.shift_row...
+    70+params.shift_col 71+params.shift_col]; 
+    params.roi2 = [104+params.shift_row 107+params.shift_row...
+    44+params.shift_col 45+params.shift_col];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
@@ -143,8 +136,9 @@ function params = parameters_260715_corals_7ps()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.ref_roi_compare = false; 
-    params.do_ref_roi_compare = true;
+    params.do_ref_spectrum_analysis = true; 
+    params.do_ref_roi_analysis = true;
+    params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
