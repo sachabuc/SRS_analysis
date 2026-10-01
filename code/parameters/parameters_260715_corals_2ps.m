@@ -99,9 +99,9 @@ function params = parameters_260715_corals_2ps()
     params.ci_alpha = 0.5;
 
     % Paramètres de segmentation
-    params.R2_min_final = 0.9;
-    params.threshold_sigma_final = 2;
-    params.min_points_above_noise = 1;
+    params.R2_min_final = 0.7;
+    params.threshold_sigma_final = 4;
+    params.min_points_above_noise = 2;
     params.alpha_dominance = 10;
     params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
@@ -113,13 +113,13 @@ function params = parameters_260715_corals_2ps()
     params.methode_ref_spectra = 'amplitude';
 
     % Paramètres de décalage
-    params.shift_row = -3;
-    params.shift_col = -19;
+    params.shift_row = 0;
+    params.shift_col = 0;
 
     params.roi1 = [56+params.shift_row 57+params.shift_row...
     70+params.shift_col 71+params.shift_col]; 
-    params.roi2 = [38+params.shift_row 38+params.shift_row...
-    60+params.shift_col 63+params.shift_col];
+    params.roi2 = [110+params.shift_row 113+params.shift_row...
+    14+params.shift_col 15+params.shift_col];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];

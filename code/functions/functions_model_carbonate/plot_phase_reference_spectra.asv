@@ -246,7 +246,12 @@ for i = 1:n_req
     % Reconstruction du spectre theorique COMPLET
     % a partir des parametres ajustes dans pixel_fit
     % ================================================================
-    
+
+%% ================================================================
+% Reconstruction du spectre theorique COMPLET
+% a partir des parametres ajustes dans pixel_fit
+% ================================================================
+
     if show_theoretical
     
         % ------------------------------------------------------------
@@ -341,7 +346,7 @@ for i = 1:n_req
             nan(1, n_theoretical_points);
     
         peak_height_phase_fit = NaN;
-    
+
     end
  
     ref_spectra(i).n_used                   = n_use;
@@ -351,8 +356,6 @@ for i = 1:n_req
     ref_spectra(i).std_spectrum             = std_spec;
     ref_spectra(i).wavenumber_theoretical   = wavenumber_theo;
     ref_spectra(i).theoretical_spectrum     = theo_spec;
-    ref_spectra(i).theoretical_phase_fit    = theoretical_phase_fit;
-    ref_spectra(i).peak_height_phase_fit    = peak_height_phase_fit;
     ref_spectra(i).pixel_linear_idx         = sel;
     ref_spectra(i).row                      = row_sel(:);
     ref_spectra(i).col                      = col_sel(:);

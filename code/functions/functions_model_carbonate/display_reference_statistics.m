@@ -31,7 +31,7 @@ function display_reference_statistics(ref_spectra, fwhm_inst)
         %% Résolution instrumentale utilisée
 
     fprintf('\n============================================================\n');
-    fprintf('FWHM instrumentale utilisée : %.4f cm^-1\n', fwhm_inst);
+    fprintf('FWHM instrumentale utilisée : %.2f cm^-1\n', fwhm_inst);
     
 
     for i = 1:numel(ref_spectra)
@@ -80,7 +80,7 @@ function display_reference_statistics(ref_spectra, fwhm_inst)
 
             for j = 1:numel(rs.nu_target_mean)
 
-                fprintf('  Raie %d : nu = %.4f +/- %.4f cm^-1\n', ...
+                fprintf('  Raie %d : nu = %.2f +/- %.2f cm^-1\n', ...
                     j, ...
                     rs.nu_target_mean(j), ...
                     rs.nu_target_std(j));
@@ -104,7 +104,7 @@ function display_reference_statistics(ref_spectra, fwhm_inst)
                 fwhm_mesure_std = rs.FWHM_target_std(j);
 
 
-                fprintf('  Raie %d : FWHM_deconvolve = %.4f +/- %.4f cm^-1\n', ...
+                fprintf('  Raie %d : FWHM_deconvolve = %.2f +/- %.2f cm^-1\n', ...
                     j, ...
                     fwhm_mesure, ...
                     fwhm_mesure_std);

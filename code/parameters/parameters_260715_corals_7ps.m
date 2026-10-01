@@ -34,7 +34,7 @@ function params = parameters_260715_corals_7ps()
     day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi');
+    day_folder_data_2compare,folder_data_2compare,'ref_roi');
 
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
@@ -94,8 +94,8 @@ function params = parameters_260715_corals_7ps()
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.nu_LB = [1084.5, 1084, 1073, 1072, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1076, 1102, 1070];
-    params.FWHM_LB = [1, 1, 3, 27, 3, 3];
-    params.FWHM_UB = [5, 5, 10, 33, 10, 10];
+    params.FWHM_LB = [1, 1, 3, 20, 3, 3];
+    params.FWHM_UB = [5, 5, 10, 40, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 2;
 
@@ -112,13 +112,13 @@ function params = parameters_260715_corals_7ps()
     params.methode_ref_spectra = 'amplitude';
 
     % Paramètres de décalage
-    params.shift_row = 0;
-    params.shift_col = 0;
+    params.shift_row = 3;
+    params.shift_col = 18;
 
     params.roi1 = [56+params.shift_row 57+params.shift_row...
     70+params.shift_col 71+params.shift_col]; 
-    params.roi2 = [104+params.shift_row 107+params.shift_row...
-    44+params.shift_col 45+params.shift_col];
+    params.roi2 = [110+params.shift_row 113+params.shift_row...
+    14+params.shift_col 15+params.shift_col];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
