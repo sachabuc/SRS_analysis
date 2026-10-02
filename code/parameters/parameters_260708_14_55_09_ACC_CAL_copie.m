@@ -9,8 +9,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     folder_data = '14-55-09_ACC_Cal_Copie';
 
     % Data to compare 
-    day_folder_data_2compare = '';
-    folder_data_2compare = '';
+    day_folder_data_2compare = '260708';
+    folder_data_2compare = '16-25-59_ACC_Cal_7ps';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -32,12 +32,12 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'ref_roi_compare');
+    day_folder_data_2compare,folder_data_2compare,'ref_roi');
 
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
 
-    params.path2ref_spectra_7ps = fullfile(project_root, 'results', 'extracted_data', ...
+    params.path2ref_spectra_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_spectra');
 
     % Chemins des fonctions
@@ -93,10 +93,10 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
+    params.nu_LB = [1084.5,   1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1, 3, 20, 3, 3];
-    params.FWHM_UB = [4, 4, 10, 40, 10, 10];
+    params.FWHM_UB = [5, 5, 10, 40, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -105,13 +105,13 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.threshold_sigma_final = 1;
     params.min_points_above_noise = 1;
     params.alpha_dominance = 1;
-    params.dominance_phases = [false false false true false false];
+    params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
     params.nbr_pix_per_phase = [30 90];
-    params.priority_phases =       [false false false true false false];
+    params.priority_phases =       [false false false false false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
-    params.methode_ref_spectra = '';
+    params.methode_ref_spectra = 'amplitude';
 
     % Paramètres spectres ROI 
     params.shift_row = 0;
@@ -122,14 +122,15 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.roi2 = [22+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
-    params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
-    params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
+    params.colors_roi = [0.8500, 0.3250, 0.0980; 0.4940, 0.1840, 0.5560];
+    params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
 
 
+    params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = true;
+    params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;
@@ -137,12 +138,14 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.ref_roi_compare = false; 
-    params.compare_acquisition = false;
+    params.do_ref_spectrum_analysis = false; 
+    params.do_ref_roi_analysis = true;
+    params.compare_2ps_7ps = true;
+    params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
     %sauvegarde
-    params.exportgraphics_segm_roi = true;
+    params.exportgraphics_segm_roi = false;
 
 end

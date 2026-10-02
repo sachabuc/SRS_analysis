@@ -1,5 +1,5 @@
 function ref_roi = plot_phase_reference_ROI( ...
-          I_corr,wavenumber, phase_model, phase_map, ...
+          I_corr,wavenumber, phase_model, phase_map, noise_global, ...
           roi1, roi2,fwhm_instr,active_idx, phase_colors, colors_roi,...
           sub_dir_save,exportgraphics_segm_roi,...
           n_theoretical_points, results_dir, params)
@@ -52,11 +52,11 @@ function ref_roi = plot_phase_reference_ROI( ...
 %% ================================================================
 % 1. Valeurs par défaut
 
-if nargin < 17 || isempty(n_theoretical_points)
+if nargin < 18 || isempty(n_theoretical_points)
     n_theoretical_points = 500;
 end
 
-if nargin < 18
+if nargin < 19
     results_dir = '';
 end
 
@@ -453,6 +453,8 @@ for j = 1:n_roi
     ref_roi(j).name = phase_name;
 
     ref_roi(j).phase_idx = phase_idx;
+
+    ref_roi(j).noise_global = noise_global;
 
     ref_roi(j).roi = roi;
 

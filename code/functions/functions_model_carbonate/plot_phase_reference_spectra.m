@@ -1,5 +1,5 @@
 function ref_spectra = plot_phase_reference_spectra( ...
-          params,I_corr, wavenumber, pixel_fit, phase_map, phase_model, ...
+          params,I_corr, wavenumber, pixel_fit, phase_map, phase_model, noise_global,...
           phase_idx, n_top, fwhm_instr, show_theoretical, save_path, ...
           methode, priority_phases, n_theoretical_points)
 %PLOT_PHASE_REFERENCE_SPECTRA Spectre moyen (top-N par R^2 ou par
@@ -108,11 +108,11 @@ function ref_spectra = plot_phase_reference_spectra( ...
 %                     .nu_target_mean/.std, .FWHM_target_mean/.std
 %                     .background_values, .background_mean/.std
  
-if nargin < 10  || isempty(show_theoretical),     show_theoretical = true; end
-if nargin < 11 || isempty(save_path),            save_path = '';          end
-if nargin < 12 || isempty(methode),              methode = 'R2';          end
-if nargin < 13 || isempty(priority_phases),      priority_phases = false(1, numel(phase_model)); end
-if nargin < 14 || isempty(n_theoretical_points), n_theoretical_points = 500; end
+if nargin < 11  || isempty(show_theoretical),     show_theoretical = true; end
+if nargin < 12 || isempty(save_path),            save_path = '';          end
+if nargin < 13 || isempty(methode),              methode = 'R2';          end
+if nargin < 14 || isempty(priority_phases),      priority_phases = false(1, numel(phase_model)); end
+if nargin < 15 || isempty(n_theoretical_points), n_theoretical_points = 500; end
  
 assert(numel(phase_idx) == numel(n_top), 'phase_idx et n_top doivent avoir la meme longueur.');
 assert(any(strcmpi(methode, {'R2','amplitude'})), ...
@@ -150,12 +150,13 @@ for i = 1:n_req
  
     pool = find(phase_map.label == k);
     
-    
+   
     ref_spectra(i).phase_idx   = k;
     ref_spectra(i).name        = phase_model(k).name;
     ref_spectra(i).n_requested = n_top(i);
     ref_spectra(i).fwhm_instr    = fwhm_instr;
     ref_spectra(i).wavenumber  = wavenumber;
+    ref_spectra(i).noise_global = noise_global;
     ref_spectra(i).peak_height_phase_fit = 0;
  
     if isempty(pool)

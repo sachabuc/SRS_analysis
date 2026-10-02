@@ -37,7 +37,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'phase_model');
 
-    params.path2ref_spectra_7ps = fullfile(project_root, 'results', 'extracted_data', ...
+    params.path2ref_spectra_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_spectra');
 
     % Chemins des fonctions
@@ -105,13 +105,13 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.threshold_sigma_final = 1;
     params.min_points_above_noise = 1;
     params.alpha_dominance = 1;
-    params.dominance_phases = [false false false true false false];
+    params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
     params.nbr_pix_per_phase = [30 90];
-    params.priority_phases =       [false false false true false false];
+    params.priority_phases =       [false false false false false false];
     params.priority_min_fraction = [0 0 0 1 0 0];
-    params.methode_ref_spectra = '';
+    params.methode_ref_spectra = 'amplitude';
 
 
     params.shift_row = 0;
@@ -122,13 +122,11 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.roi2 = [22+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
-    params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
-    params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
-
-    params.roi1_phase_idx = params.phase2plot(1);
-    params.roi2_phase_idx = params.phase2plot(2);
+    params.colors_roi = [0.8500, 0.3250, 0.0980; 0.4940, 0.1840, 0.5560];
+    params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
 
 
+    params.nu_interval = [1075 1085];
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
@@ -140,12 +138,14 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.do_ref_roi_compare = true;
-    params.compare_acquisition = false;
+    params.do_ref_spectrum_analysis = true; 
+    params.do_ref_roi_analysis = true;
+    params.compare_2ps_7ps = true;
+    params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
     %sauvegarde
-    params.exportgraphics_segm_roi = true;
+    params.exportgraphics_segm_roi = false;
 
 end
