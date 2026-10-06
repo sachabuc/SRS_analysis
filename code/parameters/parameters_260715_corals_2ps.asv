@@ -57,7 +57,7 @@ function params = parameters_260715_corals_2ps()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 10.8;
+    params.fwhm_mesure = 11.1;
     params.fwhm_ref = 3;
 
     % Paramètres de prétraitement

@@ -1,0 +1,2990 @@
+
+function result = plot_single_ROI_fit( ...
+    I_corr, wavenumber, phase_model, phase_map, roi, ...
+    fwhm_instr, active_idx, phase_colors, params, ...
+    background_spectrum, noise_spectrum)
+
+%PLOT_SINGLE_ROI_FIT
+%
+% Fit spectral d'un ROI unique avec les phases carbonate actives.
+%
+% IMPORTANT
+% ----------
+% I_corr est deja corrige du background :
+%
+%       I_corr = I_raw - background_spectrum
+%
+% Le background mesure dans le ROI sans echantillon n'est donc PAS
+% remis dans le modele de fit.
+%
+% background_spectrum et noise_spectrum sont utilises comme references
+% independantes pour l'analyse du bruit.
+%
+% CONVENTION DES UNITES
+% ---------------------
+% Le fit est effectue sur la SOMME des pixels du ROI.
+%
+% Pour les affichages et les rapports de hauteurs de pics, les resultats
+% sont convertis en intensite MOYENNE PAR PIXEL :
+%
+%       signal_mean = signal_sum / n_pixels_roi
+%
+% Ainsi :
+%       background_spectrum
+%       composantes
+%       spectre experimental
+%
+% sont tous dans la meme unite.
+%
+% SORTIE
+% ------
+% result.name
+% result.roi
+% result.n_pixels_roi
+% result.sum_spectrum
+% result.mean_spectrum
+% result.fit_total
+% result.fit_total_mean
+% result.components
+% result.components_mean
+% result.background_reference
+% result.noise_spectrum
+% result.A_fit
+% result.nu_fit
+% result.FWHM_fit
+% result.background_fit
+% result.R2
+% result.resnorm
+% result.exitflag
+% result.wavenumber_theoretical
+% result.components_theoretical_mean
+% result.fit_total_theoretical_mean
+% result.norm_factor
+% result.max_ACC
+% result.max_ARA
+% result.ratio_ACC_ARA
+% result.noise_analysis
+% result.phase_map_roi
+%
+% -------------------------------------------------------------------------
+
+%% ========================================================================
+% 0. OPTIONS
+% ========================================================================
+
+use_snr_phases     = true;
+use_residual_noise = true;
+use_amplitude_ci   = false;
+
+% Region spectrale utilisee pour estimer le bruit du background.
+%
+% A adapter a une zone sans bande Raman/SRS significative.
+if isfield(params,'noise_interval') && ...
+        numel(params.noise_interval) == 2
+
+    noise_interval = params.noise_interval;
+
+else
+
+    noise_interval = [1120 1150];
+
+end
+
+if isfield(params,'noise_threshold_sigma') && ...
+        ~isempty(params.noise_threshold_sigma)
+
+    noise_threshold_sigma = params.noise_threshold_sigma;
+
+else
+
+    noise_threshold_sigma = 3;
+
+end
+
+if isfield(params,'ci_alpha') && ...
+        ~isempty(params.ci_alpha)
+
+    ci_alpha = params.ci_alpha;
+
+else
+
+    ci_alpha = 0.05;
+
+end
+
+
+%% ========================================================================
+% 1. NOM DU RESULTAT
+% ========================================================================
+
+if isfield(params,'name') && ...
+        ~isempty(params.name)
+
+    result_name = char(params.name);
+
+else
+
+    result_name = sprintf( ...
+        'ROI_r%d-%d_c%d-%d', ...
+        roi(1),roi(2),roi(3),roi(4));
+
+end
+
+
+%% ========================================================================
+% 2. VERIFICATIONS
+% ========================================================================
+
+if ndims(I_corr) ~= 3
+    error('I_corr doit etre un cube 3D [n_y x n_x x n_wn].');
+end
+
+wavenumber = wavenumber(:);
+
+[n_y,n_x,n_wn] = size(I_corr);
+
+if numel(wavenumber) ~= n_wn
+    error( ...
+        ['Le nombre de points spectraux de I_corr (%d) ne correspond ' ...
+         'pas a wavenumber (%d).'], ...
+        n_wn,numel(wavenumber));
+end
+
+if numel(roi) ~= 4
+    error( ...
+        'roi doit etre [row_start row_end col_start col_end].');
+end
+
+roi = round(roi);
+
+row_start = roi(1);
+row_end   = roi(2);
+col_start = roi(3);
+col_end   = roi(4);
+
+if row_start < 1 || ...
+   row_end > n_y || ...
+   col_start < 1 || ...
+   col_end > n_x || ...
+   row_start > row_end || ...
+   col_start > col_end
+
+    error('ROI invalide.');
+
+end
+
+if isempty(active_idx)
+
+    error('active_idx est vide.');
+
+end
+
+if any(active_idx < 1) || ...
+   any(active_idx > numel(phase_model))
+
+    error('active_idx contient des indices invalides.');
+
+end
+
+background_spectrum = background_spectrum(:);
+noise_spectrum      = noise_spectrum(:);
+
+if numel(background_spectrum) ~= n_wn
+    error('background_spectrum doit contenir %d valeurs.',n_wn);
+end
+
+if numel(noise_spectrum) ~= n_wn
+    error('noise_spectrum doit contenir %d valeurs.',n_wn);
+end
+
+
+%% ========================================================================
+% 3. TRI DU SPECTRE
+% ========================================================================
+
+[wavenumber,sort_idx] = sort(wavenumber);
+
+I_corr = I_corr(:,:,sort_idx);
+
+background_spectrum = background_spectrum(sort_idx);
+
+noise_spectrum = noise_spectrum(sort_idx);
+
+
+%% ========================================================================
+% 4. INTERVALLE DU FIT
+% ========================================================================
+
+if isfield(params,'nu_interval') && ...
+        numel(params.nu_interval) == 2
+
+    nu_min = params.nu_interval(1);
+    nu_max = params.nu_interval(2);
+
+else
+
+    nu_min = min(wavenumber);
+    nu_max = max(wavenumber);
+
+end
+
+idx_fit = ...
+    wavenumber >= nu_min & ...
+    wavenumber <= nu_max;
+
+if ~any(idx_fit)
+
+    error( ...
+        'Aucun point spectral dans l''intervalle de fit.');
+
+end
+
+wn_fit = wavenumber(idx_fit);
+
+
+%% ========================================================================
+% 5. EXTRACTION DU ROI
+% ========================================================================
+
+ROI_cube = I_corr( ...
+    row_start:row_end, ...
+    col_start:col_end, :);
+
+n_pixels_roi = ...
+    size(ROI_cube,1) * size(ROI_cube,2);
+
+ROI_2D = reshape( ...
+    ROI_cube, ...
+    [], ...
+    n_wn);
+
+
+% -------------------------------------------------------------------------
+% Somme
+% -------------------------------------------------------------------------
+
+sum_spectrum = ...
+    sum(ROI_2D,1,'omitnan');
+
+
+% -------------------------------------------------------------------------
+% Moyenne par pixel
+% -------------------------------------------------------------------------
+
+mean_spectrum = ...
+    mean(ROI_2D,1,'omitnan');
+
+
+% -------------------------------------------------------------------------
+% Donnees du fit
+% -------------------------------------------------------------------------
+
+sum_fit_data = ...
+    sum_spectrum(idx_fit).';
+
+mean_fit_data = ...
+    mean_spectrum(idx_fit).';
+
+
+%% ========================================================================
+% 6. PARAMETRES DU MODELE
+% ========================================================================
+
+n_phases = numel(phase_model);
+
+
+% Position variable ?
+if isfield(params,'nu_is_variable')
+
+    nu_is_variable = params.nu_is_variable;
+
+else
+
+    nu_is_variable = false(1,n_phases);
+
+end
+
+
+% FWHM variable ?
+if isfield(params,'FWHM_is_variable')
+
+    FWHM_is_variable = params.FWHM_is_variable;
+
+else
+
+    FWHM_is_variable = false(1,n_phases);
+
+end
+
+
+% Bornes position
+if isfield(params,'nu_LB')
+
+    nu_LB = params.nu_LB;
+
+else
+
+    nu_LB = ...
+        arrayfun( ...
+        @(p) min(p.nu)-3, ...
+        phase_model);
+
+end
+
+if isfield(params,'nu_UB')
+
+    nu_UB = params.nu_UB;
+
+else
+
+    nu_UB = ...
+        arrayfun( ...
+        @(p) max(p.nu)+3, ...
+        phase_model);
+
+end
+
+
+% Bornes FWHM
+if isfield(params,'FWHM_LB')
+
+    FWHM_LB = params.FWHM_LB;
+
+else
+
+    FWHM_LB = ...
+        arrayfun( ...
+        @(p) 0.5*min(p.FWHM), ...
+        phase_model);
+
+end
+
+if isfield(params,'FWHM_UB')
+
+    FWHM_UB = params.FWHM_UB;
+
+else
+
+    FWHM_UB = ...
+        arrayfun( ...
+        @(p) 2*max(p.FWHM), ...
+        phase_model);
+
+end
+
+
+% Type de line shape
+if isfield(params,'lineshape_type')
+
+    lineshape_type = params.lineshape_type;
+
+else
+
+    lineshape_type = 'gaussian';
+
+end
+
+
+%% ========================================================================
+% 7. SIGMA INSTRUMENT
+% ========================================================================
+
+sigma_instr = ...
+    fwhm2sigma(fwhm_instr);
+
+
+%% ========================================================================
+% 8. CONSTRUCTION DU VECTEUR DE PARAMETRES
+% ========================================================================
+
+[param_map,idx_background,x0,lb,ub] = ...
+    buildParamMap( ...
+        phase_model, ...
+        active_idx, ...
+        nu_is_variable, ...
+        FWHM_is_variable, ...
+        nu_LB, ...
+        nu_UB, ...
+        FWHM_LB, ...
+        FWHM_UB);
+
+
+%% ========================================================================
+% 9. INITIALISATION DES AMPLITUDES
+% ========================================================================
+
+signal_scale = ...
+    max(sum_fit_data);
+
+if ~isfinite(signal_scale) || ...
+        signal_scale <= 0
+
+    signal_scale = 1;
+
+end
+
+for a = 1:numel(param_map)
+
+    x0(param_map(a).idx_A) = ...
+        0.1 * signal_scale;
+
+end
+
+
+% Offset residuel
+x0(idx_background) = ...
+    median(sum_fit_data,'omitnan');
+
+
+%% ========================================================================
+% 10. MODELE
+% ========================================================================
+
+model_fun = @(x,xdata) ...
+    roiForwardModel( ...
+        x, ...
+        xdata, ...
+        param_map, ...
+        idx_background, ...
+        sigma_instr, ...
+        lineshape_type);
+
+
+%% ========================================================================
+% 11. FIT
+% ========================================================================
+
+opts = optimoptions( ...
+    'lsqcurvefit', ...
+    'Display','off', ...
+    'MaxFunctionEvaluations',1e5, ...
+    'MaxIterations',2000);
+
+[x_fit, ...
+ resnorm, ...
+ residual, ...
+ exitflag, ...
+ output, ...
+ lambda, ...
+ jacobian] = ...
+    lsqcurvefit( ...
+        model_fun, ...
+        x0, ...
+        wn_fit, ...
+        sum_fit_data, ...
+        lb, ...
+        ub, ...
+        opts);
+
+
+%% ========================================================================
+% 12. FIT TOTAL
+% ========================================================================
+
+fit_total = ...
+    model_fun( ...
+        x_fit, ...
+        wn_fit);
+
+
+%% ========================================================================
+% 13. R2
+% ========================================================================
+
+SS_res = ...
+    sum((sum_fit_data-fit_total).^2);
+
+SS_tot = ...
+    sum((sum_fit_data- ...
+        mean(sum_fit_data,'omitnan')).^2);
+
+if SS_tot > 0
+
+    R2 = ...
+        1 - SS_res/SS_tot;
+
+else
+
+    R2 = NaN;
+
+end
+
+
+%% ========================================================================
+% 14. EXTRACTION DES PARAMETRES
+% ========================================================================
+
+A_fit = zeros(n_phases,1);
+
+nu_fit = cell(n_phases,1);
+
+FWHM_fit = cell(n_phases,1);
+
+
+for a = 1:numel(param_map)
+
+    k = param_map(a).k;
+
+    % Amplitude
+    A_fit(k) = ...
+        x_fit(param_map(a).idx_A);
+
+
+    % Position
+    if ~isempty(param_map(a).idx_nu)
+
+        nu_fit{k} = ...
+            x_fit(param_map(a).idx_nu).';
+
+    else
+
+        nu_fit{k} = ...
+            param_map(a).nu_fixed;
+
+    end
+
+
+    % FWHM
+    if ~isempty(param_map(a).idx_FWHM)
+
+        FWHM_fit{k} = ...
+            x_fit(param_map(a).idx_FWHM).';
+
+    else
+
+        FWHM_fit{k} = ...
+            param_map(a).FWHM_fixed;
+
+    end
+
+end
+
+
+background_fit_sum = ...
+    x_fit(idx_background);
+
+
+%% ========================================================================
+% 15. INTERVALLES DE CONFIANCE OPTIONNELLES
+% ========================================================================
+
+A_CI = nan(n_phases,2);
+
+A_significant = false(n_phases,1);
+
+if use_amplitude_ci
+
+    try
+
+        ci = nlparci( ...
+            x_fit, ...
+            residual, ...
+            'jacobian',full(jacobian), ...
+            'alpha',ci_alpha);
+
+        for a = 1:numel(param_map)
+
+            k = param_map(a).k;
+
+            idx_A = ...
+                param_map(a).idx_A;
+
+            A_CI(k,:) = ...
+                ci(idx_A,:);
+
+            A_significant(k) = ...
+                A_CI(k,1) > 0;
+
+        end
+
+    catch
+
+        warning( ...
+            'Calcul des intervalles de confiance impossible.');
+
+    end
+
+end
+
+
+%% ========================================================================
+% 16. RECONSTRUCTION DES COMPOSANTES SUR LES POINTS EXPERIMENTAUX
+% ========================================================================
+
+components_sum = ...
+    zeros(numel(wn_fit),n_phases);
+
+
+for a = 1:numel(param_map)
+
+    k = param_map(a).k;
+
+    components_sum(:,k) = ...
+        model_phase_only( ...
+            x_fit, ...
+            wn_fit, ...
+            param_map(a), ...
+            sigma_instr, ...
+            lineshape_type);
+
+end
+
+
+% -------------------------------------------------------------------------
+% Passage en intensite moyenne PAR PIXEL
+% -------------------------------------------------------------------------
+
+components_mean = ...
+    components_sum / n_pixels_roi;
+
+fit_total_mean = ...
+    fit_total / n_pixels_roi;
+
+background_fit_mean = ...
+    background_fit_sum / n_pixels_roi;
+
+
+%% ========================================================================
+% 17. RECONSTRUCTION THEORIQUE
+% ========================================================================
+
+if isfield(params,'n_theoretical_points') && ...
+        ~isempty(params.n_theoretical_points)
+
+    n_theoretical_points = ...
+        params.n_theoretical_points;
+
+else
+
+    n_theoretical_points = 1000;
+
+end
+
+wavenumber_theoretical = ...
+    linspace( ...
+        min(wn_fit), ...
+        max(wn_fit), ...
+        n_theoretical_points).';
+
+
+components_theoretical_sum = ...
+    zeros( ...
+        numel(wavenumber_theoretical), ...
+        n_phases);
+
+
+for a = 1:numel(param_map)
+
+    k = param_map(a).k;
+
+    components_theoretical_sum(:,k) = ...
+        reconstruct_phase( ...
+            A_fit(k), ...
+            nu_fit{k}, ...
+            FWHM_fit{k}, ...
+            phase_model(k).ratio, ...
+            wavenumber_theoretical, ...
+            sigma_instr, ...
+            lineshape_type);
+
+end
+
+
+% Passage en intensite moyenne par pixel
+components_theoretical_mean = ...
+    components_theoretical_sum / n_pixels_roi;
+
+
+% Offset residuel en moyenne par pixel
+fit_total_theoretical_mean = ...
+    sum(components_theoretical_mean,2) + ...
+    background_fit_mean;
+
+
+%% ========================================================================
+% 18. NORMALISATION
+% ========================================================================
+
+% IMPORTANT :
+%
+% La normalisation est faite UNIQUEMENT par rapport au signal de phases.
+%
+% On n'inclut PAS :
+%   - le background ;
+%   - l'offset ;
+%   - le bruit.
+%
+% Cela permet de comparer directement les hauteurs ACC / ARA.
+
+phase_signal_total = ...
+    sum(components_theoretical_mean,2);
+
+norm_factor = ...
+    max(phase_signal_total);
+
+
+if ~isfinite(norm_factor) || ...
+        norm_factor <= 0
+
+    norm_factor = 1;
+
+end
+
+
+% Spectre experimental corrige
+mean_fit_data_norm = ...
+    mean_fit_data / norm_factor;
+
+
+% Fit total
+fit_total_mean_norm = ...
+    fit_total_mean / norm_factor;
+
+
+% Composantes
+components_mean_norm = ...
+    components_mean / norm_factor;
+
+components_theoretical_mean_norm = ...
+    components_theoretical_mean / norm_factor;
+
+
+% Background de reference
+background_norm = ...
+    background_spectrum / norm_factor;
+
+
+%% ========================================================================
+% 19. IDENTIFICATION ACC / ARA
+% ========================================================================
+
+idx_ACC = [];
+
+idx_ARA = [];
+
+
+for k = active_idx(:).'
+
+    name_k = ...
+        lower(char(phase_model(k).name));
+
+    if contains(name_k,'acc')
+
+        idx_ACC = k;
+
+    elseif contains(name_k,'ara') || ...
+           contains(name_k,'aragon')
+
+        idx_ARA = k;
+
+    end
+
+end
+
+
+%% ========================================================================
+% 20. HAUTEURS ACC / ARA
+% ========================================================================
+
+max_ACC = NaN;
+max_ARA = NaN;
+ratio_ACC_ARA = NaN;
+
+
+if ~isempty(idx_ACC)
+
+    max_ACC = ...
+        max(components_theoretical_mean(:,idx_ACC));
+
+end
+
+
+if ~isempty(idx_ARA)
+
+    max_ARA = ...
+        max(components_theoretical_mean(:,idx_ARA));
+
+end
+
+
+if isfinite(max_ACC) && ...
+   isfinite(max_ARA) && ...
+   max_ARA > 0
+
+    ratio_ACC_ARA = ...
+        max_ACC / max_ARA;
+
+end
+
+
+%% ========================================================================
+% 21. SNR
+% ========================================================================
+
+noise_analysis = struct();
+
+noise_analysis.noise_interval = ...
+    noise_interval;
+
+noise_analysis.noise_spectrum = ...
+    noise_spectrum;
+
+
+idx_noise = ...
+    wavenumber >= noise_interval(1) & ...
+    wavenumber <= noise_interval(2);
+
+
+if any(idx_noise)
+
+    noise_sigma_per_pixel = ...
+        median( ...
+            noise_spectrum(idx_noise), ...
+            'omitnan');
+
+else
+
+    noise_sigma_per_pixel = NaN;
+
+end
+
+
+noise_analysis.noise_sigma_per_pixel = ...
+    noise_sigma_per_pixel;
+
+
+% Pour le ROI somme :
+%
+% sigma_sum ~ sqrt(N) sigma_pixel
+%
+% Hypothese de pixels independants.
+
+if isfinite(noise_sigma_per_pixel)
+
+    noise_sigma_sum = ...
+        sqrt(n_pixels_roi) * ...
+        noise_sigma_per_pixel;
+
+else
+
+    noise_sigma_sum = NaN;
+
+end
+
+
+noise_analysis.noise_sigma_sum = ...
+    noise_sigma_sum;
+
+
+if use_snr_phases && ...
+        isfinite(noise_sigma_per_pixel) && ...
+        noise_sigma_per_pixel > 0
+
+    SNR_phase = ...
+        nan(n_phases,1);
+
+    for k = active_idx(:).'
+
+        peak_k = ...
+            max(components_theoretical_mean(:,k));
+
+        SNR_phase(k) = ...
+            peak_k / noise_sigma_per_pixel;
+
+    end
+
+else
+
+    SNR_phase = ...
+        nan(n_phases,1);
+
+end
+
+
+noise_analysis.SNR_phase = ...
+    SNR_phase;
+
+
+%% ========================================================================
+% 22. RESIDU
+% ========================================================================
+
+if use_residual_noise
+
+    residual_sigma_sum = ...
+        1.4826 * ...
+        median( ...
+            abs(residual - ...
+                median(residual,'omitnan')), ...
+            'omitnan');
+
+    residual_sigma_mean = ...
+        residual_sigma_sum / ...
+        n_pixels_roi;
+
+    noise_analysis.residual_sigma_sum = ...
+        residual_sigma_sum;
+
+    noise_analysis.residual_sigma_mean = ...
+        residual_sigma_mean;
+
+    if isfinite(noise_sigma_per_pixel) && ...
+            noise_sigma_per_pixel > 0
+
+        noise_analysis.residual_to_noise = ...
+            residual_sigma_mean / ...
+            noise_sigma_per_pixel;
+
+    else
+
+        noise_analysis.residual_to_noise = NaN;
+
+    end
+
+else
+
+    noise_analysis.residual_sigma_sum = NaN;
+    noise_analysis.residual_sigma_mean = NaN;
+    noise_analysis.residual_to_noise = NaN;
+
+end
+
+
+%% ========================================================================
+% 23. FIGURE 1 : FIT DU ROI
+% ========================================================================
+
+figure( ...
+    'Color','white', ...
+    'Position',[100 100 1000 650]);
+
+hold on;
+
+
+% Spectre experimental MOYEN
+plot( ...
+    wn_fit, ...
+    mean_fit_data, ...
+    'k.', ...
+    'MarkerSize',8, ...
+    'DisplayName','ROI experimental');
+
+
+% Fit total MOYEN
+plot( ...
+    wn_fit, ...
+    fit_total_mean, ...
+    'k-', ...
+    'LineWidth',2, ...
+    'DisplayName','Fit total');
+
+
+% Background de reference
+plot( ...
+    wavenumber, ...
+    background_spectrum, ...
+    '--', ...
+    'Color',[0.5 0.5 0.5], ...
+    'LineWidth',1.3, ...
+    'DisplayName','Background reference');
+
+
+xlabel('Wavenumber (cm^{-1})');
+
+ylabel('Intensity (a.u./pixel)');
+
+title(sprintf( ...
+    '%s — spectral fit', ...
+    result_name), ...
+    'Interpreter','none');
+
+
+legend( ...
+    'Location','best', ...
+    'Box','off');
+
+grid on;
+box on;
+
+set(gca,'FontSize',11);
+
+
+% Annotation
+annotation_text = {};
+
+annotation_text{end+1} = ...
+    sprintf('R^2 = %.4f',R2);
+
+annotation_text{end+1} = ...
+    sprintf('N = %d pixels',n_pixels_roi);
+
+if isfinite(noise_sigma_per_pixel)
+
+    annotation_text{end+1} = ...
+        sprintf( ...
+        '\\sigma_{noise} = %.3g', ...
+        noise_sigma_per_pixel);
+
+end
+
+if isfinite(ratio_ACC_ARA)
+
+    annotation_text{end+1} = ...
+        sprintf( ...
+        'ACC / ARA = %.3f', ...
+        ratio_ACC_ARA);
+
+end
+
+
+annotation( ...
+    'textbox',[0.65 0.67 0.25 0.18], ...
+    'String',annotation_text, ...
+    'FitBoxToText','on', ...
+    'BackgroundColor','white', ...
+    'EdgeColor',[0.7 0.7 0.7], ...
+    'FontSize',9, ...
+    'Interpreter','tex');
+
+
+hold off;
+
+
+%% ========================================================================
+% 24. FIGURE 2 : COMPOSANTES
+% ========================================================================
+
+figure( ...
+    'Color','white', ...
+    'Position',[100 100 1000 650]);
+
+hold on;
+
+
+% Spectre experimental normalise
+plot( ...
+    wn_fit, ...
+    mean_fit_data_norm, ...
+    'k.', ...
+    'MarkerSize',8, ...
+    'DisplayName','ROI experimental');
+
+
+% Composantes
+for k = active_idx(:).'
+
+    if ~isempty(phase_colors) && ...
+            size(phase_colors,1) >= k
+
+        color_k = ...
+            phase_colors(k,:);
+
+    else
+
+        color_tmp = ...
+            lines(n_phases);
+
+        color_k = ...
+            color_tmp(k,:);
+
+    end
+
+
+    plot( ...
+        wavenumber_theoretical, ...
+        components_theoretical_mean_norm(:,k), ...
+        '-', ...
+        'Color',color_k, ...
+        'LineWidth',2, ...
+        'DisplayName',char(phase_model(k).name));
+
+end
+
+
+% Somme des phases
+plot( ...
+    wavenumber_theoretical, ...
+    sum(components_theoretical_mean_norm,2), ...
+    'k-', ...
+    'LineWidth',2.5, ...
+    'DisplayName','Sum of phases');
+
+
+xlabel('Wavenumber (cm^{-1})');
+
+ylabel('Normalized intensity');
+
+title(sprintf( ...
+    '%s — fitted phase components', ...
+    result_name), ...
+    'Interpreter','none');
+
+
+legend( ...
+    'Location','best', ...
+    'Box','off');
+
+grid on;
+box on;
+
+set(gca,'FontSize',11);
+
+
+% Annotation ACC / ARA
+annotation_text = {};
+
+if isfinite(max_ACC)
+
+    annotation_text{end+1} = ...
+        sprintf( ...
+        'ACC peak = %.3f', ...
+        max_ACC/norm_factor);
+
+end
+
+if isfinite(max_ARA)
+
+    annotation_text{end+1} = ...
+        sprintf( ...
+        'ARA peak = %.3f', ...
+        max_ARA/norm_factor);
+
+end
+
+if isfinite(ratio_ACC_ARA)
+
+    annotation_text{end+1} = ...
+        sprintf( ...
+        'ACC / ARA = %.3f', ...
+        ratio_ACC_ARA);
+
+end
+
+
+annotation( ...
+    'textbox',[0.67 0.72 0.22 0.15], ...
+    'String',annotation_text, ...
+    'FitBoxToText','on', ...
+    'BackgroundColor','white', ...
+    'EdgeColor',[0.7 0.7 0.7], ...
+    'FontSize',9, ...
+    'Interpreter','tex');
+
+
+hold off;
+
+
+%% ========================================================================
+% 25. PHASE MAP + ROI
+% ========================================================================
+
+phase_map_roi = [];
+
+if ~isempty(phase_map) && ...
+        ndims(phase_map) == 2 && ...
+        size(phase_map,1) == n_y && ...
+        size(phase_map,2) == n_x
+
+    phase_map_roi = ...
+        phase_map( ...
+            row_start:row_end, ...
+            col_start:col_end);
+
+    figure( ...
+        'Color','white', ...
+        'Position',[100 100 700 650]);
+
+    imagesc(phase_map);
+
+    axis image;
+
+    hold on;
+
+    rectangle( ...
+        'Position',[ ...
+            col_start, ...
+            row_start, ...
+            col_end-col_start+1, ...
+            row_end-row_start+1], ...
+        'EdgeColor','w', ...
+        'LineWidth',2);
+
+    xlabel('Column');
+
+    ylabel('Row');
+
+    title(sprintf( ...
+        '%s — phase map', ...
+        result_name), ...
+        'Interpreter','none');
+
+    colorbar;
+
+    set(gca,'FontSize',11);
+
+    hold off;
+
+end
+
+
+%% ========================================================================
+% 26. RESULT STRUCTURE
+% ========================================================================
+
+result = struct();
+
+% Identifiant indispensable pour la suite du main
+result.name = result_name;
+
+% ROI
+result.roi = roi;
+
+result.n_pixels_roi = ...
+    n_pixels_roi;
+
+
+% Axes spectraux
+result.wavenumber = ...
+    wavenumber;
+
+result.wavenumber_fit = ...
+    wn_fit;
+
+result.wavenumber_theoretical = ...
+    wavenumber_theoretical;
+
+
+% Spectres
+result.sum_spectrum = ...
+    sum_spectrum;
+
+result.mean_spectrum = ...
+    mean_spectrum;
+
+
+% Fits
+result.fit_total = ...
+    fit_total;
+
+result.fit_total_mean = ...
+    fit_total_mean;
+
+result.fit_total_theoretical_mean = ...
+    fit_total_theoretical_mean;
+
+
+% Composantes
+result.components = ...
+    components_sum;
+
+result.components_mean = ...
+    components_mean;
+
+result.components_theoretical_mean = ...
+    components_theoretical_mean;
+
+
+% Composantes normalisees
+result.components_mean_norm = ...
+    components_mean_norm;
+
+result.components_theoretical_mean_norm = ...
+    components_theoretical_mean_norm;
+
+result.fit_total_theoretical_mean_norm = ...
+    fit_total_mean_norm;
+
+
+% Parametres
+result.A_fit = ...
+    A_fit;
+
+result.A_CI = ...
+    A_CI;
+
+result.A_significant = ...
+    A_significant;
+
+result.nu_fit = ...
+    nu_fit;
+
+result.FWHM_fit = ...
+    FWHM_fit;
+
+
+% Background
+result.background_reference = ...
+    background_spectrum;
+
+result.background_fit = ...
+    background_fit_mean;
+
+
+% Qualite du fit
+result.R2 = ...
+    R2;
+
+result.resnorm = ...
+    resnorm;
+
+result.exitflag = ...
+    exitflag;
+
+result.output = ...
+    output;
+
+result.lambda = ...
+    lambda;
+
+result.jacobian = ...
+    jacobian;
+
+
+% Normalisation
+result.norm_factor = ...
+    norm_factor;
+
+
+% ACC / ARA
+result.max_ACC = ...
+    max_ACC;
+
+result.max_ARA = ...
+    max_ARA;
+
+result.ratio_ACC_ARA = ...
+    ratio_ACC_ARA;
+
+
+% Bruit
+result.noise_spectrum = ...
+    noise_spectrum;
+
+result.noise_analysis = ...
+    noise_analysis;
+
+
+% Carte
+result.phase_map_roi = ...
+    phase_map_roi;
+
+
+% Parametres instrument
+result.fwhm_instr = ...
+    fwhm_instr;
+
+result.active_idx = ...
+    active_idx;
+
+
+%% ========================================================================
+% 27. AFFICHAGE CONSOLE
+% ========================================================================
+
+fprintf('\n');
+fprintf('============================================================\n');
+fprintf(' %s\n',result.name);
+fprintf('============================================================\n');
+
+fprintf( ...
+    'ROI : rows %d-%d, columns %d-%d\n', ...
+    row_start,row_end,col_start,col_end);
+
+fprintf( ...
+    'Pixels : %d\n', ...
+    n_pixels_roi);
+
+fprintf( ...
+    'Spectral range : %.2f - %.2f cm^-1\n', ...
+    nu_min,nu_max);
+
+fprintf( ...
+    'R^2 : %.6f\n', ...
+    R2);
+
+fprintf( ...
+    'Resnorm : %.6g\n', ...
+    resnorm);
+
+if isfinite(noise_sigma_per_pixel)
+
+    fprintf( ...
+        'Noise reference : %.6g a.u./pixel\n', ...
+        noise_sigma_per_pixel);
+
+end
+
+fprintf('\n');
+
+for k = active_idx(:).'
+
+    fprintf( ...
+        '%s : A = %.6g', ...
+        char(phase_model(k).name), ...
+        A_fit(k));
+
+    if ~isempty(nu_fit{k})
+
+        fprintf( ...
+            ', nu = %.4f', ...
+            nu_fit{k}(1));
+
+    end
+
+    if ~isempty(FWHM_fit{k})
+
+        fprintf( ...
+            ', FWHM = %.4f', ...
+            FWHM_fit{k}(1));
+
+    end
+
+    if use_snr_phases && ...
+            isfinite(SNR_phase(k))
+
+        fprintf( ...
+            ', SNR = %.3f', ...
+            SNR_phase(k));
+
+    end
+
+    fprintf('\n');
+
+end
+
+if isfinite(ratio_ACC_ARA)
+
+    fprintf( ...
+        '\nACC / ARA peak-height ratio = %.4f\n', ...
+        ratio_ACC_ARA);
+
+end
+
+fprintf('============================================================\n\n');
+
+
+end
+
+
+%% ========================================================================
+% LOCAL FUNCTION : PARAMETER MAP
+% ========================================================================
+
+function [param_map,idx_background,x0,lb,ub] = ...
+    buildParamMap( ...
+        phase_model, ...
+        active_idx, ...
+        nu_is_variable, ...
+        FWHM_is_variable, ...
+        nu_LB, ...
+        nu_UB, ...
+        FWHM_LB, ...
+        FWHM_UB)
+
+param_map = struct( ...
+    'k',{}, ...
+    'idx_A',{}, ...
+    'idx_nu',{}, ...
+    'idx_FWHM',{}, ...
+    'nu_fixed',{}, ...
+    'FWHM_fixed',{}, ...
+    'ratio',{});
+
+x0 = [];
+lb = [];
+ub = [];
+
+idx = 0;
+
+for a = 1:numel(active_idx)
+
+    k = active_idx(a);
+
+    param_map(a).k = k;
+
+
+    % -------------------------------------------------------------
+    % Amplitude
+    % -------------------------------------------------------------
+
+    idx = idx + 1;
+
+    param_map(a).idx_A = idx;
+
+    x0(idx,1) = 0;
+
+    lb(idx,1) = 0;
+
+    ub(idx,1) = Inf;
+
+
+    % -------------------------------------------------------------
+    % Position
+    % -------------------------------------------------------------
+
+    if nu_is_variable(k)
+
+        n = numel(phase_model(k).nu);
+
+        idx_nu = ...
+            idx + (1:n);
+
+        param_map(a).idx_nu = ...
+            idx_nu;
+
+        x0(idx_nu,1) = ...
+            phase_model(k).nu(:);
+
+        lb(idx_nu,1) = ...
+            nu_LB(k) * ones(n,1);
+
+        ub(idx_nu,1) = ...
+            nu_UB(k) * ones(n,1);
+
+        idx = idx + n;
+
+    else
+
+        param_map(a).idx_nu = [];
+
+    end
+
+    param_map(a).nu_fixed = ...
+        phase_model(k).nu;
+
+
+    % -------------------------------------------------------------
+    % FWHM
+    % -------------------------------------------------------------
+
+    if FWHM_is_variable(k)
+
+        n = numel(phase_model(k).FWHM);
+
+        idx_FWHM = ...
+            idx + (1:n);
+
+        param_map(a).idx_FWHM = ...
+            idx_FWHM;
+
+        x0(idx_FWHM,1) = ...
+            phase_model(k).FWHM(:);
+
+        lb(idx_FWHM,1) = ...
+            FWHM_LB(k) * ones(n,1);
+
+        ub(idx_FWHM,1) = ...
+            FWHM_UB(k) * ones(n,1);
+
+        idx = idx + n;
+
+    else
+
+        param_map(a).idx_FWHM = [];
+
+    end
+
+    param_map(a).FWHM_fixed = ...
+        phase_model(k).FWHM;
+
+
+    % Ratio des sous-raies
+    param_map(a).ratio = ...
+        phase_model(k).ratio;
+
+end
+
+
+% -------------------------------------------------------------
+% Offset residuel
+% -------------------------------------------------------------
+
+idx = idx + 1;
+
+idx_background = idx;
+
+x0(idx_background,1) = 0;
+
+lb(idx_background,1) = -Inf;
+
+ub(idx_background,1) = Inf;
+
+end
+
+
+%% ========================================================================
+% LOCAL FUNCTION : FORWARD MODEL
+% ========================================================================
+
+function y = roiForwardModel( ...
+    x, ...
+    wavenumber, ...
+    param_map, ...
+    idx_background, ...
+    sigma_instr, ...
+    lineshape_type)
+
+% ICI :
+%
+% y = phases + offset
+%
+% Aucun background externe n'est ajoute :
+% I_corr est deja background-corrige.
+
+y = ...
+    x(idx_background) * ...
+    ones(size(wavenumber));
+
+
+for a = 1:numel(param_map)
+
+    pm = param_map(a);
+
+    A = ...
+        x(pm.idx_A);
+
+
+    if isempty(pm.idx_nu)
+
+        nu = ...
+            pm.nu_fixed;
+
+    else
+
+        nu = ...
+            x(pm.idx_nu).';
+
+    end
+
+
+    if isempty(pm.idx_FWHM)
+
+        FWHM = ...
+            pm.FWHM_fixed;
+
+    else
+
+        FWHM = ...
+            x(pm.idx_FWHM).';
+
+    end
+
+
+    G = ...
+        reconstruct_phase( ...
+            1, ...
+            nu, ...
+            FWHM, ...
+            pm.ratio, ...
+            wavenumber, ...
+            sigma_instr, ...
+            lineshape_type);
+
+
+    y = ...
+        y + A .* G;
+
+end
+
+end
+
+
+%% ========================================================================
+% LOCAL FUNCTION : COMPOSANTE UNIQUE
+% ========================================================================
+
+function component = model_phase_only( ...
+    x, ...
+    wavenumber, ...
+    pm, ...
+    sigma_instr, ...
+    lineshape_type)
+
+A = ...
+    x(pm.idx_A);
+
+
+if isempty(pm.idx_nu)
+
+    nu = ...
+        pm.nu_fixed;
+
+else
+
+    nu = ...
+        x(pm.idx_nu).';
+
+end
+
+
+if isempty(pm.idx_FWHM)
+
+    FWHM = ...
+        pm.FWHM_fixed;
+
+else
+
+    FWHM = ...
+        x(pm.idx_FWHM).';
+
+end
+
+
+component = ...
+    reconstruct_phase( ...
+        A, ...
+        nu, ...
+        FWHM, ...
+        pm.ratio, ...
+        wavenumber, ...
+        sigma_instr, ...
+        lineshape_type);
+
+end
+
+
+%% ========================================================================
+% LOCAL FUNCTION : RECONSTRUCTION PHASE
+% ========================================================================
+
+function component = reconstruct_phase( ...
+    A, ...
+    nu, ...
+    FWHM, ...
+    ratio, ...
+    wavenumber, ...
+    sigma_instr, ...
+    lineshape_type)
+
+nu = nu(:).';
+
+FWHM = FWHM(:).';
+
+ratio = ratio(:).';
+
+if sum(ratio) > 0
+
+    ratio = ...
+        ratio / sum(ratio);
+
+end
+
+
+G = ...
+    zeros(size(wavenumber));
+
+
+for p = 1:numel(nu)
+
+    sigma_phase = ...
+        fwhm2sigma(FWHM(p));
+
+
+    sigma_eff = ...
+        sqrt( ...
+            sigma_phase^2 + ...
+            sigma_instr^2);
+
+
+    G = ...
+        G + ...
+        ratio(p) .* ...
+        lineShapeArea( ...
+            wavenumber, ...
+            nu(p), ...
+            sigma_eff, ...
+            lineshape_type);
+
+end
+
+
+component = ...
+    A .* G;
+
+end
+
+
+%% ========================================================================
+% LOCAL FUNCTION : FWHM -> SIGMA
+% ========================================================================
+
+function sigma = fwhm2sigma(FWHM)
+
+sigma = ...
+    FWHM ./ ...
+    (2*sqrt(2*log(2)));
+
+end
+
+
+%% ========================================================================
+% LOCAL FUNCTION : LINE SHAPE
+% ========================================================================
+
+function G = lineShapeArea( ...
+    x, ...
+    x0, ...
+    sigma, ...
+    lineshape_type)
+
+switch lower(lineshape_type)
+
+    case 'gaussian'
+
+        G = ...
+            exp( ...
+            -0.5*((x-x0)./sigma).^2) ./ ...
+            (sigma*sqrt(2*pi));
+
+
+    otherwise
+
+        error( ...
+            'lineshape_type "%s" non implemente.', ...
+            lineshape_type);
+
+end
+
+end
+
+
+% function result = plot_single_ROI_fit( ...
+%     I_corr, wavenumber, phase_model, roi, ...
+%     fwhm_instr, active_idx, phase_colors, params)
+% % ================================================================
+% % PLOT_SINGLE_ROI_FIT
+% %
+% % Analyse et affiche le FIT d'un seul ROI.
+% %
+% % Le spectre utilisé pour le fit est la SOMME de tous les pixels
+% % du ROI.
+% %
+% % Deux figures sont produites :
+% %
+% %   1. Spectre brut somme + FIT TOTAL
+% %
+% %   2. Spectre brut somme + COMPOSANTES individuelles du FIT
+% %
+% % Les composantes sont calculées sur la même échelle que le spectre
+% % somme : aucune division par le nombre de pixels.
+% %
+% %
+% % INPUTS
+% % ------------------------------------------------
+% % I_corr       : cube [ny x nx x n_wn]
+% % wavenumber   : vecteur spectral
+% % phase_model  : structure contenant les modèles des phases
+% % roi          : [row_start row_end col_start col_end]
+% % fwhm_instr   : FWHM de la réponse instrumentale
+% % active_idx   : indices des phases incluses dans le fit
+% % phase_colors : [n_phases x 3], couleurs des phases
+% % params       : paramètres du modèle :
+% %                .nu_is_variable
+% %                .FWHM_is_variable
+% %                .nu_LB
+% %                .nu_UB
+% %                .FWHM_LB
+% %                .FWHM_UB
+% %                éventuellement .lineshape_type
+% %
+% %
+% % OUTPUT
+% % ------------------------------------------------
+% % result.sum_spectrum
+% % result.fit_total
+% % result.background
+% % result.components
+% % result.A_fit
+% % result.nu_fit
+% % result.FWHM_fit
+% % result.R2
+% % result.resnorm
+% % result.exitflag
+% % result.wavenumber
+% % result.wavenumber_theoretical
+% % result.n_pixels
+% % result.roi
+% %
+% % ================================================================
+% 
+% 
+% %% ================================================================
+% % 1. Vérifications / mise en forme
+% % ================================================================
+% 
+% if ndims(I_corr) == 4
+%     I_corr = squeeze(I_corr);
+% end
+% 
+% assert(ndims(I_corr) == 3, ...
+%     'I_corr doit être un cube [ny x nx x n_wn].');
+% 
+% assert(numel(roi) == 4, ...
+%     'roi doit être [row_start row_end col_start col_end].');
+% 
+% assert(numel(active_idx) >= 1, ...
+%     'active_idx doit contenir au moins une phase.');
+% 
+% active_idx = active_idx(:).';
+% 
+% [n_y,n_x,n_wn] = size(I_corr);
+% 
+% 
+% %% ================================================================
+% % 2. Tri spectral
+% % ================================================================
+% 
+% [wavenumber,sort_idx] = sort(wavenumber(:));
+% 
+% I_corr = I_corr(:,:,sort_idx);
+% 
+% 
+% %% ================================================================
+% % 3. Vérification du ROI
+% % ================================================================
+% 
+% row_start = roi(1);
+% row_end   = roi(2);
+% col_start = roi(3);
+% col_end   = roi(4);
+% 
+% assert(row_start >= 1 && row_end <= n_y && ...
+%        col_start >= 1 && col_end <= n_x, ...
+%        'Le ROI sort des dimensions de I_corr.');
+% 
+% assert(row_start <= row_end && col_start <= col_end, ...
+%        'ROI invalide.');
+% 
+% 
+% rows = row_start:row_end;
+% cols = col_start:col_end;
+% 
+% n_pixels_roi = numel(rows) * numel(cols);
+% 
+% 
+% %% ================================================================
+% % 4. Extraction du ROI
+% % ================================================================
+% 
+% I_roi = I_corr(rows,cols,:);
+% 
+% I_roi_2D = reshape( ...
+%     I_roi, ...
+%     n_pixels_roi, ...
+%     n_wn);
+% 
+% 
+% %% ================================================================
+% % 5. SPECTRE SOMME
+% % ================================================================
+% 
+% % Spectre réellement utilisé pour le FIT
+% sum_spectrum = sum(I_roi_2D,1,'omitnan');
+% sum_spectrum = sum_spectrum(:);
+% 
+% 
+% % Pour information uniquement
+% mean_spectrum = mean(I_roi_2D,1,'omitnan');
+% mean_spectrum = mean_spectrum(:);
+% 
+% std_spectrum = std(I_roi_2D,0,1,'omitnan');
+% std_spectrum = std_spectrum(:);
+% 
+% 
+% %% ================================================================
+% % 6. Paramètres du modèle
+% % ================================================================
+% 
+% nu_is_variable   = params.nu_is_variable;
+% FWHM_is_variable = params.FWHM_is_variable;
+% 
+% lineshape_type = 'gaussian';
+% 
+% if isfield(params,'lineshape_type') && ...
+%         ~isempty(params.lineshape_type)
+% 
+%     lineshape_type = params.lineshape_type;
+% 
+% end
+% 
+% 
+% n_phases = numel(phase_model);
+% 
+% 
+% assert(numel(params.nu_LB) == n_phases && ...
+%        numel(params.nu_UB) == n_phases && ...
+%        numel(params.FWHM_LB) == n_phases && ...
+%        numel(params.FWHM_UB) == n_phases, ...
+%        ['Les vecteurs de bornes doivent avoir ', ...
+%         'un élément par phase.']);
+% 
+% 
+% %% ================================================================
+% % 7. Construction du modèle
+% % ================================================================
+% 
+% [param_map,idx_background,x0_template,lb,ub] = buildParamMap( ...
+%     phase_model, ...
+%     active_idx, ...
+%     nu_is_variable, ...
+%     FWHM_is_variable, ...
+%     params.nu_LB, ...
+%     params.nu_UB, ...
+%     params.FWHM_LB, ...
+%     params.FWHM_UB);
+% 
+% 
+% %% ================================================================
+% % 8. Réponse instrumentale
+% % ================================================================
+% 
+% sigma_inst = fwhm2sigma(fwhm_instr);
+% 
+% 
+% %% ================================================================
+% % 9. Fonction modèle
+% % ================================================================
+% 
+% model_fun = @(x,xdata) pixelForwardModel( ...
+%     x, ...
+%     xdata, ...
+%     param_map, ...
+%     idx_background, ...
+%     sigma_inst, ...
+%     lineshape_type);
+% 
+% 
+% %% ================================================================
+% % 10. Initialisation
+% % ================================================================
+% 
+% opts = optimoptions( ...
+%     'lsqcurvefit', ...
+%     'Display','off');
+% 
+% 
+% x0 = x0_template;
+% 
+% 
+% % ------------------------------------------------
+% % Modèle test avec A = 1
+% % ------------------------------------------------
+% 
+% x0_A_test = x0_template;
+% 
+% 
+% for a = 1:numel(param_map)
+% 
+%     x0_A_test(param_map(a).idx_A) = 1;
+% 
+%     if ~isempty(param_map(a).idx_nu)
+% 
+%         x0_A_test(param_map(a).idx_nu) = ...
+%             phase_model(param_map(a).k).nu;
+% 
+%     end
+% 
+%     if ~isempty(param_map(a).idx_FWHM)
+% 
+%         x0_A_test(param_map(a).idx_FWHM) = ...
+%             phase_model(param_map(a).k).FWHM;
+% 
+%     end
+% 
+% end
+% 
+% 
+% % Fond initial
+% x0_A_test(idx_background) = min(sum_spectrum);
+% 
+% 
+% %% ================================================================
+% % 11. Construction des fonctions de base pour NNLS
+% % ================================================================
+% 
+% G = zeros(n_wn,numel(param_map));
+% 
+% 
+% for a = 1:numel(param_map)
+% 
+%     x_tmp = x0_A_test;
+% 
+% 
+%     % Amplitude de la phase courante = 1
+%     x_tmp(param_map(a).idx_A) = 1;
+% 
+% 
+%     % Toutes les autres amplitudes = 0
+%     for b = 1:numel(param_map)
+% 
+%         if b ~= a
+% 
+%             x_tmp(param_map(b).idx_A) = 0;
+% 
+%         end
+% 
+%     end
+% 
+% 
+%     % Pas de fond pour NNLS
+%     x_tmp(idx_background) = 0;
+% 
+% 
+%     G(:,a) = model_fun(x_tmp,wavenumber);
+% 
+% end
+% 
+% 
+% %% ================================================================
+% % 12. Initialisation NNLS
+% % ================================================================
+% 
+% y_init = sum_spectrum - min(sum_spectrum);
+% 
+% y_init = max(y_init,0);
+% 
+% 
+% A0 = lsqnonneg(G,y_init);
+% 
+% 
+% for a = 1:numel(param_map)
+% 
+%     x0(param_map(a).idx_A) = max(A0(a),0);
+% 
+% end
+% 
+% 
+% % Fond initial
+% x0(idx_background) = min(sum_spectrum);
+% 
+% 
+% %% ================================================================
+% % 13. FIT DU SPECTRE SOMME
+% % ================================================================
+% 
+% [x_fit,resnorm,residual,exitflag,~,~,jacobian] = ...
+%     lsqcurvefit( ...
+%         model_fun, ...
+%         x0, ...
+%         wavenumber, ...
+%         sum_spectrum, ...
+%         lb, ...
+%         ub, ...
+%         opts);
+% 
+% 
+% %% ================================================================
+% % 14. Qualité du fit
+% % ================================================================
+% 
+% SS_tot = sum( ...
+%     (sum_spectrum - mean(sum_spectrum)).^2);
+% 
+% R2 = 1 - resnorm / max(SS_tot,eps);
+% 
+% 
+% %% ================================================================
+% % 15. Extraction des paramètres ajustés
+% % ================================================================
+% 
+% A_fit    = zeros(n_phases,1);
+% nu_fit   = cell(n_phases,1);
+% FWHM_fit = cell(n_phases,1);
+% 
+% 
+% for a = 1:numel(param_map)
+% 
+%     k = param_map(a).k;
+% 
+% 
+%     % Amplitude
+%     A_fit(k) = x_fit(param_map(a).idx_A);
+% 
+% 
+%     % Position
+%     if ~isempty(param_map(a).idx_nu)
+% 
+%         nu_fit{k} = reshape( ...
+%             x_fit(param_map(a).idx_nu), ...
+%             1,[]);
+% 
+%     else
+% 
+%         nu_fit{k} = param_map(a).nu_fixed;
+% 
+%     end
+% 
+% 
+%     % FWHM
+%     if ~isempty(param_map(a).idx_FWHM)
+% 
+%         FWHM_fit{k} = reshape( ...
+%             x_fit(param_map(a).idx_FWHM), ...
+%             1,[]);
+% 
+%     else
+% 
+%         FWHM_fit{k} = param_map(a).FWHM_fixed;
+% 
+%     end
+% 
+% end
+% 
+% 
+% background_fit = x_fit(idx_background);
+% 
+% 
+% %% ================================================================
+% % 16. FIT TOTAL — grille expérimentale
+% % ================================================================
+% 
+% fit_total = model_fun( ...
+%     x_fit, ...
+%     wavenumber);
+% 
+% 
+% %% ================================================================
+% % 17. Grille spectrale fine pour les plots
+% % ================================================================
+% 
+% n_theoretical_points = 1000;
+% 
+% wavenumber_theoretical = linspace( ...
+%     min(wavenumber), ...
+%     max(wavenumber), ...
+%     n_theoretical_points).';
+% 
+% 
+% fit_total_theoretical = model_fun( ...
+%     x_fit, ...
+%     wavenumber_theoretical);
+% 
+% 
+% %% ================================================================
+% % 18. Reconstruction des composantes individuelles
+% % ================================================================
+% %
+% % IMPORTANT :
+% %
+% % Chaque composante est reconstruite en utilisant EXACTEMENT
+% % le même modèle que le fit.
+% %
+% % On conserve uniquement une phase à la fois et on met le fond
+% % à zéro.
+% %
+% % Cela évite de réécrire manuellement la convolution et le
+% % profil spectral.
+% 
+% n_active = numel(param_map);
+% 
+% components = zeros( ...
+%     numel(wavenumber_theoretical), ...
+%     n_active);
+% 
+% 
+% component_phase_idx = zeros(n_active,1);
+% 
+% 
+% for a = 1:n_active
+% 
+%     % Index de la phase
+%     k = param_map(a).k;
+% 
+%     component_phase_idx(a) = k;
+% 
+% 
+%     % Vecteur de paramètres nul
+%     x_component = x_fit;
+% 
+% 
+%     % Toutes les amplitudes à zéro
+%     for b = 1:n_active
+% 
+%         x_component(param_map(b).idx_A) = 0;
+% 
+%     end
+% 
+% 
+%     % Fond retiré
+%     x_component(idx_background) = 0;
+% 
+% 
+%     % Une seule phase active
+%     x_component(param_map(a).idx_A) = ...
+%         x_fit(param_map(a).idx_A);
+% 
+% 
+%     % Reconstruction
+%     components(:,a) = model_fun( ...
+%         x_component, ...
+%         wavenumber_theoretical);
+% 
+% end
+% 
+% 
+% %% ================================================================
+% % 19. Composante du fond
+% % ================================================================
+% 
+% background_component = ...
+%     background_fit * ones(size(wavenumber_theoretical));
+% 
+% 
+% %% ================================================================
+% % 20. Vérification de la reconstruction
+% % ================================================================
+% 
+% fit_reconstructed = ...
+%     background_component + sum(components,2);
+% 
+% 
+% reconstruction_error = ...
+%     max(abs(fit_reconstructed - fit_total_theoretical));
+% 
+% 
+% %% ================================================================
+% % 21. FIGURE 1
+% %     Spectre brut somme + FIT TOTAL
+% % ================================================================
+% 
+% figure( ...
+%     'Color','white', ...
+%     'Position',[100 100 1000 600]);
+% 
+% hold on;
+% box on;
+% 
+% 
+% % Spectre brut
+% plot( ...
+%     wavenumber, ...
+%     sum_spectrum, ...
+%     'o', ...
+%     'Color',[0.15 0.15 0.15], ...
+%     'MarkerFaceColor',[0.15 0.15 0.15], ...
+%     'MarkerSize',4, ...
+%     'DisplayName','ROI sum');
+% 
+% 
+% % Fit total
+% plot( ...
+%     wavenumber_theoretical, ...
+%     fit_total_theoretical, ...
+%     '-', ...
+%     'Color',[0.85 0.10 0.60], ...
+%     'LineWidth',2.2, ...
+%     'DisplayName',sprintf('Total fit (R^2 = %.4f)',R2));
+% 
+% 
+% xlabel('Wavenumber (cm^{-1})');
+% ylabel('Intensity (ROI sum)');
+% 
+% title('Single ROI — summed spectrum and total fit');
+% 
+% 
+% legend( ...
+%     'Location','best', ...
+%     'Box','off');
+% 
+% 
+% grid on;
+% 
+% 
+% set(gca, ...
+%     'FontName','Arial', ...
+%     'FontSize',12, ...
+%     'LineWidth',1, ...
+%     'TickDir','out');
+% 
+% 
+% %% ================================================================
+% % 22. FIGURE 2
+% %     Spectre brut somme + COMPOSANTES NORMALISEES
+% % ================================================================
+% 
+% % ------------------------------------------------
+% % Normalisation commune
+% % ------------------------------------------------
+% %
+% % On normalise toutes les composantes par le maximum
+% % du FIT TOTAL.
+% %
+% % Ainsi :
+% %
+% %   max(fit_total_normalized) = 1
+% %
+% % Les amplitudes relatives des différentes phases
+% % sont conservées.
+% %
+% 
+% norm_factor_components = max(fit_total_theoretical);
+% 
+% if norm_factor_components <= 0 || ~isfinite(norm_factor_components)
+%     norm_factor_components = 1;
+% end
+% 
+% 
+% sum_spectrum_norm = ...
+%     sum_spectrum / norm_factor_components;
+% 
+% components_norm = ...
+%     components / norm_factor_components;
+% 
+% background_norm = ...
+%     background_component / norm_factor_components;
+% 
+% fit_total_norm = ...
+%     fit_total_theoretical / norm_factor_components;
+% 
+% 
+% %% ================================================================
+% % Recherche ACC et ARA
+% % ================================================================
+% 
+% idx_ACC = [];
+% idx_ARA = [];
+% 
+% for a = 1:n_active
+% 
+%     k = component_phase_idx(a);
+% 
+%     if isfield(phase_model(k),'name')
+% 
+%         phase_name_tmp = lower(phase_model(k).name);
+% 
+%     else
+% 
+%         phase_name_tmp = sprintf('phase %d',k);
+% 
+%     end
+% 
+% 
+%     % Recherche robuste du nom
+%     if contains(phase_name_tmp,'acc')
+% 
+%         idx_ACC = a;
+% 
+%     elseif contains(phase_name_tmp,'aragonite') || ...
+%            strcmp(phase_name_tmp,'ara')
+% 
+%         idx_ARA = a;
+% 
+%     end
+% 
+% end
+% 
+% 
+% %% ================================================================
+% % Rapport max(ACC) / max(ARA)
+% % ================================================================
+% 
+% ratio_ACC_ARA = NaN;
+% 
+% max_ACC = NaN;
+% max_ARA = NaN;
+% 
+% if ~isempty(idx_ACC)
+% 
+%     max_ACC = max(components(:,idx_ACC))
+% 
+% end
+% 
+% if ~isempty(idx_ARA)
+% 
+%     max_ARA = max(components(:,idx_ARA))
+% 
+% end
+% 
+% if isfinite(max_ACC) && ...
+%    isfinite(max_ARA) && ...
+%    max_ARA > 0
+% 
+%     ratio_ACC_ARA = max_ACC / max_ARA
+% 
+% end
+% 
+% 
+% %% ================================================================
+% % Figure
+% % ================================================================
+% 
+% figure( ...
+%     'Color','white', ...
+%     'Position',[150 100 1100 700]);
+% 
+% hold on;
+% box on;
+% 
+% 
+% %% ------------------------------------------------
+% % Spectre expérimental brut normalisé
+% % ------------------------------------------------
+% 
+% plot( ...
+%     wavenumber, ...
+%     sum_spectrum_norm, ...
+%     'o', ...
+%     'Color',[0.15 0.15 0.15], ...
+%     'MarkerFaceColor',[0.15 0.15 0.15], ...
+%     'MarkerSize',4, ...
+%     'DisplayName','ROI sum');
+% 
+% 
+% %% ------------------------------------------------
+% % Composantes
+% % ------------------------------------------------
+% 
+% legend_handles = gobjects(n_active+2,1);
+% legend_labels  = cell(n_active+2,1);
+% 
+% legend_counter = 0;
+% 
+% 
+% for a = 1:n_active
+% 
+%     k = component_phase_idx(a);
+% 
+% 
+%     % ------------------------------------------------
+%     % Couleur
+%     % ------------------------------------------------
+% 
+%     if size(phase_colors,1) >= k
+% 
+%         current_color = phase_colors(k,:);
+% 
+%     else
+% 
+%         tmp_colors = lines(n_active);
+%         current_color = tmp_colors(a,:);
+% 
+%     end
+% 
+% 
+%     % ------------------------------------------------
+%     % Nom
+%     % ------------------------------------------------
+% 
+%     if isfield(phase_model(k),'name')
+% 
+%         phase_name = phase_model(k).name;
+% 
+%     else
+% 
+%         phase_name = sprintf('Phase %d',k);
+% 
+%     end
+% 
+% 
+%     % ------------------------------------------------
+%     % Plot
+%     % ------------------------------------------------
+% 
+%     h = plot( ...
+%         wavenumber_theoretical, ...
+%         components_norm(:,a), ...
+%         '-', ...
+%         'Color',current_color, ...
+%         'LineWidth',2, ...
+%         'DisplayName',phase_name);
+% 
+% 
+%     legend_counter = legend_counter + 1;
+% 
+%     legend_handles(legend_counter) = h;
+% 
+%     legend_labels{legend_counter} = phase_name;
+% 
+% 
+% end
+% 
+% 
+% %% ------------------------------------------------
+% % Fond
+% % ------------------------------------------------
+% 
+% h_bg = plot( ...
+%     wavenumber_theoretical, ...
+%     background_norm, ...
+%     ':', ...
+%     'Color',[0.35 0.35 0.35], ...
+%     'LineWidth',1.5, ...
+%     'DisplayName','Background');
+% 
+% 
+% legend_counter = legend_counter + 1;
+% 
+% legend_handles(legend_counter) = h_bg;
+% 
+% legend_labels{legend_counter} = 'Background';
+% 
+% 
+% %% ------------------------------------------------
+% % Fit total normalisé
+% % ------------------------------------------------
+% 
+% h_total = plot( ...
+%     wavenumber_theoretical, ...
+%     fit_total_norm, ...
+%     '--', ...
+%     'Color',[0 0 0], ...
+%     'LineWidth',1.8, ...
+%     'DisplayName','Total fit');
+% 
+% 
+% legend_counter = legend_counter + 1;
+% 
+% legend_handles(legend_counter) = h_total;
+% 
+% legend_labels{legend_counter} = 'Total fit';
+% 
+% 
+% %% ================================================================
+% % Axes
+% % ================================================================
+% 
+% xlabel( ...
+%     'Wavenumber (cm^{-1})', ...
+%     'FontSize',12);
+% 
+% ylabel( ...
+%     'Normalized intensity', ...
+%     'FontSize',12);
+% 
+% 
+% title( ...
+%     'Single ROI — fitted phase components', ...
+%     'FontSize',13);
+% 
+% 
+% grid on;
+% 
+% 
+% set(gca, ...
+%     'FontName','Arial', ...
+%     'FontSize',12, ...
+%     'LineWidth',1, ...
+%     'TickDir','out');
+% 
+% 
+% legend( ...
+%     legend_handles(1:legend_counter), ...
+%     legend_labels(1:legend_counter), ...
+%     'Location','best', ...
+%     'Box','off');
+% 
+% 
+% %% ================================================================
+% % Texte avec résultats du fit
+% % ================================================================
+% 
+% fit_text = sprintf( ...
+%     ['R^2 = %.4f\n' ...
+%      'Resnorm = %.4g\n' ...
+%      'Background = %.4g'], ...
+%     R2, ...
+%     resnorm, ...
+%     background_fit);
+% 
+% 
+% % ------------------------------------------------
+% % Paramètres de chaque phase
+% % ------------------------------------------------
+% 
+% for a = 1:n_active
+% 
+%     k = component_phase_idx(a);
+% 
+% 
+%     if isfield(phase_model(k),'name')
+% 
+%         phase_name = phase_model(k).name;
+% 
+%     else
+% 
+%         phase_name = sprintf('Phase %d',k);
+% 
+%     end
+% 
+% 
+%     fit_text = sprintf( ...
+%         '%s\n%s : A = %.4g', ...
+%         fit_text, ...
+%         phase_name, ...
+%         A_fit(k));
+% 
+% 
+%     if ~isempty(nu_fit{k})
+% 
+%         fit_text = sprintf( ...
+%             '%s, \\nu = %.3f', ...
+%             fit_text, ...
+%             nu_fit{k}(1));
+% 
+%     end
+% 
+% 
+%     if ~isempty(FWHM_fit{k})
+% 
+%         fit_text = sprintf( ...
+%             '%s, FWHM = %.3f', ...
+%             fit_text, ...
+%             FWHM_fit{k}(1));
+% 
+%     end
+% 
+% end
+% 
+% 
+% %% ------------------------------------------------
+% % Rapport ACC / ARA
+% % ------------------------------------------------
+% 
+% if isfinite(ratio_ACC_ARA)
+% 
+%     fit_text = sprintf( ...
+%         '%s\n\nmax(ACC) / max(ARA) = %.4f', ...
+%         fit_text, ...
+%         ratio_ACC_ARA);
+% 
+% else
+% 
+%     fit_text = sprintf( ...
+%         '%s\n\nmax(ACC) / max(ARA) = N/A', ...
+%         fit_text);
+% 
+% end
+% 
+% 
+% %% ------------------------------------------------
+% % Affichage du texte
+% % ------------------------------------------------
+% 
+% annotation( ...
+%     'textbox', ...
+%     [0.15 0.45 0.35 0.30], ...
+%     'String',fit_text, ...
+%     'FitBoxToText','on', ...
+%     'BackgroundColor','white', ...
+%     'EdgeColor',[0.7 0.7 0.7], ...
+%     'FontName','Arial', ...
+%     'FontSize',10, ...
+%     'Interpreter','tex');
+% 
+% 
+% %% ================================================================
+% % Affichage console
+% % ================================================================
+% 
+% fprintf('\n');
+% fprintf('============================================================\n');
+% fprintf(' SINGLE ROI — FIT RESULTS\n');
+% fprintf('============================================================\n');
+% 
+% fprintf('R2         = %.6f\n',R2);
+% 
+% fprintf('Resnorm    = %.6g\n',resnorm);
+% 
+% fprintf('Background = %.6g\n',background_fit);
+% 
+% 
+% for a = 1:n_active
+% 
+%     k = component_phase_idx(a);
+% 
+% 
+%     if isfield(phase_model(k),'name')
+% 
+%         phase_name = phase_model(k).name;
+% 
+%     else
+% 
+%         phase_name = sprintf('Phase %d',k);
+% 
+%     end
+% 
+% 
+%     fprintf('\n%s\n',phase_name);
+% 
+%     fprintf('  A    = %.8g\n',A_fit(k));
+% 
+% 
+%     if ~isempty(nu_fit{k})
+% 
+%         fprintf('  nu   = %.6f cm^-1\n',nu_fit{k}(1));
+% 
+%     end
+% 
+% 
+%     if ~isempty(FWHM_fit{k})
+% 
+%         fprintf('  FWHM = %.6f cm^-1\n',FWHM_fit{k}(1));
+% 
+%     end
+% 
+% end
+% 
+% 
+% fprintf('\n------------------------------------------------------------\n');
+% 
+% if isfinite(ratio_ACC_ARA)
+% 
+%     fprintf( ...
+%         'max(ACC) / max(ARA) = %.6f\n', ...
+%         ratio_ACC_ARA);
+% 
+% else
+% 
+%     fprintf('max(ACC) / max(ARA) = N/A\n');
+% 
+% end
+% 
+% fprintf('============================================================\n');
+% 
+% 
+% %% ================================================================
+% % 23. Affichage des paramètres
+% % ================================================================
+% 
+% fprintf('\n');
+% fprintf('============================================================\n');
+% fprintf(' SINGLE ROI FIT\n');
+% fprintf('============================================================\n');
+% 
+% fprintf('ROI = [%d %d %d %d]\n',roi);
+% 
+% fprintf('Nombre de pixels = %d\n',n_pixels_roi);
+% 
+% fprintf('R2       = %.6f\n',R2);
+% 
+% fprintf('Resnorm  = %.6g\n',resnorm);
+% 
+% fprintf('Exitflag = %d\n',exitflag);
+% 
+% fprintf('Background = %.6g\n',background_fit);
+% 
+% fprintf('\n');
+% 
+% 
+% for a = 1:n_active
+% 
+%     k = component_phase_idx(a);
+% 
+% 
+%     if isfield(phase_model(k),'name')
+% 
+%         phase_name = phase_model(k).name;
+% 
+%     else
+% 
+%         phase_name = sprintf('Phase %d',k);
+% 
+%     end
+% 
+% 
+%     fprintf('------------------------------------------------------------\n');
+% 
+%     fprintf('%s\n',phase_name);
+% 
+%     fprintf('A = %.8g\n',A_fit(k));
+% 
+% 
+%     if ~isempty(nu_fit{k})
+% 
+%         fprintf('nu = ');
+% 
+%         fprintf('%.4f ',nu_fit{k});
+% 
+%         fprintf('cm^-1\n');
+% 
+%     end
+% 
+% 
+%     if ~isempty(FWHM_fit{k})
+% 
+%         fprintf('FWHM = ');
+% 
+%         fprintf('%.4f ',FWHM_fit{k});
+% 
+%         fprintf('cm^-1\n');
+% 
+%     end
+% 
+% end
+% 
+% 
+% fprintf('------------------------------------------------------------\n');
+% 
+% fprintf('Maximum reconstruction error = %.6g\n', ...
+%     reconstruction_error);
+% 
+% fprintf('============================================================\n');
+% 
+% 
+% %% ================================================================
+% % 24. Sortie
+% % ================================================================
+% 
+% result = struct();
+% 
+% result.name = 'ARA+ACC';
+% 
+% result.roi = roi;
+% 
+% result.n_pixels = n_pixels_roi;
+% 
+% 
+% % Spectres
+% result.wavenumber = wavenumber;
+% 
+% result.sum_spectrum = sum_spectrum;
+% 
+% result.mean_spectrum = mean_spectrum;
+% 
+% result.std_spectrum = std_spectrum;
+% 
+% 
+% % Fit
+% result.fit_total = fit_total;
+% 
+% result.wavenumber_theoretical = ...
+%     wavenumber_theoretical;
+% 
+% result.fit_total_theoretical = ...
+%     fit_total_theoretical;
+% 
+% 
+% % Composantes
+% result.components = components;
+% 
+% result.component_phase_idx = ...
+%     component_phase_idx;
+% 
+% result.background_component = ...
+%     background_component;
+% 
+% 
+% % Paramètres
+% result.A_fit = A_fit;
+% 
+% result.nu_fit = nu_fit;
+% 
+% result.FWHM_fit = FWHM_fit;
+% 
+% result.background_fit = ...
+%     background_fit;
+% 
+% 
+% % Qualité
+% result.R2 = R2;
+% 
+% result.resnorm = resnorm;
+% 
+% result.exitflag = exitflag;
+% 
+% result.residual = residual;
+% 
+% result.jacobian = jacobian;
+% 
+% 
+% end

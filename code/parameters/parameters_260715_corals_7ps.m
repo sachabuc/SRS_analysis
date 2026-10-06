@@ -90,8 +90,8 @@ function params = parameters_260715_corals_7ps()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.nu_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [params.use_CAL false params.use_VAT true params.use_CCHH params.use_MHC];
     params.nu_LB = [1084.5, 1084, 1073, 1072, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1076, 1102, 1070];
     params.FWHM_LB = [1, 1, 3, 20, 3, 3];
@@ -120,6 +120,9 @@ function params = parameters_260715_corals_7ps()
     params.roi2 = [110+params.shift_row 113+params.shift_row...
     14+params.shift_col 15+params.shift_col];
 
+    params.roi_alone = [114+params.shift_row 126+params.shift_row ...
+        49+params.shift_col 76+params.shift_col];
+
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
 
@@ -136,9 +139,9 @@ function params = parameters_260715_corals_7ps()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.do_ref_spectrum_analysis = true; 
+    params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
-    params.compare_2ps_7ps = true;
+    params.compare_2ps_7ps = false;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;

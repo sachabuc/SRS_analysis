@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260708_14_55_09_ACC_CAL_copie();
+params = parameters_260715_corals_7ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -27,8 +27,9 @@ else
     [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
 end
 
+% fwhm_instr = 7;
 %% 3. Soustraction du fond
-[I_corr, background_spectrum, noise_map, noise_global] = ...
+[I_corr, background_spectrum, noise_map, noise_global,noise_spectrum] = ...
     estimate_background_noise_roi(I_raw, params.wavenumber,...
     params.x1_s, params.x1_e, params.x2_s, params.x2_e);
 
@@ -153,6 +154,18 @@ if params.do_ref_roi_analysis
         ref_roi, params.colors_roi);
     
     saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
+
+        roi_alone_result = plot_single_ROI_fit( ...
+    I_corr, params.wavenumber, phase_model, params.roi_alone, ...
+    fwhm_instr, active_idx, params.phase_colors, params);
+
+%     roi_alone_result = plot_single_ROI_fit_noise( ...
+%     I_corr, params.wavenumber, phase_model, phase_map, params.roi_alone, ...
+%     fwhm_instr, active_idx, params.phase_colors, params, ...
+%     background_spectrum, noise_spectrum);
+
+    I_sum_alone = plot_wavenumber_sum_ROI( ...
+        I_corr, params.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
 
     
     if params.compare_2ps_7ps

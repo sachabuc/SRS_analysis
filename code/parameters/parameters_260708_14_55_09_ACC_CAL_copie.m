@@ -122,7 +122,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.roi2 = [22+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
-    params.colors_roi = [0.8500, 0.3250, 0.0980; 0.4940, 0.1840, 0.5560];
+
+    params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
     params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
 
 
