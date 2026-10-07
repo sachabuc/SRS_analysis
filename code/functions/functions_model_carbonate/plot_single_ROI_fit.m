@@ -1,10 +1,8 @@
 
 
-
-
 function result = plot_single_ROI_fit( ...
     I_corr, wavenumber, phase_model, roi, ...
-    fwhm_instr, active_idx, phase_colors, params)
+    fwhm_instr, noise_global, active_idx, phase_colors, params)
 % ================================================================
 % PLOT_SINGLE_ROI_FIT
 %
@@ -134,6 +132,8 @@ I_roi_2D = reshape( ...
 
 % Spectre réellement utilisé pour le FIT
 sum_spectrum = sum(I_roi_2D,1,'omitnan');
+sum_spectrum = sum_spectrum - min(sum_spectrum);
+
 sum_spectrum = sum_spectrum(:);
 
 
@@ -396,7 +396,10 @@ fit_total = model_fun( ...
     x_fit, ...
     wavenumber);
 
-
+fprintf('min experimental = %.6f\n', min(sum_spectrum));
+fprintf('background fit   = %.6f\n', background_fit);
+fprintf('min fit          = %.6f\n', min(fit_total));
+fprintf('max fit          = %.6f\n', max(fit_total));
 %% ================================================================
 % 17. Grille spectrale fine pour les plots
 % ================================================================
@@ -584,8 +587,10 @@ sum_spectrum_norm = ...
 components_norm = ...
     components / norm_factor_components;
 
-background_norm = ...
-    background_component / norm_factor_components;
+noise_global_norm = noise_global * sqrt(n_pixels_roi) / norm_factor_components;
+
+components_noise_global_norm = noise_global_norm  *...
+    ones(size(wavenumber_theoretical));
 
 fit_total_norm = ...
     fit_total_theoretical / norm_factor_components;
@@ -639,13 +644,13 @@ max_ARA = NaN;
 
 if ~isempty(idx_ACC)
 
-    max_ACC = max(components(:,idx_ACC))
+    max_ACC = max(components(:,idx_ACC));
 
 end
 
 if ~isempty(idx_ARA)
 
-    max_ARA = max(components(:,idx_ARA))
+    max_ARA = max(components(:,idx_ARA));
 
 end
 
@@ -653,7 +658,7 @@ if isfinite(max_ACC) && ...
    isfinite(max_ARA) && ...
    max_ARA > 0
 
-    ratio_ACC_ARA = max_ACC / max_ARA
+    ratio_ACC_ARA = max_ACC / max_ARA;
 
 end
 
@@ -676,7 +681,7 @@ box on;
 
 plot( ...
     wavenumber, ...
-    sum_spectrum_norm, ...
+    sum_spectrum_norm , ...
     'o', ...
     'Color',[0.15 0.15 0.15], ...
     'MarkerFaceColor',[0.15 0.15 0.15], ...
@@ -759,18 +764,18 @@ end
 
 h_bg = plot( ...
     wavenumber_theoretical, ...
-    background_norm, ...
+    components_noise_global_norm, ...
     ':', ...
     'Color',[0.35 0.35 0.35], ...
     'LineWidth',1.5, ...
-    'DisplayName','Background');
+    'DisplayName','Noise level');
 
 
 legend_counter = legend_counter + 1;
 
 legend_handles(legend_counter) = h_bg;
 
-legend_labels{legend_counter} = 'Background';
+legend_labels{legend_counter} = 'Noise level';
 
 
 %% ------------------------------------------------
@@ -838,7 +843,7 @@ fit_text = sprintf( ...
      'Background = %.4g'], ...
     R2, ...
     resnorm, ...
-    background_fit);
+    noise_global_norm);
 
 
 % ------------------------------------------------
@@ -939,8 +944,6 @@ fprintf('R2         = %.6f\n',R2);
 
 fprintf('Resnorm    = %.6g\n',resnorm);
 
-fprintf('Background = %.6g\n',background_fit);
-
 
 for a = 1:n_active
 
@@ -1014,8 +1017,6 @@ fprintf('R2       = %.6f\n',R2);
 fprintf('Resnorm  = %.6g\n',resnorm);
 
 fprintf('Exitflag = %d\n',exitflag);
-
-fprintf('Background = %.6g\n',background_fit);
 
 fprintf('\n');
 
@@ -1127,6 +1128,8 @@ result.FWHM_fit = FWHM_fit;
 
 result.background_fit = ...
     background_fit;
+
+result.noise_global = noise_global;
 
 
 % Qualité

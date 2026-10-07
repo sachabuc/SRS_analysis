@@ -1,3 +1,4 @@
+
 function result = plot_single_ROI_fit_noise( ...
     I_corr, wavenumber, phase_model, phase_map, roi, ...
     fwhm_instr, active_idx, phase_colors, params, ...
@@ -1197,22 +1198,25 @@ end
 % 25. HAUTEURS ACC / ARA
 % ========================================================================
 
-idx_ACC = [];
+%% ================================================================
+% Identification ACC / ARA dans les phases actives
+% ================================================================
 
+idx_ACC = [];
 idx_ARA = [];
 
+for j = 1:numel(active_idx)
 
-for a = 1:n_active
-
-    k = active_idx(a);
+    k = active_idx(j);
 
     phase_name = string(phase_model(k).name);
-    
+
     if contains(phase_name, "ACC", 'IgnoreCase', true)
-        idx_ACC = k;
+        idx_ACC = j;
+
     elseif contains(phase_name, "aragonite", 'IgnoreCase', true) || ...
            strcmpi(phase_name, "ARA")
-        idx_ARA = k;
+        idx_ARA = j;
     end
 
 end
