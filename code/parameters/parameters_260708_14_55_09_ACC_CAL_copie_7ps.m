@@ -141,6 +141,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.display_fit = true;
     params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
+    params.do_ref_roi_alone_analysis = false;
     params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;

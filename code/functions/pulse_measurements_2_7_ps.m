@@ -126,7 +126,7 @@ end
 
 %% ===================== AXES AND LABELS =======================
 xlabel('Relative delay (ps)', 'FontSize', 16, 'FontName', 'Arial');
-ylabel('SFG intensity (arb. units)', 'FontSize', 16, 'FontName', 'Arial');
+ylabel('SFG intensity', 'FontSize', 16, 'FontName', 'Arial');
 
 xline(0, 'k:', 'LineWidth', 0.8, 'HandleVisibility', 'off');
 ylim([0 1.08]);
@@ -137,28 +137,20 @@ ax.GridAlpha = 0.12;
 ax.GridLineStyle = '-';
 ax.Layer = 'bottom';
 
+set(gca, 'Box', 'on', 'LineWidth', 1.0);
+
 %% ===================== LEGEND WITH FWHM =======================
+% Créer des lignes personnalisées pour la légende avec des croix
+h_legend_entries = [];
+h_legend_entries(1) = plot(NaN, NaN, '-x', 'Color', color_chirp, 'MarkerSize', 10, 'LineWidth', 1.5, 'DisplayName', sprintf('Chirp        %.2f', fit_chirp.gaussian.FWHM));
+h_legend_entries(2) = plot(NaN, NaN, '-x', 'Color', color_noChirp, 'MarkerSize', 10, 'LineWidth', 1.5, 'DisplayName', sprintf('No chirp    %.2f', fit_noChirp.gaussian.FWHM));
 
-col_chirp   = [0.85 0.33 0.10];
-col_noChirp = [0 0.45 0.74];
+% Créer la légende avec un titre
+lgd = legend(h_legend_entries, 'Location', 'northeast', 'Box', 'off', 'FontSize', 13, 'Interpreter', 'tex');
+lgd.Title.String = '                         FWHM (ps)';
+lgd.Title.FontWeight = 'bold';
 
-legend_entries = {
-    sprintf('Chirp      : %.2f',    fit_chirp.gaussian.FWHM)
-    sprintf('No chirp : %.2f', fit_noChirp.gaussian.FWHM)
-};
-
-lgd = legend([h_fit_chirp, h_fit_noChirp], legend_entries, ...
-    'Location', 'northeast', ...
-    'Box', 'off', ...
-    'FontSize', 12, ...
-    'Interpreter', 'tex');
-
-lgd.Title.String      = 'FWHM (ps)';
-lgd.Title.Interpreter = 'tex';
-lgd.Title.FontWeight  = 'bold';
-
-set(gca, 'FontName', 'Arial', 'FontSize', 10, 'LineWidth', 1.0, ...
-         'TickDir', 'out', 'Box', 'off');
+set(gca, 'FontName', 'Arial', 'FontSize', 13, 'LineWidth', 1.0, 'TickDir', 'out');
 title('');
 
 %% ===================== SAVE FIGURE ===========================

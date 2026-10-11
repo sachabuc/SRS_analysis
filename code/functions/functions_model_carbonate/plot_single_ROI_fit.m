@@ -1,10 +1,8 @@
 
 
-
-
 function result = plot_single_ROI_fit( ...
     I_corr, wavenumber, phase_model, roi, ...
-    fwhm_instr, active_idx, phase_colors, params)
+    fwhm_instr, noise_global, noise_spectrum, active_idx, phase_colors, params)
 % ================================================================
 % PLOT_SINGLE_ROI_FIT
 %
@@ -88,9 +86,14 @@ active_idx = active_idx(:).';
 % 2. Tri spectral
 % ================================================================
 
+% lim_wn = [1060 1080];
+lim_wn = [min(wavenumber) 1079];
+
 [wavenumber,sort_idx] = sort(wavenumber(:));
 
 I_corr = I_corr(:,:,sort_idx);
+
+
 
 
 %% ================================================================
@@ -134,6 +137,8 @@ I_roi_2D = reshape( ...
 
 % Spectre réellement utilisé pour le FIT
 sum_spectrum = sum(I_roi_2D,1,'omitnan');
+% sum_spectrum = sum_spectrum - min(sum_spectrum);
+
 sum_spectrum = sum_spectrum(:);
 
 
@@ -326,6 +331,89 @@ x0(idx_background) = min(sum_spectrum);
         ub, ...
         opts);
 
+%% ================================================================
+% Résidu normalisé par le bruit spectral
+% ================================================================
+
+% noise_spectrum doit être défini sur la même grille spectrale
+% que wavenumber, et correspondre au bruit d'un pixel.
+
+noise_sum_spectrum = n_pixels_roi .* noise_spectrum(:);
+
+% Protection contre les NaN / valeurs nulles
+valid_noise = isfinite(noise_sum_spectrum) & ...
+              noise_sum_spectrum > 0;
+
+residual_normalized = NaN(size(residual));
+
+residual_normalized(valid_noise) = ...
+    residual(valid_noise) ./ noise_sum_spectrum(valid_noise);
+
+%% ================================================================
+% Figure — résidu normalisé
+% ================================================================
+
+figure( ...
+    'Color','white', ...
+    'Position',[150 100 1100 500]);
+
+hold on;
+box on;
+
+plot( ...
+    wavenumber, ...
+    residual_normalized, ...
+    '-', ...
+    'Color',[0.15 0.15 0.15], ...
+    'LineWidth',1.2);
+
+yline(0,'k--','LineWidth',1);
+
+yline(1,':','Color',[0.5 0.5 0.5]);
+yline(-1,':','Color',[0.5 0.5 0.5]);
+
+yline(2,':','Color',[0.3 0.3 0.3]);
+yline(-2,':','Color',[0.3 0.3 0.3]);
+
+yline(3,':','Color',[0.15 0.15 0.15]);
+yline(-3,':','Color',[0.15 0.15 0.15]);
+
+xlabel('Wavenumber (cm^{-1})');
+ylabel('Residual / noise');
+
+title('Normalized fit residual');
+
+grid on;
+
+set(gca, ...
+    'FontName','Arial', ...
+    'FontSize',12, ...
+    'LineWidth',1, ...
+    'TickDir','out');
+
+%% ================================================================
+% Résidu dans la région ACC
+% ================================================================
+
+idx_ACC_region = ...
+    wavenumber >= lim_wn(1) & wavenumber <= lim_wn(2);
+
+valid_ACC = idx_ACC_region & isfinite(residual_normalized);
+
+RMS_residual_ACC = sqrt( ...
+    mean(residual_normalized(valid_ACC).^2));
+
+MAX_residual_ACC = max( ...
+    abs(residual_normalized(valid_ACC)));
+
+fprintf('\n');
+fprintf('ACC residual analysis\n');
+fprintf('---------------------\n');
+fprintf('RMS normalized residual = %.3f\n', ...
+    RMS_residual_ACC);
+fprintf('Max normalized residual = %.3f\n', ...
+    MAX_residual_ACC);
+
 
 %% ================================================================
 % 14. Qualité du fit
@@ -396,7 +484,10 @@ fit_total = model_fun( ...
     x_fit, ...
     wavenumber);
 
-
+fprintf('min experimental = %.6f\n', min(sum_spectrum));
+fprintf('background fit   = %.6f\n', background_fit);
+fprintf('min fit          = %.6f\n', min(fit_total));
+fprintf('max fit          = %.6f\n', max(fit_total));
 %% ================================================================
 % 17. Grille spectrale fine pour les plots
 % ================================================================
@@ -495,6 +586,48 @@ fit_reconstructed = ...
 reconstruction_error = ...
     max(abs(fit_reconstructed - fit_total_theoretical));
 
+%% TEST
+% figure('Color','white','Position',[150 100 1100 750]);
+% 
+% tiledlayout(2,1,'TileSpacing','compact');
+% 
+% % =========================================================
+% % Spectre
+% % =========================================================
+% nexttile;
+% hold on;
+% box on;
+% 
+% plot(wavenumber, sum_spectrum, 'o', ...
+%     'Color',[0.15 0.15 0.15], ...
+%     'MarkerFaceColor',[0.15 0.15 0.15], ...
+%     'MarkerSize',4);
+% 
+% plot(wavenumber_theoretical, fit_total_theoretical, '-', ...
+%     'Color',[0.85 0.10 0.60], ...
+%     'LineWidth',2);
+% 
+% ylabel('Intensity');
+% title('7 ps — ROI spectrum and fit');
+% 
+% % =========================================================
+% % Résidu
+% % =========================================================
+% nexttile;
+% hold on;
+% box on;
+% 
+% plot(wavenumber, residual, 'o-', ...
+%     'Color',[0.15 0.15 0.15], ...
+%     'MarkerSize',3);
+% 
+% yline(0,'k--');
+% 
+% xlabel('Wavenumber (cm^{-1})');
+% ylabel('Residual');
+% title('Fit residual');
+% 
+% grid on;
 
 %% ================================================================
 % 21. FIGURE 1
@@ -584,8 +717,10 @@ sum_spectrum_norm = ...
 components_norm = ...
     components / norm_factor_components;
 
-background_norm = ...
-    background_component / norm_factor_components;
+noise_global_norm = noise_global *n_pixels_roi / norm_factor_components;
+
+components_noise_global_norm = noise_global_norm  *...
+    ones(size(wavenumber_theoretical));
 
 fit_total_norm = ...
     fit_total_theoretical / norm_factor_components;
@@ -639,13 +774,13 @@ max_ARA = NaN;
 
 if ~isempty(idx_ACC)
 
-    max_ACC = max(components(:,idx_ACC))
+    max_ACC = max(components(:,idx_ACC));
 
 end
 
 if ~isempty(idx_ARA)
 
-    max_ARA = max(components(:,idx_ARA))
+    max_ARA = max(components(:,idx_ARA));
 
 end
 
@@ -653,7 +788,7 @@ if isfinite(max_ACC) && ...
    isfinite(max_ARA) && ...
    max_ARA > 0
 
-    ratio_ACC_ARA = max_ACC / max_ARA
+    ratio_ACC_ARA = max_ACC / max_ARA;
 
 end
 
@@ -676,7 +811,7 @@ box on;
 
 plot( ...
     wavenumber, ...
-    sum_spectrum_norm, ...
+    sum_spectrum_norm , ...
     'o', ...
     'Color',[0.15 0.15 0.15], ...
     'MarkerFaceColor',[0.15 0.15 0.15], ...
@@ -759,18 +894,18 @@ end
 
 h_bg = plot( ...
     wavenumber_theoretical, ...
-    background_norm, ...
+    components_noise_global_norm, ...
     ':', ...
     'Color',[0.35 0.35 0.35], ...
     'LineWidth',1.5, ...
-    'DisplayName','Background');
+    'DisplayName','bckg variability');
 
 
 legend_counter = legend_counter + 1;
 
 legend_handles(legend_counter) = h_bg;
 
-legend_labels{legend_counter} = 'Background';
+legend_labels{legend_counter} = 'bckg variability';
 
 
 %% ------------------------------------------------
@@ -835,10 +970,10 @@ legend( ...
 fit_text = sprintf( ...
     ['R^2 = %.4f\n' ...
      'Resnorm = %.4g\n' ...
-     'Background = %.4g'], ...
+     'bckg variability = %.4g'], ...
     R2, ...
     resnorm, ...
-    background_fit);
+    noise_global_norm);
 
 
 % ------------------------------------------------
@@ -939,8 +1074,6 @@ fprintf('R2         = %.6f\n',R2);
 
 fprintf('Resnorm    = %.6g\n',resnorm);
 
-fprintf('Background = %.6g\n',background_fit);
-
 
 for a = 1:n_active
 
@@ -1014,8 +1147,6 @@ fprintf('R2       = %.6f\n',R2);
 fprintf('Resnorm  = %.6g\n',resnorm);
 
 fprintf('Exitflag = %d\n',exitflag);
-
-fprintf('Background = %.6g\n',background_fit);
 
 fprintf('\n');
 
@@ -1127,6 +1258,8 @@ result.FWHM_fit = FWHM_fit;
 
 result.background_fit = ...
     background_fit;
+
+result.noise_global = noise_global;
 
 
 % Qualité

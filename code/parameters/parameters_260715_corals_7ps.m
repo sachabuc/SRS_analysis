@@ -91,11 +91,11 @@ function params = parameters_260715_corals_7ps()
 
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL false params.use_VAT true params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084.5, 1084, 1073, 1072, 1097, 1066];
+    params.FWHM_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
+    params.nu_LB = [1084.5, 1084, 1070, 1072, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1076, 1102, 1070];
-    params.FWHM_LB = [1, 1, 3, 20, 3, 3];
-    params.FWHM_UB = [5, 5, 10, 40, 10, 10];
+    params.FWHM_LB = [1, 2, 3, 20, 3, 3];
+    params.FWHM_UB = [5, 4, 10, 40, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 2;
 
@@ -141,6 +141,7 @@ function params = parameters_260715_corals_7ps()
     params.display_fit = true;
     params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
+    params.do_ref_roi_alone_analysis = true;
     params.compare_2ps_7ps = false;
     params.compare_acquisition = true;
     params.display_fit_stat = true;

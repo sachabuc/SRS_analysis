@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260715_corals_7ps();
+params = parameters_260527_13_05_52_vaterite_7ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -29,7 +29,7 @@ end
 
 % fwhm_instr = 7;
 %% 3. Soustraction du fond
-[I_corr, background_spectrum, noise_map, noise_global,noise_spectrum] = ...
+[I_corr, background_spectrum, noise_map, spatial_dispersion_bg_global, spatial_dispersion_bg] = ...
     estimate_background_noise_roi(I_raw, params.wavenumber,...
     params.x1_s, params.x1_e, params.x2_s, params.x2_e);
 
@@ -101,7 +101,7 @@ plotFitMaps(pixel_fit, phase_model, active_idx);
 if params.do_ref_spectrum_analysis
 
     ref_spectra = plot_phase_reference_spectra(...
-        params,I_corr, params.wavenumber, pixel_fit, phase_map, phase_model, noise_global, ...
+        params,I_corr, params.wavenumber, pixel_fit, phase_map, phase_model, spatial_dispersion_bg_global, ...
         active_idx, params.nbr_pix_per_phase, fwhm_instr,...
         true,'',params.methode_ref_spectra,params.priority_phases);
 
@@ -143,7 +143,7 @@ end
 if params.do_ref_roi_analysis 
 
     ref_roi = plot_phase_reference_ROI( ...
-        I_corr,params.wavenumber, phase_model, phase_map,noise_global, ...
+        I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
         params.roi1, params.roi2,fwhm_instr, active_idx, ...
         params.phase_colors, params.colors_roi, params.figures_dir, ...
         params.exportgraphics_segm_roi, 500, params.results_dir,params);
@@ -155,19 +155,6 @@ if params.do_ref_roi_analysis
     
     saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
 
-        roi_alone_result = plot_single_ROI_fit( ...
-    I_corr, params.wavenumber, phase_model, params.roi_alone, ...
-    fwhm_instr, active_idx, params.phase_colors, params);
-
-%     roi_alone_result = plot_single_ROI_fit_noise( ...
-%     I_corr, params.wavenumber, phase_model, phase_map, params.roi_alone, ...
-%     fwhm_instr, active_idx, params.phase_colors, params, ...
-%     background_spectrum, noise_spectrum);
-
-    I_sum_alone = plot_wavenumber_sum_ROI( ...
-        I_corr, params.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
-
-    
     if params.compare_2ps_7ps
     
         loaded_data = load(params.path2ref_roi_compare);
@@ -175,9 +162,22 @@ if params.do_ref_roi_analysis
         plot_compare_ref_roi(ref_roi,ref_roi_compare,params) 
     
     end
+    
+end
 
+if params.do_ref_roi_alone_analysis 
+
+    roi_alone_result = plot_single_ROI_fit( ...
+        I_corr, params.wavenumber, phase_model, params.roi_alone, ...
+        fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
+        params.phase_colors, params);
+
+
+    I_sum_alone = plot_wavenumber_sum_ROI( ...
+        I_corr, params.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
 
 end
+
 
 
 
