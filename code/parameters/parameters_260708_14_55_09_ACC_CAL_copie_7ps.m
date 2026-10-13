@@ -123,11 +123,11 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
 
-    params.colors_roi = [0.2, 1, 0.2;1, 0.2, 0.2];
-    params.phase_colors = [0.85 0.10 0.60;0, 0.4470, 0.7410];
+    params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
+    params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
 
 
-    params.nu_interval = [1075 1085];
+    params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;

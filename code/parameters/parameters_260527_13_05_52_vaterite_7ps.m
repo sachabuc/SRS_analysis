@@ -128,8 +128,8 @@ function params = parameters_260527_13_05_52_vaterite_7ps()
     params.nu_interval = [min(params.wavenumber) max(params.wavenumber)];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = false;
+    params.load_pixel_fit = false;
+    params.calcul_fwhm_instr = true;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;

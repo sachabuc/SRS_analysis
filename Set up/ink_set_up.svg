@@ -1,0 +1,1697 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="-277.9 -127.76 1256.5 689.695714848987"
+   width="1257"
+   height="690"
+   font-family="Helvetica, Arial, sans-serif"
+   version="1.1"
+   id="svg29128"
+   sodipodi:docname="ink_set_up.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview29130"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.1652174"
+     inkscape:cx="516.64179"
+     inkscape:cy="329.12313"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="1192"
+     inkscape:window-y="352"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg29128" />
+  <defs
+     id="defs28550">
+    <rect
+       x="775.82089"
+       y="388.76865"
+       width="7.7238805"
+       height="22.313433"
+       id="rect5" />
+    <linearGradient
+       id="pulseSpectrum"
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="0">
+      <stop
+         offset="0"
+         stop-color="#7c3aed"
+         id="stop28537" />
+      <stop
+         offset="0.22"
+         stop-color="#2563eb"
+         id="stop28539" />
+      <stop
+         offset="0.45"
+         stop-color="#10b981"
+         id="stop28541" />
+      <stop
+         offset="0.65"
+         stop-color="#eab308"
+         id="stop28543" />
+      <stop
+         offset="0.82"
+         stop-color="#f97316"
+         id="stop28545" />
+      <stop
+         offset="1"
+         stop-color="#ef4444"
+         id="stop28547" />
+    </linearGradient>
+  </defs>
+  <polyline
+     points="220.00,280.00 308.74,447.25 334.81,423.74 258.55,280.00"
+     fill="none"
+     stroke="#8b1a1a"
+     stroke-width="2"
+     opacity="0.35654153934774474"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28554"
+     style="opacity:0.95;stroke:#ff6600;stroke-opacity:1"
+     transform="translate(-52.167943,0.60660399)" />
+  <polyline
+     points="258.55,280.00 258.55,236.55 245.45,236.55 245.45,280.00"
+     fill="none"
+     stroke="#8b1a1a"
+     stroke-width="2"
+     opacity="0.35654153934774474"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28556"
+     style="opacity:0.95;stroke:#ff6600;stroke-opacity:1"
+     transform="translate(-52.167943,0.60660399)" />
+  <polyline
+     points="245.45,280.00 331.54,442.26 323.18,449.80 233.09,280.00"
+     fill="none"
+     stroke="#8b1a1a"
+     stroke-width="2"
+     opacity="0.35654153934774474"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28558"
+     style="opacity:0.95;stroke:#ff6600;stroke-opacity:1"
+     transform="translate(-52.167943,0.60660399)" />
+  <polyline
+     points="-75.00,275.00 -25.00,275.00"
+     fill="none"
+     stroke="#800000"
+     stroke-width="2"
+     opacity="0.95"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28624"
+     transform="translate(-1.213208,26.690575)" />
+  <polyline
+     points="75.00,350.00 190.58,496.58 213.06,482.67 108.44,350.00"
+     fill="none"
+     stroke="#8b1a1a"
+     stroke-width="2"
+     opacity="0.35654153934774724"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28628"
+     style="stroke:#7f0000;stroke-opacity:1;opacity:0.95" />
+  <polyline
+     points="108.44,350.00 108.44,305.44 97.56,305.44 97.56,350.00"
+     fill="none"
+     stroke="#8b1a1a"
+     stroke-width="2"
+     opacity="0.35654153934774724"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28630"
+     style="stroke:#7f0000;stroke-opacity:1;opacity:0.95" />
+  <polyline
+     points="97.56,350.00 211.07,493.94 203.21,498.80 85.88,350.00"
+     fill="none"
+     stroke="#8b1a1a"
+     stroke-width="2"
+     opacity="0.35654153934774724"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28632"
+     style="stroke:#7f0000;stroke-opacity:1;opacity:0.95" />
+  <polyline
+     points="600.65,149.45 600.65,224.45 650.65,224.45 650.65,149.45 600.65,149.45"
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     opacity="0.9"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     stroke-dasharray="7, 5"
+     id="polyline28698"
+     transform="translate(-163.61299,-4.5710849)" />
+  <polyline
+     points="400.00,150.00 400.00,175.00"
+     fill="none"
+     stroke="#e02020"
+     stroke-width="2"
+     opacity="0.9"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28700"
+     transform="translate(-177.57859,7.7208082)" />
+  <polygon
+     points="400,175 405.4,164 394.6,164 "
+     fill="#e02020"
+     id="polygon28702"
+     transform="translate(-177.57859,12.43908)" />
+  <polyline
+     points="400.00,135.00 400.00,110.00"
+     fill="none"
+     stroke="#e02020"
+     stroke-width="2"
+     opacity="0.9"
+     stroke-linejoin="round"
+     stroke-linecap="round"
+     id="polyline28704"
+     transform="translate(-177.57859,7.7208082)" />
+  <polygon
+     points="394.6,121 405.4,121 400,110 "
+     fill="#e02020"
+     id="polygon28706"
+     transform="translate(-177.57859,3.4314703)" />
+  <g
+     transform="translate(-127,229.11699)"
+     id="g28726">
+    <rect
+       x="-46"
+       y="-17"
+       width="92"
+       height="34"
+       rx="4"
+       fill="#3a3f46"
+       stroke="#22252a"
+       stroke-width="1.5"
+       id="rect28714" />
+    <text
+       x="0"
+       y="-3"
+       text-anchor="middle"
+       dominant-baseline="central"
+       font-size="10px"
+       font-weight="700"
+       letter-spacing="1.5"
+       fill="#ffffff"
+       id="text28716">PUMP</text>
+    <g
+       stroke="#8fd3ff"
+       stroke-width="1.2"
+       opacity="0.95"
+       id="g28722">
+      <path
+         d="m -17,8 h 5 l 2,-5 2,8 2,-3 h 5"
+         id="path28718" />
+      <path
+         d="m 3,8 h 5 l 2,-5 2,8 2,-3 h 5"
+         id="path28720" />
+    </g>
+    <rect
+       x="46"
+       y="-6"
+       width="5"
+       height="12"
+       fill="#666666"
+       stroke="#444444"
+       stroke-width="1"
+       id="rect28724" />
+  </g>
+  <text
+     x="-127"
+     y="261.11697"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28728"><tspan
+       sodipodi:role="line"
+       id="tspan33426"
+       x="-127"
+       y="261.11697">Tunable ps laser source</tspan><tspan
+       sodipodi:role="line"
+       id="tspan33428"
+       x="-127"
+       y="274.86697">(700 to 990 nm)</tspan></text>
+  <g
+     transform="rotate(-135,271.26776,2.8274986)"
+     id="g28740">
+    <circle
+       r="4.5"
+       fill="#777777"
+       stroke="#444444"
+       stroke-width="1.2"
+       id="circle28730"
+       cx="0"
+       cy="0" />
+    <g
+       id="g28734">
+      <line
+         x1="0"
+         y1="-10"
+         x2="0"
+         y2="10"
+         stroke="#444444"
+         stroke-width="3"
+         id="line28732" />
+    </g>
+    <path
+       d="m -9,-13 a 15,15 0 0 1 18,0"
+       fill="none"
+       stroke="#999999"
+       stroke-width="1.2"
+       stroke-dasharray="3, 2"
+       id="path28736" />
+    <path
+       d="M -9,13 A 15,15 0 0 0 9,13"
+       fill="none"
+       stroke="#999999"
+       stroke-width="1.2"
+       stroke-dasharray="3, 2"
+       id="path28738" />
+  </g>
+  <g
+     transform="rotate(-135,265.99048,-10.341922)"
+     id="g28752">
+    <circle
+       r="4.5"
+       fill="#777777"
+       stroke="#444444"
+       stroke-width="1.2"
+       id="circle28742"
+       cx="0"
+       cy="0" />
+    <g
+       id="g28746">
+      <line
+         x1="0"
+         y1="-10"
+         x2="0"
+         y2="10"
+         stroke="#444444"
+         stroke-width="3"
+         id="line28744" />
+    </g>
+    <path
+       d="m -9,-13 a 15,15 0 0 1 18,0"
+       fill="none"
+       stroke="#999999"
+       stroke-width="1.2"
+       stroke-dasharray="3, 2"
+       id="path28748" />
+    <path
+       d="M -9,13 A 15,15 0 0 0 9,13"
+       fill="none"
+       stroke="#999999"
+       stroke-width="1.2"
+       stroke-dasharray="3, 2"
+       id="path28750" />
+  </g>
+  <g
+     transform="translate(366.01662,108.97717)"
+     id="g28760">
+    <g
+       class="markdown-label"
+       data-markdown="true"
+       id="g28758" />
+  </g>
+  <g
+     transform="rotate(45,54.198071,719.05233)"
+     id="g28778">
+    <rect
+       x="-3"
+       y="-12.7"
+       width="6"
+       height="25.4"
+       fill="#dfeef7"
+       stroke="#5d7f96"
+       stroke-width="1.5"
+       id="rect28774" />
+    <line
+       x1="-3"
+       y1="-12.7"
+       x2="-3"
+       y2="12.7"
+       stroke="#b04ad0"
+       stroke-width="2"
+       id="line28776" />
+  </g>
+  <text
+     x="547.42096"
+     y="172.28172"
+     text-anchor="start"
+     dominant-baseline="central"
+     font-size="11px"
+     fill="#444444"
+     id="text28780">SP700</text>
+  <g
+     transform="rotate(-90,326.30137,-200.01964)"
+     id="g28792">
+    <path
+       d="m 16.606604,-14.852832 -9,-7 h -28 v 34 h 28 l 9,-6.9999999 z"
+       fill="#8d98a5"
+       stroke="none"
+       id="path28782" />
+    <path
+       d="m 7.606604,-21.852832 h -28 v 34 h 28"
+       fill="none"
+       stroke="#4d565f"
+       stroke-width="1.5"
+       stroke-linejoin="round"
+       id="path28784" />
+    <line
+       x1="7.6066041"
+       y1="-21.852833"
+       x2="7.6066041"
+       y2="12.147168"
+       stroke="#4d565f"
+       stroke-width="1"
+       id="line28786" />
+    <rect
+       x="-20.393396"
+       y="-21.852833"
+       width="2.4000001"
+       height="7"
+       fill="#2f3e4d"
+       id="rect28788" />
+    <rect
+       x="-20.393396"
+       y="5.1471682"
+       width="2.4000001"
+       height="7"
+       fill="#2f3e4d"
+       id="rect28790" />
+  </g>
+  <g
+     transform="rotate(90,226.89653,294.57165)"
+     id="g28804">
+    <path
+       d="M 16,-10 7,-17 H -21 V 17 H 7 l 9,-7 z"
+       fill="#8d98a5"
+       stroke="none"
+       id="path28794" />
+    <path
+       d="M 7,-17 H -21 V 17 H 7"
+       fill="none"
+       stroke="#4d565f"
+       stroke-width="1.5"
+       stroke-linejoin="round"
+       id="path28796" />
+    <line
+       x1="7"
+       y1="-17"
+       x2="7"
+       y2="17"
+       stroke="#4d565f"
+       stroke-width="1"
+       id="line28798" />
+    <rect
+       x="-21"
+       y="-17"
+       width="2.4000001"
+       height="7"
+       fill="#2f3e4d"
+       id="rect28800" />
+    <rect
+       x="-21"
+       y="10"
+       width="2.4000001"
+       height="7"
+       fill="#2f3e4d"
+       id="rect28802" />
+  </g>
+  <g
+     transform="rotate(-45,300.38141,-655.93871)"
+     id="g28810">
+    <rect
+       x="-21.015219"
+       y="-30.715219"
+       width="6"
+       height="25.4"
+       fill="#dfeef7"
+       stroke="#5d7f96"
+       stroke-width="1.5"
+       id="rect28806" />
+    <line
+       x1="-21.015219"
+       y1="-30.715219"
+       x2="-21.015219"
+       y2="-5.3152194"
+       stroke="#b04ad0"
+       stroke-width="2"
+       id="line28808" />
+  </g>
+  <text
+     x="549.42096"
+     y="20.281729"
+     text-anchor="start"
+     dominant-baseline="central"
+     font-size="11px"
+     fill="#444444"
+     id="text28812">SP700</text>
+  <g
+     transform="translate(-128.21321,301.69058)"
+     id="g28826">
+    <rect
+       x="-46"
+       y="-17"
+       width="92"
+       height="34"
+       rx="4"
+       fill="#3a3f46"
+       stroke="#22252a"
+       stroke-width="1.5"
+       id="rect28814" />
+    <text
+       x="1.6408269"
+       y="-3"
+       text-anchor="middle"
+       dominant-baseline="central"
+       font-size="10px"
+       font-weight="700"
+       letter-spacing="1.5"
+       fill="#ffffff"
+       id="text28816"
+       style="text-align:center;text-anchor:middle">STOKES</text>
+    <g
+       stroke="#8fd3ff"
+       stroke-width="1.2"
+       opacity="0.95"
+       id="g28822">
+      <path
+         d="m -17,8 h 5 l 2,-5 2,8 2,-3 h 5"
+         id="path28818" />
+      <path
+         d="m 3,8 h 5 l 2,-5 2,8 2,-3 h 5"
+         id="path28820" />
+    </g>
+    <rect
+       x="46"
+       y="-6"
+       width="5"
+       height="12"
+       fill="#666666"
+       stroke="#444444"
+       stroke-width="1"
+       id="rect28824" />
+    <text
+       xml:space="preserve"
+       style="font-size:11.9952px;text-align:center;text-anchor:middle;opacity:0.95;fill:none;fill-opacity:1;stroke:#ff6701;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+       x="-7.7414584"
+       y="2.7398427"
+       id="text33424"><tspan
+         sodipodi:role="line"
+         id="tspan33422"
+         style="stroke-width:1.9992" /></text>
+  </g>
+  <text
+     x="-128.21321"
+     y="333.69058"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28828">Fixed beam, ps (1030 nm)</text>
+  <g
+     transform="rotate(-90,172.38328,-84.956879)"
+     id="g28844"
+     style="fill:none">
+    <path
+       d="M -25.4,25.4 0,0 -25.4,-25.4"
+       fill="#e8eaee"
+       fill-opacity="0.3"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="path28842"
+       style="fill:none" />
+  </g>
+  <g
+     transform="rotate(-45,372.72656,-225.78564)"
+     id="g28856">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line28846" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.6999998"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28848" />
+    <line
+       x1="-1.5"
+       y1="-6.2333331"
+       x2="-7.5"
+       y2="-0.23333333"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28850" />
+    <line
+       x1="-1.5"
+       y1="0.23333333"
+       x2="-7.5"
+       y2="6.2333331"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28852" />
+    <line
+       x1="-1.5"
+       y1="6.6999998"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28854" />
+  </g>
+  <g
+     transform="rotate(135,-24.914884,163.89353)"
+     id="g28868">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line28858" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.6999998"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28860" />
+    <line
+       x1="-1.5"
+       y1="-6.2333331"
+       x2="-7.5"
+       y2="-0.23333333"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28862" />
+    <line
+       x1="-1.5"
+       y1="0.23333333"
+       x2="-7.5"
+       y2="6.2333331"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28864" />
+    <line
+       x1="-1.5"
+       y1="6.6999998"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28866" />
+  </g>
+  <g
+     transform="rotate(-135,216.24283,25.744471)"
+     id="g28874">
+    <rect
+       x="-3"
+       y="-12.7"
+       width="6"
+       height="25.4"
+       fill="#dfeef7"
+       stroke="#5d7f96"
+       stroke-width="1.5"
+       id="rect28870" />
+    <line
+       x1="-3"
+       y1="-12.7"
+       x2="-3"
+       y2="12.7"
+       stroke="#b04ad0"
+       stroke-width="2"
+       id="line28872" />
+  </g>
+  <text
+     x="328.64093"
+     y="219.22231"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876">SP1000</text>
+  <text
+     x="49.259129"
+     y="350.77661"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6"
+     style="font-size:13.328px">G1</text>
+  <text
+     x="238.0983"
+     y="282.36069"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-8"
+     style="font-size:13.328px">G2</text>
+  <g
+     transform="translate(262.021,50.353454)"
+     id="g28900" />
+  <g
+     transform="translate(-175 -75) rotate(0)"
+     id="g28908">
+    <g
+       class="markdown-label"
+       data-markdown="true"
+       id="g28906">
+      <text
+         x="0"
+         y="7.2800002"
+         text-anchor="start"
+         font-size="28px"
+         fill="#333333"
+         xml:space="preserve"
+         id="text28904"><tspan
+           id="tspan28902" /></text>
+    </g>
+  </g>
+  <g
+     transform="translate(-175 -50) rotate(0)"
+     id="g28912">
+    <g
+       class="markdown-label"
+       data-markdown="true"
+       id="g28910" />
+  </g>
+  <g
+     transform="translate(521.4682,96.675124)"
+     id="g28920">
+    <path
+       d="M -37,-8 V 6 h 22"
+       fill="none"
+       stroke="#4d565f"
+       stroke-width="4"
+       id="path28914" />
+    <path
+       d="M 37,-8 V 6 H 15"
+       fill="none"
+       stroke="#4d565f"
+       stroke-width="4"
+       id="path28916" />
+    <rect
+       x="-25"
+       y="-3"
+       width="50"
+       height="6"
+       fill="#c9e4f5"
+       fill-opacity="0.75"
+       stroke="none"
+       id="rect28918" />
+  </g>
+  <g
+     transform="translate(-26.213208,301.69058)"
+     id="g28926">
+    <rect
+       x="-22"
+       y="-12"
+       width="44"
+       height="24"
+       rx="3"
+       fill="#b8c9a3"
+       stroke="#66794a"
+       stroke-width="1.5"
+       id="rect28922" />
+    <text
+       x="0"
+       y="0"
+       text-anchor="middle"
+       dominant-baseline="central"
+       font-size="11px"
+       font-weight="600"
+       fill="#2f3a20"
+       id="text28924">EOM</text>
+  </g>
+  <text
+     x="-25.355339"
+     y="272.92917"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28928"><tspan
+       sodipodi:role="line"
+       id="tspan37256"
+       x="-25.355339"
+       y="272.92917">20 MHz</tspan><tspan
+       sodipodi:role="line"
+       id="tspan37258"
+       x="-25.355339"
+       y="286.67917">modulation</tspan></text>
+  <g
+     transform="translate(-175 -25) rotate(0)"
+     id="g28936">
+    <g
+       class="markdown-label"
+       data-markdown="true"
+       id="g28934">
+      <text
+         x="0"
+         y="5.1999998"
+         text-anchor="start"
+         font-size="20px"
+         fill="#333333"
+         xml:space="preserve"
+         id="text28932"><tspan
+           id="tspan28930" /></text>
+    </g>
+  </g>
+  <g
+     transform="rotate(180,203.89919,10.140865)"
+     id="g28946">
+    <rect
+       x="-18"
+       y="-13"
+       width="36"
+       height="26"
+       rx="3"
+       fill="#4b5563"
+       stroke="#2b333d"
+       stroke-width="1.5"
+       id="rect28938" />
+    <text
+       x="0"
+       y="0"
+       transform="scale(-1)"
+       text-anchor="middle"
+       dominant-baseline="central"
+       font-size="11px"
+       font-weight="600"
+       fill="#ffffff"
+       id="text28940">PD</text>
+    <rect
+       x="-19.5"
+       y="-9"
+       width="3"
+       height="18"
+       fill="#93c5fd"
+       stroke="#2b333d"
+       stroke-width="1"
+       id="rect28942" />
+    <circle
+       cx="11"
+       cy="-8"
+       r="3.0999999"
+       fill="#ff0e0e"
+       opacity="1"
+       stroke="#ffffff"
+       stroke-width="0.8"
+       id="circle28944" />
+  </g>
+  <text
+     x="407.79837"
+     y="-1.7182717"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28948">SRS channel</text>
+  <g
+     transform="translate(476.79839,20.281728)"
+     id="g28952">
+    <rect
+       x="-2.5"
+       y="-12.7"
+       width="5"
+       height="25.4"
+       fill="#bfe3c9"
+       stroke="#555577"
+       stroke-width="1.5"
+       id="rect28950" />
+  </g>
+  <text
+     x="476.79837"
+     y="-2.4182718"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28954">SP1000</text>
+  <g
+     transform="rotate(-90,311.90042,-114.04509)"
+     id="g28960">
+    <rect
+       x="-9.9030018"
+       y="-31.602262"
+       width="25.4"
+       height="25.4"
+       fill="#c9e4f5"
+       stroke="#4a90c4"
+       stroke-width="1.5"
+       id="rect28956" />
+    <line
+       x1="-9.9030018"
+       y1="-6.2022629"
+       x2="15.496998"
+       y2="-31.602262"
+       stroke="#4a90c4"
+       stroke-width="1.5"
+       id="line28958" />
+    <path
+       style="opacity:0.95;fill:none;fill-opacity:1;stroke:#ff6701;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+       d="m 2.2141564,-78.460039 -0.4289293,-77.208091 93.0733739,-0.51707 -0.137676,-24.78208 -92.0272894,0.51127 -0.3579376,-64.42863 -78.618755,0.43676"
+       id="path33249" />
+    <path
+       style="opacity:0.95;fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+       d="M 2.6430957,-19.481648 V 33.706147"
+       id="path34746" />
+  </g>
+  <g
+     transform="translate(100 350) rotate(270)"
+     id="g28992">
+    <rect
+       x="0"
+       y="-36.25"
+       width="6"
+       height="72.5"
+       fill="#e8e0f0"
+       stroke="#5d5575"
+       stroke-width="1.5"
+       id="rect28962" />
+    <line
+       x1="0"
+       y1="-33.25"
+       x2="4"
+       y2="-33.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28964" />
+    <line
+       x1="0"
+       y1="-28.25"
+       x2="4"
+       y2="-28.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28966" />
+    <line
+       x1="0"
+       y1="-23.25"
+       x2="4"
+       y2="-23.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28968" />
+    <line
+       x1="0"
+       y1="-18.25"
+       x2="4"
+       y2="-18.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28970" />
+    <line
+       x1="0"
+       y1="-13.25"
+       x2="4"
+       y2="-13.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28972" />
+    <line
+       x1="0"
+       y1="-8.25"
+       x2="4"
+       y2="-8.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28974" />
+    <line
+       x1="0"
+       y1="-3.25"
+       x2="4"
+       y2="-3.25"
+       stroke="#333"
+       stroke-width="1"
+       id="line28976" />
+    <line
+       x1="0"
+       y1="1.75"
+       x2="4"
+       y2="1.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28978" />
+    <line
+       x1="0"
+       y1="6.75"
+       x2="4"
+       y2="6.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28980" />
+    <line
+       x1="0"
+       y1="11.75"
+       x2="4"
+       y2="11.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28982" />
+    <line
+       x1="0"
+       y1="16.75"
+       x2="4"
+       y2="16.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28984" />
+    <line
+       x1="0"
+       y1="21.75"
+       x2="4"
+       y2="21.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28986" />
+    <line
+       x1="0"
+       y1="26.75"
+       x2="4"
+       y2="26.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28988" />
+    <line
+       x1="0"
+       y1="31.75"
+       x2="4"
+       y2="31.75"
+       stroke="#333"
+       stroke-width="1"
+       id="line28990" />
+  </g>
+  <g
+     transform="translate(210 500) rotate(55)"
+     id="g28996"
+     style="fill:none">
+    <path
+       d="M -25.4,25.4 L 0,0 L -25.4,-25.4"
+       fill="#e8eaee"
+       fill-opacity="0.3"
+       stroke="#444"
+       stroke-width="3.5"
+       id="path28994"
+       style="fill:none" />
+  </g>
+  <g
+     transform="translate(103 300) rotate(270)"
+     id="g29000"
+     style="fill:none">
+    <path
+       d="M -9.5,9.5 L 0,0 L -9.5,-9.5"
+       fill="#e8eaee"
+       fill-opacity="0.3"
+       stroke="#444"
+       stroke-width="3.5"
+       id="path28998"
+       style="fill:none" />
+  </g>
+  <g
+     transform="translate(86.5 250) rotate(45)"
+     id="g29012">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444"
+       stroke-width="3.5"
+       id="line29002" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.699999999999999"
+       stroke="#888"
+       stroke-width="1"
+       id="line29004" />
+    <line
+       x1="-1.5"
+       y1="-6.233333333333333"
+       x2="-7.5"
+       y2="-0.2333333333333334"
+       stroke="#888"
+       stroke-width="1"
+       id="line29006" />
+    <line
+       x1="-1.5"
+       y1="0.2333333333333325"
+       x2="-7.5"
+       y2="6.2333333333333325"
+       stroke="#888"
+       stroke-width="1"
+       id="line29008" />
+    <line
+       x1="-1.5"
+       y1="6.699999999999999"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888"
+       stroke-width="1"
+       id="line29010" />
+  </g>
+  <g
+     transform="rotate(135,37.109221,147.84149)"
+     id="g29024">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line29014" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.6999998"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29016" />
+    <line
+       x1="-1.5"
+       y1="-6.2333331"
+       x2="-7.5"
+       y2="-0.23333333"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29018" />
+    <line
+       x1="-1.5"
+       y1="0.23333333"
+       x2="-7.5"
+       y2="6.2333331"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29020" />
+    <line
+       x1="-1.5"
+       y1="6.6999998"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29022" />
+  </g>
+  <g
+     transform="rotate(-90,233.71933,46.887274)"
+     id="g29056">
+    <rect
+       x="0"
+       y="-36.25"
+       width="6"
+       height="72.5"
+       fill="#e8e0f0"
+       stroke="#5d5575"
+       stroke-width="1.5"
+       id="rect29026" />
+    <line
+       x1="0"
+       y1="-33.25"
+       x2="4"
+       y2="-33.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29028" />
+    <line
+       x1="0"
+       y1="-28.25"
+       x2="4"
+       y2="-28.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29030" />
+    <line
+       x1="0"
+       y1="-23.25"
+       x2="4"
+       y2="-23.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29032" />
+    <line
+       x1="0"
+       y1="-18.25"
+       x2="4"
+       y2="-18.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29034" />
+    <line
+       x1="0"
+       y1="-13.25"
+       x2="4"
+       y2="-13.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29036" />
+    <line
+       x1="0"
+       y1="-8.25"
+       x2="4"
+       y2="-8.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29038" />
+    <line
+       x1="0"
+       y1="-3.25"
+       x2="4"
+       y2="-3.25"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29040" />
+    <line
+       x1="0"
+       y1="1.75"
+       x2="4"
+       y2="1.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29042" />
+    <line
+       x1="0"
+       y1="6.75"
+       x2="4"
+       y2="6.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29044" />
+    <line
+       x1="0"
+       y1="11.75"
+       x2="4"
+       y2="11.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29046" />
+    <line
+       x1="0"
+       y1="16.75"
+       x2="4"
+       y2="16.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29048" />
+    <line
+       x1="0"
+       y1="21.75"
+       x2="4"
+       y2="21.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29050" />
+    <line
+       x1="0"
+       y1="26.75"
+       x2="4"
+       y2="26.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29052" />
+    <line
+       x1="0"
+       y1="31.75"
+       x2="4"
+       y2="31.75"
+       stroke="#333333"
+       stroke-width="1"
+       id="line29054" />
+  </g>
+  <g
+     transform="rotate(55,-294.84808,492.65851)"
+     id="g29060"
+     style="fill:none">
+    <path
+       d="M -25.4,25.4 0,0 -25.4,-25.4"
+       fill="#e8eaee"
+       fill-opacity="0.3"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="path29058"
+       style="fill:none" />
+  </g>
+  <g
+     transform="rotate(-90,215.21933,15.387273)"
+     id="g29064"
+     style="fill:none">
+    <path
+       d="M -11.75,11.75 0,0 -11.75,-11.75"
+       fill="#e8eaee"
+       fill-opacity="0.3"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="path29062"
+       style="fill:none" />
+  </g>
+  <g
+     transform="rotate(45,-146.58853,312.18808)"
+     id="g29076"
+     inkscape:transform-center-x="2.7418324"
+     inkscape:transform-center-y="-3.7050404">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line29066" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.6999998"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29068" />
+    <line
+       x1="-1.5"
+       y1="-6.2333331"
+       x2="-7.5"
+       y2="-0.23333333"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29070" />
+    <line
+       x1="-1.5"
+       y1="0.23333333"
+       x2="-7.5"
+       y2="6.2333331"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29072" />
+    <line
+       x1="-1.5"
+       y1="6.6999998"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29074" />
+  </g>
+  <g
+     transform="rotate(-135,232.05529,51.582477)"
+     id="g29088">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line29078" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.6999998"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29080" />
+    <line
+       x1="-1.5"
+       y1="-6.2333331"
+       x2="-7.5"
+       y2="-0.23333333"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29082" />
+    <line
+       x1="-1.5"
+       y1="0.23333333"
+       x2="-7.5"
+       y2="6.2333331"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29084" />
+    <line
+       x1="-1.5"
+       y1="6.6999998"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29086" />
+  </g>
+  <g
+     transform="rotate(-90,280.58743,-125.62712)"
+     id="g29100">
+    <path
+       d="m 16,-5.5 -9,-7 h -28 v 25 H 7 l 9,-7 z"
+       fill="#8d98a5"
+       stroke="none"
+       id="path29090" />
+    <path
+       d="m 7,-12.5 h -28 v 25 H 7"
+       fill="none"
+       stroke="#4d565f"
+       stroke-width="1.5"
+       stroke-linejoin="round"
+       id="path29092" />
+    <line
+       x1="7"
+       y1="-12.5"
+       x2="7"
+       y2="12.5"
+       stroke="#4d565f"
+       stroke-width="1"
+       id="line29094" />
+    <rect
+       x="-21"
+       y="-12.5"
+       width="2.4000001"
+       height="8.5"
+       fill="#2f3e4d"
+       id="rect29096" />
+    <rect
+       x="-21"
+       y="4"
+       width="2.4000001"
+       height="8.5"
+       fill="#2f3e4d"
+       id="rect29098" />
+  </g>
+  <g
+     transform="translate(406.21456,283.7132)"
+     id="g29104">
+    <path
+       d="m 12,-150.75289 h -28 l 4,-8 h 28 z"
+       fill="#e4d5f2"
+       stroke="#8a5fb0"
+       stroke-width="1.5"
+       id="path29102" />
+  </g>
+  <g
+     transform="rotate(-90,244.79309,-160.20826)"
+     id="g29118">
+    <rect
+       x="-25"
+       y="-13"
+       width="50"
+       height="26"
+       rx="13"
+       fill="#4b5563"
+       stroke="#2b333d"
+       stroke-width="1.5"
+       id="rect29110" />
+    <rect
+       x="-27"
+       y="-9"
+       width="4"
+       height="18"
+       fill="#93c5fd"
+       stroke="#2b333d"
+       stroke-width="1"
+       id="rect29112" />
+    <text
+       x="2"
+       y="0"
+       text-anchor="middle"
+       dominant-baseline="central"
+       font-size="10px"
+       font-weight="600"
+       fill="#ffffff"
+       id="text29114">PMT</text>
+    <circle
+       cx="16"
+       cy="-7"
+       r="3.0999999"
+       fill="#ff2121"
+       opacity="1"
+       stroke="#ffffff"
+       stroke-width="0.8"
+       id="circle29116" />
+  </g>
+  <g
+     transform="translate(76.051138,164.11267)"
+     id="g29126">
+    <g
+       class="markdown-label"
+       data-markdown="true"
+       id="g29124">
+      <text
+         x="-67.771538"
+         y="275.42828"
+         text-anchor="start"
+         font-size="20px"
+         fill="#333333"
+         xml:space="preserve"
+         id="text29122"><tspan
+           id="tspan29120">7ps Chirper</tspan></text>
+      <text
+         x="344.14758"
+         y="76.122559"
+         text-anchor="start"
+         font-size="20px"
+         fill="#333333"
+         xml:space="preserve"
+         id="text29122-2"><tspan
+           sodipodi:role="line"
+           id="tspan2"
+           x="344.14758"
+           y="76.122559">Scan Unit</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:11.9952px;writing-mode:lr-tb;direction:ltr;fill:#dfd8d8;fill-opacity:1;stroke:#bfbfbf;stroke-width:0.999602;stroke-opacity:1"
+         x="244.84042"
+         y="-33.669418"
+         id="text4"><tspan
+           sodipodi:role="line"
+           id="tspan4"
+           style="stroke-width:0.999602"
+           x="244.84042"
+           y="-33.669418"></tspan></text>
+      <g
+         id="g29124-6"
+         transform="translate(230.81953,-23.659203)">
+        <text
+           x="-150.12682"
+           y="13.778676"
+           text-anchor="start"
+           font-size="20px"
+           fill="#333333"
+           xml:space="preserve"
+           id="text29122-8"
+           style="font-size:13.328px;fill:#d40000"><tspan
+             sodipodi:role="line"
+             id="tspan9"
+             x="-150.12682"
+             y="13.778676">Delay line</tspan></text>
+      </g>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.99960223,0,0,0.99960223,-353.95114,-291.88758)"
+         id="text5"
+         style="font-size:13.3333px;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect5);display:inline;fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         x="316.46228"
+         y="57.279743"
+         text-anchor="middle"
+         font-size="11px"
+         fill="#444444"
+         id="text28876-6-2-4-4-1-9"
+         style="font-size:13.328px">BS</text>
+      <text
+         x="281.07336"
+         y="-42.180676"
+         text-anchor="middle"
+         font-size="11px"
+         fill="#444444"
+         id="text28876-6-2-4-4-1-1"
+         style="font-size:13.328px"><tspan
+           sodipodi:role="line"
+           id="tspan10"
+           x="281.07336"
+           y="-42.180676">Non-linear</tspan><tspan
+           sodipodi:role="line"
+           id="tspan11"
+           x="281.07336"
+           y="-25.52067">crystal</tspan></text>
+    </g>
+  </g>
+  <path
+     style="opacity:0.95;fill:none;stroke:#800000;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     d="m -3.8113076,302.01675 77.6370156,-0.42894 0.236936,42.88497"
+     id="path30646" />
+  <path
+     style="opacity:0.95;fill:none;fill-opacity:1;stroke:#ff6600;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     d="m -75.443248,230.3848 244.492268,0.85787 -0.14899,42.46091"
+     id="path30852" />
+  <path
+     style="opacity:0.95;fill:none;fill-opacity:1;stroke:none;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     d="M 181.29922,273.19032 180.69261,194.3318"
+     id="path30908" />
+  <g
+     transform="rotate(-135,164.52258,47.58182)"
+     id="g29012-8">
+    <line
+       x1="0"
+       y1="-12.7"
+       x2="0"
+       y2="12.7"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line29002-1" />
+    <line
+       x1="-1.5"
+       y1="-12.7"
+       x2="-7.5"
+       y2="-6.6999998"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29004-6" />
+    <line
+       x1="-1.5"
+       y1="-6.2333331"
+       x2="-7.5"
+       y2="-0.23333333"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29006-5" />
+    <line
+       x1="-1.5"
+       y1="0.23333333"
+       x2="-7.5"
+       y2="6.2333331"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29008-9" />
+    <line
+       x1="-1.5"
+       y1="6.6999998"
+       x2="-7.5"
+       y2="12.7"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29010-6" />
+  </g>
+  <path
+     style="opacity:0.95;fill:none;fill-opacity:1;stroke:#800000;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     d="m 86.693728,342.33653 -0.428939,-90.50504 270.917441,-1.28397 -0.25993,-54.8474"
+     id="path33482" />
+  <path
+     style="opacity:0.95;fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.99920446;stroke-dasharray:none;stroke-opacity:1"
+     d="m 462.22526,195.21223 -0.21447,-25.09262 59.42865,-0.50794 -1.28381,-150.205667 -95.01105,0.812056"
+     id="path35476" />
+  <path
+     style="opacity:0.95;fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     d="m 458.68656,195.26585 3.5387,-0.0536 0.9651,0.0536"
+     id="path35478" />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.99920446;stroke-opacity:1;stroke-dasharray:none"
+     d="m 356.97563,195.26585 49.54185,-0.10723 -0.17965,-82.99877"
+     id="path5" />
+  <text
+     xml:space="preserve"
+     style="font-size:13.328px;writing-mode:lr-tb;direction:ltr;fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     x="291.72409"
+     y="304.59036"
+     id="text6"><tspan
+       sodipodi:role="line"
+       id="tspan6"
+       style="stroke-width:1.9992"></tspan></text>
+  <text
+     x="158.28676"
+     y="494.26144"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2"
+     style="font-size:13.328px">RF</text>
+  <text
+     x="247.22832"
+     y="463.54565"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-9"
+     style="font-size:13.328px">RF</text>
+  <text
+     x="120.05507"
+     y="303.01999"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4"
+     style="font-size:13.328px">RF</text>
+  <text
+     x="225.83386"
+     y="97.400307"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-3"
+     style="font-size:13.328px">RF</text>
+  <text
+     x="219.22455"
+     y="235.97203"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-1"
+     style="font-size:13.328px">RF</text>
+  <text
+     x="586.80963"
+     y="100.29466"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-4"
+     style="font-size:13.328px">Sample</text>
+  <text
+     xml:space="preserve"
+     style="font-size:13.328px;writing-mode:lr-tb;direction:ltr;fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
+     x="554.23157"
+     y="318.31622"
+     id="text7"><tspan
+       sodipodi:role="line"
+       id="tspan7"
+       style="stroke-width:1.9992"></tspan></text>
+  <text
+     x="562.15216"
+     y="65.867775"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-4-1"
+     style="font-size:13.328px">OBJ 3</text>
+  <text
+     x="373.22263"
+     y="165.38484"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-4-1-8"
+     style="font-size:13.328px">OBJ 1</text>
+  <text
+     x="562.72174"
+     y="136.43369"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-4-1-4"
+     style="font-size:13.328px">OBJ 2</text>
+</svg>

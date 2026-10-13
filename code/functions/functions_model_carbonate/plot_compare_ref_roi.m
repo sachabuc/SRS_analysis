@@ -436,19 +436,19 @@ yline(1, ':', ...
 
 %% Finalisation
 grid on;
-xlabel('Raman shift (cm^{-1})');
-ylabel('Normalized intensity');
+xlabel('Wavenumber (cm^{-1})');
+ylabel('SRS intensity');
 
-if n_phases == 2
-    title(sprintf('(a) %s and %s spectra', phase_name_2, phase_name_1));
-else
-    title(sprintf('(a) %s spectra', phase_name_1));
-end
+% if n_phases == 2
+%     title(sprintf('(a) %s and %s spectra', phase_name_2, phase_name_1));
+% else
+%     title(sprintf('(a) %s spectra', phase_name_1));
+% end
 
 % Appel unique à legend pour inclure toutes les entrées
-legend('Location', 'northeast', 'Box', 'off', 'FontSize', 10);
+legend('Location', 'northeast', 'Box', 'on', 'FontSize', 16);
 
-set(gca, 'FontName', 'Arial', 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
+set(gca, 'FontName', 'Arial', 'FontSize', 16, 'LineWidth', 1, 'TickDir', 'out');
 
 if use_xlim
     xlim(xlim_values);

@@ -133,7 +133,7 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = false;
+    params.calcul_fwhm_instr = true;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;
@@ -141,8 +141,11 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.ref_roi_compare = false; 
-    params.do_ref_roi_compare = true;
+    params.do_ref_spectrum_analysis = false; 
+    params.do_ref_roi_analysis = true;
+    params.do_ref_roi_alone_analysis = false;
+    params.compare_2ps_7ps = false;
+    params.compare_acquisition = false;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
