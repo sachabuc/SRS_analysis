@@ -345,15 +345,15 @@ for j = 1:n_roi
             ub, ...
             opts);
 
-%     fprintf('\nParamètres avant / après fit :\n');
-% 
-%     for i = 1:numel(x_fit)
-%         fprintf(['p%d : x0 = %.6g | x_fit = %.6g ', ...
-%                  '| LB = %.6g | UB = %.6g\n'], ...
-%                  i, x0(i), x_fit(i), lb(i), ub(i));
-%     end
-%     
-%     fprintf('exitflag = %d\n', exitflag);
+    fprintf('\nParamètres avant / après fit :\n');
+
+    for i = 1:numel(x_fit)
+        fprintf(['p%d : x0 = %.6g | x_fit = %.6g ', ...
+                 '| LB = %.6g | UB = %.6g\n'], ...
+                 i, x0(i), x_fit(i), lb(i), ub(i));
+    end
+    
+    fprintf('exitflag = %d\n', exitflag);
     %% ------------------------------------------------------------
     % R²
 
@@ -605,10 +605,10 @@ for j = 1:n_roi
 
 end
 
-for i = 1:numel(x0)
-    fprintf('x0(%d) = %.6g | lb = %.6g | ub = %.6g\n', ...
-        i, x0(i), lb(i), ub(i));
-end
+% for i = 1:numel(x0)
+%     fprintf('x0(%d) = %.6g | lb = %.6g | ub = %.6g\n', ...
+%         i, x0(i), lb(i), ub(i));
+% end
 %% ================================================================
 % 6. Normalisation commune
 %

@@ -110,19 +110,24 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.threshold_A = 10;
     params.nbr_pix_per_phase = [30 90];
     params.priority_phases =       [false false false false false false];
-    params.priority_min_fraction = [0 0 0 1 0 0];
+    params.priority_min_fraction = [0 0 0 0 0 0];
     params.methode_ref_spectra = 'amplitude';
 
     % Paramètres spectres ROI 
     params.shift_row = 0;
     params.shift_col = 0;
     
-    params.roi1 = [75+params.shift_row 80+params.shift_row...
-        100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [82+params.shift_row 85+params.shift_row...
+        100+params.shift_col 103+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi2 = [22+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi_alone = [80+params.shift_row 85+params.shift_row...
+        100+params.shift_col 105+params.shift_col];
 
 
+
+%      params.colors_roi = [0.85 0.20 0.10];
+%      params.phase_colors = [0, 0.4470, 0.7410];
     params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
     params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
 

@@ -91,8 +91,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [true false false true false false];
-    params.FWHM_is_variable = [true false false true false false];
+    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1, 3, 20, 3, 3];
@@ -110,19 +110,23 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.threshold_A = 10;
     params.nbr_pix_per_phase = [30 90];
     params.priority_phases =       [false false false false false false];
-    params.priority_min_fraction = [0 0 0 1 0 0];
+    params.priority_min_fraction = [0 0 0 0 0 0];
     params.methode_ref_spectra = 'amplitude';
 
 
-    params.shift_row = 0;
-    params.shift_col = 0;
+    params.shift_row = -3;
+    params.shift_col = -3;
     
-    params.roi1 = [75+params.shift_row 80+params.shift_row...
-        100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [82+params.shift_row 85+params.shift_row...
+        100+params.shift_col 103+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi2 = [22+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
+    params.roi_alone = [80+params.shift_row 85+params.shift_row...
+        100+params.shift_col 105+params.shift_col];
 
+%      params.colors_roi = [0.85 0.20 0.10];
+%      params.phase_colors = [0, 0.4470, 0.7410];
     params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
     params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
 

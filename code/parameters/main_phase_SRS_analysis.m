@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260708_14_55_09_ACC_CAL_copie_7ps();
+params = parameters_260708_14_55_09_ACC_CAL_copie();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
