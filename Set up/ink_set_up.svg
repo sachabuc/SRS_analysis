@@ -23,8 +23,8 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="1.1652174"
-     inkscape:cx="516.64179"
-     inkscape:cy="329.12313"
+     inkscape:cx="483.17164"
+     inkscape:cy="374.60821"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="1192"
@@ -72,17 +72,6 @@
     </linearGradient>
   </defs>
   <polyline
-     points="220.00,280.00 308.74,447.25 334.81,423.74 258.55,280.00"
-     fill="none"
-     stroke="#8b1a1a"
-     stroke-width="2"
-     opacity="0.35654153934774474"
-     stroke-linejoin="round"
-     stroke-linecap="round"
-     id="polyline28554"
-     style="opacity:0.95;stroke:#ff6600;stroke-opacity:1"
-     transform="translate(-52.167943,0.60660399)" />
-  <polyline
      points="258.55,280.00 258.55,236.55 245.45,236.55 245.45,280.00"
      fill="none"
      stroke="#8b1a1a"
@@ -113,7 +102,7 @@
      stroke-linejoin="round"
      stroke-linecap="round"
      id="polyline28624"
-     transform="translate(-1.213208,26.690575)" />
+     transform="translate(-10.043147,-139.373)" />
   <polyline
      points="75.00,350.00 190.58,496.58 213.06,482.67 108.44,350.00"
      fill="none"
@@ -186,7 +175,7 @@
      id="polygon28706"
      transform="translate(-177.57859,3.4314703)" />
   <g
-     transform="translate(-127,229.11699)"
+     transform="translate(-127,195.14717)"
      id="g28726">
     <rect
        x="-46"
@@ -232,7 +221,7 @@
   </g>
   <text
      x="-127"
-     y="261.11697"
+     y="227.14716"
      text-anchor="middle"
      font-size="11px"
      fill="#444444"
@@ -240,11 +229,11 @@
        sodipodi:role="line"
        id="tspan33426"
        x="-127"
-       y="261.11697">Tunable ps laser source</tspan><tspan
+       y="227.14716">Tunable ps laser source</tspan><tspan
        sodipodi:role="line"
        id="tspan33428"
        x="-127"
-       y="274.86697">(700 to 990 nm)</tspan></text>
+       y="240.89716">(700 to 990 nm)</tspan></text>
   <g
      transform="rotate(-135,271.26776,2.8274986)"
      id="g28740">
@@ -462,7 +451,7 @@
      fill="#444444"
      id="text28812">SP700</text>
   <g
-     transform="translate(-128.21321,301.69058)"
+     transform="translate(-127.60661,135.627)"
      id="g28826">
     <rect
        x="-46"
@@ -514,11 +503,13 @@
        id="text33424"><tspan
          sodipodi:role="line"
          id="tspan33422"
-         style="stroke-width:1.9992" /></text>
+         style="stroke-width:1.9992"
+         x="-7.7414584"
+         y="2.7398427" /></text>
   </g>
   <text
-     x="-128.21321"
-     y="333.69058"
+     x="-127.60661"
+     y="167.627"
      text-anchor="middle"
      font-size="11px"
      fill="#444444"
@@ -579,50 +570,6 @@
        stroke="#888888"
        stroke-width="1"
        id="line28854" />
-  </g>
-  <g
-     transform="rotate(135,-24.914884,163.89353)"
-     id="g28868">
-    <line
-       x1="0"
-       y1="-12.7"
-       x2="0"
-       y2="12.7"
-       stroke="#444444"
-       stroke-width="3.5"
-       id="line28858" />
-    <line
-       x1="-1.5"
-       y1="-12.7"
-       x2="-7.5"
-       y2="-6.6999998"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28860" />
-    <line
-       x1="-1.5"
-       y1="-6.2333331"
-       x2="-7.5"
-       y2="-0.23333333"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28862" />
-    <line
-       x1="-1.5"
-       y1="0.23333333"
-       x2="-7.5"
-       y2="6.2333331"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28864" />
-    <line
-       x1="-1.5"
-       y1="6.6999998"
-       x2="-7.5"
-       y2="12.7"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28866" />
   </g>
   <g
      transform="rotate(-135,216.24283,25.744471)"
@@ -722,44 +669,21 @@
        stroke="none"
        id="rect28918" />
   </g>
-  <g
-     transform="translate(-26.213208,301.69058)"
-     id="g28926">
-    <rect
-       x="-22"
-       y="-12"
-       width="44"
-       height="24"
-       rx="3"
-       fill="#b8c9a3"
-       stroke="#66794a"
-       stroke-width="1.5"
-       id="rect28922" />
-    <text
-       x="0"
-       y="0"
-       text-anchor="middle"
-       dominant-baseline="central"
-       font-size="11px"
-       font-weight="600"
-       fill="#2f3a20"
-       id="text28924">EOM</text>
-  </g>
   <text
-     x="-25.355339"
-     y="272.92917"
+     x="-17.027927"
+     y="106.00773"
      text-anchor="middle"
      font-size="11px"
      fill="#444444"
      id="text28928"><tspan
        sodipodi:role="line"
        id="tspan37256"
-       x="-25.355339"
-       y="272.92917">20 MHz</tspan><tspan
+       x="-17.027927"
+       y="106.00773">20 MHz</tspan><tspan
        sodipodi:role="line"
        id="tspan37258"
-       x="-25.355339"
-       y="286.67917">modulation</tspan></text>
+       x="-17.027927"
+       y="119.75773">modulation</tspan></text>
   <g
      transform="translate(-175 -25) rotate(0)"
      id="g28936">
@@ -1072,8 +996,8 @@
        id="line29010" />
   </g>
   <g
-     transform="rotate(135,37.109221,147.84149)"
-     id="g29024">
+     transform="rotate(135,10.56387,82.801041)"
+     id="g29012-0">
     <line
        x1="0"
        y1="-12.7"
@@ -1081,7 +1005,7 @@
        y2="12.7"
        stroke="#444444"
        stroke-width="3.5"
-       id="line29014" />
+       id="line29002-2" />
     <line
        x1="-1.5"
        y1="-12.7"
@@ -1089,7 +1013,7 @@
        y2="-6.6999998"
        stroke="#888888"
        stroke-width="1"
-       id="line29016" />
+       id="line29004-8" />
     <line
        x1="-1.5"
        y1="-6.2333331"
@@ -1097,7 +1021,7 @@
        y2="-0.23333333"
        stroke="#888888"
        stroke-width="1"
-       id="line29018" />
+       id="line29006-6" />
     <line
        x1="-1.5"
        y1="0.23333333"
@@ -1105,7 +1029,7 @@
        y2="6.2333331"
        stroke="#888888"
        stroke-width="1"
-       id="line29020" />
+       id="line29008-0" />
     <line
        x1="-1.5"
        y1="6.6999998"
@@ -1113,7 +1037,57 @@
        y2="12.7"
        stroke="#888888"
        stroke-width="1"
+       id="line29010-2" />
+  </g>
+  <g
+     transform="rotate(135,35.933893,129.2323)"
+     id="g29024">
+    <line
+       x1="-6.8629408"
+       y1="-9.3129473"
+       x2="-6.8629408"
+       y2="16.087051"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line29014"
+       style="stroke:#bfbfbf;stroke-opacity:1" />
+    <line
+       x1="-8.3629408"
+       y1="-9.3129473"
+       x2="-14.362941"
+       y2="-3.312947"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29016" />
+    <line
+       x1="-8.3629408"
+       y1="-2.8462803"
+       x2="-14.362941"
+       y2="3.1537194"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29018"
+       style="stroke:#878787;stroke-opacity:1" />
+    <line
+       x1="-8.3629408"
+       y1="3.6203861"
+       x2="-14.362941"
+       y2="9.6203852"
+       stroke="#888888"
+       stroke-width="1"
+       id="line29020" />
+    <line
+       x1="-8.3629408"
+       y1="10.087052"
+       x2="-14.362941"
+       y2="16.087051"
+       stroke="#888888"
+       stroke-width="1"
        id="line29022" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#ff6701;stroke-width:1.99920446;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 51.548959,-58.864261 -3.6520004,-3.6633019 161.34429,161.33298"
+       id="path11" />
   </g>
   <g
      transform="rotate(-90,233.71933,46.887274)"
@@ -1453,8 +1427,8 @@
        data-markdown="true"
        id="g29124">
       <text
-         x="-67.771538"
-         y="275.42828"
+         x="244.93129"
+         y="168.9726"
          text-anchor="start"
          font-size="20px"
          fill="#333333"
@@ -1530,16 +1504,16 @@
            id="tspan11"
            x="281.07336"
            y="-25.52067">crystal</tspan></text>
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#e11e1e;stroke-width:1.74187;stroke-dasharray:1.74187, 1.74187;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect11"
+         width="265.33844"
+         height="294.50592"
+         x="-39.242413"
+         y="48.557186"
+         ry="0" />
     </g>
   </g>
-  <path
-     style="opacity:0.95;fill:none;stroke:#800000;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
-     d="m -3.8113076,302.01675 77.6370156,-0.42894 0.236936,42.88497"
-     id="path30646" />
-  <path
-     style="opacity:0.95;fill:none;fill-opacity:1;stroke:#ff6600;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
-     d="m -75.443248,230.3848 244.492268,0.85787 -0.14899,42.46091"
-     id="path30852" />
   <path
      style="opacity:0.95;fill:none;fill-opacity:1;stroke:none;stroke-width:1.9992;stroke-dasharray:none;stroke-opacity:1"
      d="M 181.29922,273.19032 180.69261,194.3318"
@@ -1638,6 +1612,22 @@
      id="text28876-6-2-4"
      style="font-size:13.328px">RF</text>
   <text
+     x="55.766495"
+     y="181.60832"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-8"
+     style="font-size:13.328px">FP</text>
+  <text
+     x="132.78993"
+     y="177.85773"
+     text-anchor="middle"
+     font-size="11px"
+     fill="#444444"
+     id="text28876-6-2-4-8-5"
+     style="font-size:13.328px">FP</text>
+  <text
      x="225.83386"
      y="97.400307"
      text-anchor="middle"
@@ -1694,4 +1684,80 @@
      fill="#444444"
      id="text28876-6-2-4-4-1-4"
      style="font-size:13.328px">OBJ 2</text>
+  <g
+     transform="translate(-16.220319,138.15513)"
+     id="g28926">
+    <rect
+       x="-22"
+       y="-12"
+       width="44"
+       height="24"
+       rx="3"
+       fill="#b8c9a3"
+       stroke="#66794a"
+       stroke-width="1.5"
+       id="rect28922" />
+    <text
+       x="0"
+       y="0"
+       text-anchor="middle"
+       dominant-baseline="central"
+       font-size="11px"
+       font-weight="600"
+       fill="#2f3a20"
+       id="text28924">EOM</text>
+  </g>
+  <g
+     transform="rotate(-45,273.09224,9.190593)"
+     id="g28868">
+    <line
+       x1="0.758255"
+       y1="-13.458255"
+       x2="0.758255"
+       y2="11.941745"
+       stroke="#444444"
+       stroke-width="3.5"
+       id="line28858"
+       style="stroke:#bfbfbf;stroke-opacity:1" />
+    <line
+       x1="-0.741745"
+       y1="-13.458255"
+       x2="-6.741745"
+       y2="-7.4582548"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28860" />
+    <line
+       x1="-0.741745"
+       y1="-6.9915881"
+       x2="-6.741745"
+       y2="-0.99158829"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28862" />
+    <line
+       x1="-0.741745"
+       y1="-0.52492166"
+       x2="-6.741745"
+       y2="5.4750781"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28864" />
+    <line
+       x1="-0.741745"
+       y1="5.9417448"
+       x2="-6.741745"
+       y2="11.941745"
+       stroke="#888888"
+       stroke-width="1"
+       id="line28866" />
+  </g>
+  <path
+     style="fill:none;fill-opacity:1;stroke:#800000;stroke-width:1.9992;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     d="M 74.683577,342.76546 75.112506,136.01937 5.6246475,135.87521"
+     id="path12" />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#ff6600;stroke-width:1.9992;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     d="m 158.00396,281.32069 97.90754,164.14516 24.56747,-15.7717 -74.61229,-148.92127"
+     id="path13" />
 </svg>

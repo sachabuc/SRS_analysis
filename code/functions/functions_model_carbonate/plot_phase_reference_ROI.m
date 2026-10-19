@@ -679,6 +679,44 @@ for j = 1:n_roi
         'DisplayName', sprintf('%s : fit (R^2=%.3f)', ref_roi(j).name, ref_roi(j).R2));
 end
 
+%% Limite inférieure de l'axe des ordonnées
+y_min = Inf;
+
+for j = 1:n_roi
+    % Dernier point expérimental
+    y_exp = ref_roi(j).mean_spectrum / norm_factor;
+
+    if plot_error_bar
+        err = ref_roi(j).std_spectrum / norm_factor;
+        y_exp_last = y_exp(end) - err(end);
+    else
+        y_exp_last = y_exp(end);
+    end
+
+    % Dernier point du fit théorique
+    y_theo = ref_roi(j).theoretical_spectrum_fit / norm_factor;
+    y_theo_last = y_theo(end);
+
+    % Conserver la valeur la plus basse
+    y_min = min([y_min, y_exp_last, y_theo_last]);
+end
+
+% Conserver la limite supérieure actuelle
+yl = ylim;
+ylim([y_min, yl(2)]);
+
+%% Paramètres de l'axe des abscisses
+x_auto = false;       % true : limites automatiques ; false : limites manuelles
+x_min = 1020;         % Limite inférieure
+x_max = 1140;         % Limite supérieure
+
+%% Application des limites de l'axe des abscisses
+if x_auto
+    xlim auto;
+else
+    xlim([x_min, x_max]);
+end
+
 %% ------------------------------------------------------------
 % Personnalisation des axes et de la légende
 xlabel( ...

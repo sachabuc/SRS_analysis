@@ -29,7 +29,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
 
     % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'pixel_fit');
+    day_folder_data,folder_data,'pixel_fit_fwhm4');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_roi');
@@ -61,6 +61,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
 
     params.fwhm_mesure = 4.5;
     params.fwhm_ref = 3.5;
+
+    % params.fwhm_instr=1.5;
 
     % Paramètres de prétraitement
     params.x1_s = 90; params.x1_e = 95;
@@ -95,8 +97,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
-    params.FWHM_LB = [1, 1, 3, 20, 3, 3];
-    params.FWHM_UB = [4, 4, 10, 40, 10, 10];
+    params.FWHM_LB = [1, 1, 3, 10, 3, 3];
+    params.FWHM_UB = [15, 4, 10, 40, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -117,8 +119,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.shift_row = -3;
     params.shift_col = -3;
     
-    params.roi1 = [82+params.shift_row 85+params.shift_row...
-        100+params.shift_col 103+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [80+params.shift_row 83+params.shift_row...
+        97+params.shift_col 100+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi2 = [22+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
@@ -134,7 +136,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
+    params.load_pixel_fit = false;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

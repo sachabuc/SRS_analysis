@@ -123,13 +123,15 @@ function params = parameters_260713_corals_2ps_ter()
     params.roi2 = [90+params.shift_row 91+params.shift_row...
     33+params.shift_col 36+params.shift_col];
 
-    params.roi_alone = [85 94 30 40];
+    % params.roi_alone = [85 94 30 40];
+    params.roi_alone = [49 57 49 57];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
 
 
     params.nu_interval = [1075 1095];
+
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
@@ -141,8 +143,9 @@ function params = parameters_260713_corals_2ps_ter()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.do_ref_spectrum_analysis = false; 
+    params.do_ref_spectrum_analysis = true; 
     params.do_ref_roi_analysis = true;
+    params.do_ref_roi_alone_analysis = true;
     params.compare_2ps_7ps = false;
     params.compare_acquisition = true;
     params.display_fit_stat = true;

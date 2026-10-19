@@ -30,7 +30,8 @@ function I_model = pixelForwardModel(x, wavenumber, param_map, idx_background, s
         for p = 1:numel(nu)
             sigma_phase = fwhm2sigma(FWHM(p));
             sigma_eff_p = sqrt(sigma_phase^2 + sigma_inst^2);
-            G = G + ratio(p) * lineShapeArea(wavenumber, nu(p), sigma_eff_p, lineshape_type);
+            G = G + ratio(p) *exp(-(wavenumber-nu(p)).^2/(2*sigma_eff_p^2)) / (sigma_eff_p*sqrt(2*pi));
+            % G = G + ratio(p) * lineShapeArea(wavenumber, nu(p), sigma_eff_p, lineshape_type);
         end
 
         I_model = I_model + A*G;

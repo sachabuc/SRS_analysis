@@ -61,6 +61,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     params.fwhm_mesure = 14.3;
     params.fwhm_ref = 3.5;
+    % params.fwhm_instr = 4.9;
 
     % Paramètres de prétraitement
     params.x1_s = 90; params.x1_e = 95;
@@ -96,7 +97,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.nu_LB = [1084.5,   1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1, 3, 20, 3, 3];
-    params.FWHM_UB = [5, 5, 10, 40, 10, 10];
+    params.FWHM_UB = [15, 4, 10, 40, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -117,9 +118,9 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.shift_row = 0;
     params.shift_col = 0;
     
-    params.roi1 = [82+params.shift_row 85+params.shift_row...
+    params.roi1 = [83+params.shift_row 86+params.shift_row...
         100+params.shift_col 103+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [22+params.shift_row 30+params.shift_row...
+    params.roi2 = [23+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi_alone = [80+params.shift_row 85+params.shift_row...
         100+params.shift_col 105+params.shift_col];
@@ -136,7 +137,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = false;
+    params.calcul_fwhm_instr = true;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;

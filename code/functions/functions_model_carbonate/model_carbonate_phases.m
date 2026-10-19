@@ -73,8 +73,8 @@ phase_model(3).ratio = [0.4 0.3 1];
 phase_model(3).use   = use_VAT;
  
 phase_model(4).name  = "ACC";
-% phase_model(4).nu    = 1077;
-phase_model(4).nu    = 1073;
+phase_model(4).nu    = 1077;
+% phase_model(4).nu    = 1073;
 phase_model(4).FWHM  = 30;
 % phase_model(4).FWHM  = 21.5;
 phase_model(4).ratio = 1;
@@ -104,13 +104,13 @@ for k = 1:numel(phase_model)
     phase_model(k).G_analytical = [];
 end
 
-% phase_model(4).A = 1;
+phase_model(1).A = 0.8;
  
 %% ================================================================
 % 2. Grille theorique
  
-wn_min = 1040;
-wn_max = 1130;
+wn_min = 1015;
+wn_max = 1140;
 dw     = 0.05;
  
 wavenumber = wn_min:dw:wn_max;
@@ -145,7 +145,7 @@ if display_figures
  
     figCompareAnalyticalNumerical(phase_model, wavenumber, dw, sigma_inst, fwhm_instr);
  
-    tau_list_ps = [10 7 4];
+    tau_list_ps = [12 7 3];
     figMultiTau(phase_model, wavenumber, tau_list_ps);
 
 

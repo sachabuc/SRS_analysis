@@ -9,6 +9,6 @@ function [G, sigma_eff] = analyticalPhaseSpectrum(wavenumber, nu, FWHM, ratio, s
     for p = 1:numel(nu)
         sigma_phase  = fwhm2sigma(FWHM(p));
         sigma_eff(p) = sqrt(sigma_phase^2 + sigma_inst^2);
-        G = G + ratio(p) * gaussianArea(wavenumber, nu(p), sigma_eff(p));
+        G = G + ratio(p) * exp(-(wavenumber-nu(p)).^2/(2*sigma_eff(p)^2)) / (sigma_eff(p)*sqrt(2*pi));
     end
 end
