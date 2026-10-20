@@ -119,9 +119,9 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.shift_row = -3;
     params.shift_col = -3;
     
-    params.roi1 = [80+params.shift_row 83+params.shift_row...
-        97+params.shift_col 100+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [22+params.shift_row 30+params.shift_row...
+    params.roi1 = [90+params.shift_row 95+params.shift_row...
+        100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi2 = [23+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
 
     params.roi_alone = [80+params.shift_row 85+params.shift_row...
@@ -137,7 +137,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
 
     % Paramètres d'affichage
     params.load_pixel_fit = false;
-    params.calcul_fwhm_instr = false;
+    params.calcul_fwhm_instr = true;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;
