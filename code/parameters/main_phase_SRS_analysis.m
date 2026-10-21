@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260708_14_55_09_ACC_CAL_copie_7ps();
+params = parameters_260715_corals_7ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -20,11 +20,13 @@ if params.calcul_fwhm_instr
     [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
         measure_reference_FWHM(I_raw, params.wavenumber);
 
-    [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
+    [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0); 
+    % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
 else 
     FWHM_mesure = params.fwhm_mesure;
 
     [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
+    % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
 end
 
 % fwhm_instr = params.fwhm_instr;
@@ -51,10 +53,10 @@ if params.do_noise_study
 end
 
 %% 5. Affichage des images principales
-% if params.display_intensity_maps
-%     plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
-%         params.titles, params.diff_min,params.diff_min);
-% end
+if params.display_intensity_maps
+    plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
+        params.titles, params.diff_min,params.diff_max,params);
+end
 
 %% 6. Modèle théorique des phases
 [phase_model] = model_carbonate_phases(...
@@ -188,8 +190,8 @@ roi_fits = get_roi_pixel_fits( ...
     phase_model, ...
     params.wavenumber, ...
     fwhm_instr, ...
-    params.roi1, ...
-    params.roi2, ...
+    params.roi_alone, ...
+    [], ...
     active_idx, ...
     I_corr, ...
     true);

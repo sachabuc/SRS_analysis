@@ -49,7 +49,12 @@ function ref_roi = plot_phase_reference_ROI( ...
 %   .norm_factor
 
 
-plot_error_bar = false;
+plot_error_bar = true;
+
+%% Paramètres de l'axe des abscisses
+x_auto = true;       % true : limites automatiques ; false : limites manuelles
+x_min = 1020;         % Limite inférieure
+x_max = 1140;         % Limite supérieure
 
 %% ================================================================
 % 1. Valeurs par défaut
@@ -705,10 +710,7 @@ end
 yl = ylim;
 ylim([y_min, yl(2)]);
 
-%% Paramètres de l'axe des abscisses
-x_auto = false;       % true : limites automatiques ; false : limites manuelles
-x_min = 1020;         % Limite inférieure
-x_max = 1140;         % Limite supérieure
+
 
 %% Application des limites de l'axe des abscisses
 if x_auto

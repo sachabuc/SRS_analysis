@@ -92,7 +92,7 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
-    params.FWHM_LB = [1, 1, 3, 20, 3, 3];
+    params.FWHM_LB = [1, 1, 2, 20, 3, 3];
     params.FWHM_UB = [4, 4, 10, 40, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
@@ -133,7 +133,7 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = true;
+    params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;

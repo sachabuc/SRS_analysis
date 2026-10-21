@@ -2,7 +2,7 @@ function [G, sigma_eff] = analyticalPhaseSpectrum(wavenumber, nu, FWHM, ratio, s
 % Spectre d'une phase (somme ponderee de ses raies), chaque raie etant
 % convoluee ANALYTIQUEMENT avec la reponse instrumentale gaussienne :
 %   sigma_eff(p) = sqrt(sigma_phase(p)^2 + sigma_inst^2)
-    ratio = ratio/sum(ratio);
+    % ratio = ratio/sum(ratio);
     G = zeros(size(wavenumber));
     sigma_eff = zeros(size(nu));
  

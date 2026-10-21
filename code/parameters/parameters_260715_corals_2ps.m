@@ -57,8 +57,9 @@ function params = parameters_260715_corals_2ps()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 10.8;
-    params.fwhm_ref = 3;
+    params.fwhm_mesure = 10.1;
+    params.fwhm_ref = 3.5;
+    % params.fwhm_instr = 7;
 
     % Paramètres de prétraitement
     params.x1_s = 15; params.x1_e = 30;
@@ -69,11 +70,11 @@ function params = parameters_260715_corals_2ps()
     params.xc_s = 109; params.xc_e = 125;
       
     % Paramètres d'affichage (pour plot_srs_images)
-    params.ni = [8, 6, 2, 3]; % [n1, n2, n3, n4]
-    params.Imin = -10;
-    params.Imax = 10;
-    params.diff_min = -5;
-    params.diff_min = 5;
+    params.ni = [8, 6, 1, 4]; % [n1, n2, n3, n4]
+    params.Imin = [-10 -10 -10 -10];
+    params.Imax = [200 200 1000 200];
+    params.diff_min = -20;
+    params.diff_max = 20;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -91,10 +92,10 @@ function params = parameters_260715_corals_2ps()
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084.5, 1084, 1073, 1070, 1097, 1066];
-    params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
-    params.FWHM_LB = [1, 2,  3, 20,  3,  3];
-    params.FWHM_UB = [5, 4, 10, 40, 10, 10];
+    params.nu_LB = [1084, 1084, 1073, 1070, 1097, 1066];
+    params.nu_UB = [1088, 1088, 1093, 1082, 1102, 1070];
+    params.FWHM_LB = [1, 1,  3, 20,  3,  3];
+    params.FWHM_UB = [5, 5, 10, 50, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -109,7 +110,7 @@ function params = parameters_260715_corals_2ps()
     params.phase2plot = [2 4];
     params.nbr_pix_per_phase = [10 10];
     params.priority_phases =       [false false false params.use_ACC false false];
-    params.priority_min_fraction = [0 0 0 1 0 0];
+    params.priority_min_fraction = [0 0 0 0.3 0 0];
     params.methode_ref_spectra = 'amplitude';
 
     % Paramètres de décalage

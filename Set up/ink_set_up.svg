@@ -23,8 +23,8 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="1.1652174"
-     inkscape:cx="483.17164"
-     inkscape:cy="374.60821"
+     inkscape:cx="547.53731"
+     inkscape:cy="334.27239"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="1192"
@@ -1042,48 +1042,6 @@
   <g
      transform="rotate(135,35.933893,129.2323)"
      id="g29024">
-    <line
-       x1="-6.8629408"
-       y1="-9.3129473"
-       x2="-6.8629408"
-       y2="16.087051"
-       stroke="#444444"
-       stroke-width="3.5"
-       id="line29014"
-       style="stroke:#bfbfbf;stroke-opacity:1" />
-    <line
-       x1="-8.3629408"
-       y1="-9.3129473"
-       x2="-14.362941"
-       y2="-3.312947"
-       stroke="#888888"
-       stroke-width="1"
-       id="line29016" />
-    <line
-       x1="-8.3629408"
-       y1="-2.8462803"
-       x2="-14.362941"
-       y2="3.1537194"
-       stroke="#888888"
-       stroke-width="1"
-       id="line29018"
-       style="stroke:#878787;stroke-opacity:1" />
-    <line
-       x1="-8.3629408"
-       y1="3.6203861"
-       x2="-14.362941"
-       y2="9.6203852"
-       stroke="#888888"
-       stroke-width="1"
-       id="line29020" />
-    <line
-       x1="-8.3629408"
-       y1="10.087052"
-       x2="-14.362941"
-       y2="16.087051"
-       stroke="#888888"
-       stroke-width="1"
-       id="line29022" />
     <path
        style="fill:none;fill-opacity:1;stroke:#ff6701;stroke-width:1.99920446;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 51.548959,-58.864261 -3.6520004,-3.6633019 161.34429,161.33298"
@@ -1427,14 +1385,15 @@
        data-markdown="true"
        id="g29124">
       <text
-         x="244.93129"
-         y="168.9726"
+         x="-31.302071"
+         y="331.96744"
          text-anchor="start"
          font-size="20px"
          fill="#333333"
          xml:space="preserve"
          id="text29122"><tspan
-           id="tspan29120">7ps Chirper</tspan></text>
+           id="tspan29120"
+           style="fill:#ff0000"> Chirper</tspan></text>
       <text
          x="344.14758"
          y="76.122559"
@@ -1457,7 +1416,7 @@
            id="tspan4"
            style="stroke-width:0.999602"
            x="244.84042"
-           y="-33.669418"></tspan></text>
+           y="-33.669418" /></text>
       <g
          id="g29124-6"
          transform="translate(230.81953,-23.659203)">
@@ -1586,7 +1545,7 @@
      id="text6"><tspan
        sodipodi:role="line"
        id="tspan6"
-       style="stroke-width:1.9992"></tspan></text>
+       style="stroke-width:1.9992" /></text>
   <text
      x="158.28676"
      y="494.26144"
@@ -1611,22 +1570,6 @@
      fill="#444444"
      id="text28876-6-2-4"
      style="font-size:13.328px">RF</text>
-  <text
-     x="55.766495"
-     y="181.60832"
-     text-anchor="middle"
-     font-size="11px"
-     fill="#444444"
-     id="text28876-6-2-4-8"
-     style="font-size:13.328px">FP</text>
-  <text
-     x="132.78993"
-     y="177.85773"
-     text-anchor="middle"
-     font-size="11px"
-     fill="#444444"
-     id="text28876-6-2-4-8-5"
-     style="font-size:13.328px">FP</text>
   <text
      x="225.83386"
      y="97.400307"
@@ -1659,7 +1602,7 @@
      id="text7"><tspan
        sodipodi:role="line"
        id="tspan7"
-       style="stroke-width:1.9992"></tspan></text>
+       style="stroke-width:1.9992" /></text>
   <text
      x="562.15216"
      y="65.867775"
@@ -1709,49 +1652,7 @@
   </g>
   <g
      transform="rotate(-45,273.09224,9.190593)"
-     id="g28868">
-    <line
-       x1="0.758255"
-       y1="-13.458255"
-       x2="0.758255"
-       y2="11.941745"
-       stroke="#444444"
-       stroke-width="3.5"
-       id="line28858"
-       style="stroke:#bfbfbf;stroke-opacity:1" />
-    <line
-       x1="-0.741745"
-       y1="-13.458255"
-       x2="-6.741745"
-       y2="-7.4582548"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28860" />
-    <line
-       x1="-0.741745"
-       y1="-6.9915881"
-       x2="-6.741745"
-       y2="-0.99158829"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28862" />
-    <line
-       x1="-0.741745"
-       y1="-0.52492166"
-       x2="-6.741745"
-       y2="5.4750781"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28864" />
-    <line
-       x1="-0.741745"
-       y1="5.9417448"
-       x2="-6.741745"
-       y2="11.941745"
-       stroke="#888888"
-       stroke-width="1"
-       id="line28866" />
-  </g>
+     id="g28868" />
   <path
      style="fill:none;fill-opacity:1;stroke:#800000;stroke-width:1.9992;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      d="M 74.683577,342.76546 75.112506,136.01937 5.6246475,135.87521"

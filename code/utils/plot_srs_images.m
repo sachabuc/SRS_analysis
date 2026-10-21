@@ -1,4 +1,4 @@
-function plot_srs_images(I_corr, ni, Imin, Imax, titles, diff_min,diff_max)
+function plot_srs_images(I_corr, ni, Imin, Imax, titles, diff_min,diff_max,params)
     % PLOT_SRS_IMAGES - Affiche des images SRS dans une figure avec subplots.
     %   I_corr : Stack d'images 3D (H x W x N).
     %   ni : Vecteur de 4 éléments [n1, n2, n3, n4] (numéros des images).

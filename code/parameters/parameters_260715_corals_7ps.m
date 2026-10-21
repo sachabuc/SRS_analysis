@@ -70,11 +70,11 @@ function params = parameters_260715_corals_7ps()
     params.xc_s = 109; params.xc_e = 125;
       
     % Paramètres d'affichage (pour plot_srs_images)
-    params.ni = [5, 8, 12, 4]; % [n1, n2, n3, n4]
-    params.Imin = -10;
-    params.Imax = 10;
+    params.ni = [5, 8, 9, 4]; % [n1, n2, n3, n4]
+    params.Imin = [-10 -10 -10 -10];
+    params.Imax = [100 100 300 100];
     params.diff_min = -5;
-    params.diff_min = 5;
+    params.diff_max = 40;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -92,16 +92,16 @@ function params = parameters_260715_corals_7ps()
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084.5, 1084, 1070, 1072, 1097, 1066];
-    params.nu_UB = [1086.5, 1086.5, 1093, 1076, 1102, 1070];
-    params.FWHM_LB = [1, 2, 3, 20, 3, 3];
-    params.FWHM_UB = [5, 4, 10, 40, 10, 10];
+    params.nu_LB = [1084, 1084, 1073, 1070, 1097, 1066];
+    params.nu_UB = [1088, 1088, 1093, 1082, 1102, 1070];
+    params.FWHM_LB = [1, 1,  3, 20,  3,  3];
+    params.FWHM_UB = [5, 5, 10, 50, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 2;
 
     % Paramètres de segmentation
-    params.R2_min_final = 0.5;
-    params.threshold_sigma_final = 1;
+    params.R2_min_final = 0.6;
+    params.threshold_sigma_final = 5;
     params.min_points_above_noise = 1;
     params.alpha_dominance = 2;
     params.dominance_phases = [false false false false false false];

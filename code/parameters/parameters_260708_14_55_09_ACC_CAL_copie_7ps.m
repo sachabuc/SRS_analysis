@@ -95,10 +95,10 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084.5, 1084, 1073, 1073, 1097, 1066];
-    params.nu_UB = [1086.5, 1086.5, 1093, 1082, 1102, 1070];
-    params.FWHM_LB = [1, 1, 3, 10, 3, 3];
-    params.FWHM_UB = [15, 4, 10, 40, 10, 10];
+    params.nu_LB = [1084,   1084, 1073, 1073, 1097, 1066];
+    params.nu_UB = [1088, 1086.5, 1093, 1082, 1102, 1070];
+    params.FWHM_LB = [0.5, 1, 3, 10, 3, 3];
+    params.FWHM_UB = [10 , 4, 10, 50, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -116,16 +116,13 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.methode_ref_spectra = 'amplitude';
 
 
-    params.shift_row = -3;
+    params.shift_row = -2;
     params.shift_col = -3;
     
-    params.roi1 = [90+params.shift_row 95+params.shift_row...
-        100+params.shift_col 105+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [80+params.shift_row 83+params.shift_row...
+        97+params.shift_col 100+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi2 = [23+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
-
-    params.roi_alone = [80+params.shift_row 85+params.shift_row...
-        100+params.shift_col 105+params.shift_col];
 
 %      params.colors_roi = [0.85 0.20 0.10];
 %      params.phase_colors = [0, 0.4470, 0.7410];
@@ -136,8 +133,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
-    params.calcul_fwhm_instr = true;
+    params.load_pixel_fit = true;
+    params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;

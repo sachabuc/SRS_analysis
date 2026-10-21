@@ -68,8 +68,8 @@ phase_model(2).use   = use_ARA;
  
 phase_model(3).name  = "VAT";
 phase_model(3).nu    = [1075 1080 1090.8];
-phase_model(3).FWHM  = [8 8 8];
-phase_model(3).ratio = [0.4 0.3 1];
+phase_model(3).FWHM  = [3 3 3];
+phase_model(3).ratio = [0.45 0.28 1];
 phase_model(3).use   = use_VAT;
  
 phase_model(4).name  = "ACC";
@@ -109,8 +109,8 @@ phase_model(1).A = 0.8;
 %% ================================================================
 % 2. Grille theorique
  
-wn_min = 1015;
-wn_max = 1140;
+wn_min = 1050;
+wn_max = 1110;
 dw     = 0.05;
  
 wavenumber = wn_min:dw:wn_max;
@@ -132,6 +132,8 @@ for k = 1:numel(phase_model)
     [G, sigma_eff] = analyticalPhaseSpectrum( ...
         wavenumber, phase_model(k).nu, phase_model(k).FWHM, ...
         phase_model(k).ratio, sigma_inst);
+
+    %analyticalPhaseSpectrum(wavenumber, nu, FWHM, ratio, sigma_inst)
  
     phase_model(k).sigma_eff    = sigma_eff;
     phase_model(k).G_analytical = G;
@@ -145,7 +147,7 @@ if display_figures
  
     figCompareAnalyticalNumerical(phase_model, wavenumber, dw, sigma_inst, fwhm_instr);
  
-    tau_list_ps = [12 7 3];
+    tau_list_ps = [20 12 7 3];
     figMultiTau(phase_model, wavenumber, tau_list_ps);
 
 

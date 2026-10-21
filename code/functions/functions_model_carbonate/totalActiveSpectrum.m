@@ -8,6 +8,9 @@ function total = totalActiveSpectrum(phase_model, wavenumber, sigma_inst)
         end
         G = analyticalPhaseSpectrum(wavenumber, phase_model(k).nu, ...
                 phase_model(k).FWHM, phase_model(k).ratio, sigma_inst);
+        %analyticalPhaseSpectrum(wavenumber, nu, FWHM, ratio, sigma_inst)
+        
         total = total + phase_model(k).A * G;
+        
     end
 end
