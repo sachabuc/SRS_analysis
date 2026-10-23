@@ -77,7 +77,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.Imin = -10;
     params.Imax = 10;
     params.diff_min = -5;
-    params.diff_min = 5;
+    params.diff_max= 5;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -93,8 +93,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT false params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT false params.use_CCHH params.use_MHC];
     params.nu_LB = [1084,   1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1088, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [0.5, 1, 3, 10, 3, 3];
@@ -133,7 +133,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie_7ps()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
+    params.load_pixel_fit = false;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

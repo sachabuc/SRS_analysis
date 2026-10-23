@@ -367,17 +367,19 @@ grid on;
 
 %% Raman spontané 
 
-filepath = 'C:\Users\sacha.bucourt\Documents\Data lab\spectres raman spontanée\200226';
-filename = 'vat_alons_bis_x100.l6s';
 
-[w, I] = lire_spectre_raman(filepath, filename);
 
-figure;
-plot(w, I);
-xlabel('Shift Raman (cm^{-1})');
-ylabel('Intensité');
-title('Spectre Raman');
-grid on;
+% filepath = 'C:\Users\sacha.bucourt\Documents\Data lab\spectres raman spontanée\200226';
+% filename = 'vat_alons_bis_x100.l6s';
+% 
+% [w, I] = lire_spectre_raman(filepath, filename);
+% 
+% figure;
+% plot(w, I);
+% xlabel('Shift Raman (cm^{-1})');
+% ylabel('Intensité');
+% title('Spectre Raman');
+% grid on;
 
 %% Simple multi-peak detection and Gaussian fitting
 

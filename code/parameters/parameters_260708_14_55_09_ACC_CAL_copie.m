@@ -59,9 +59,9 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 14;
+    params.fwhm_mesure = 14.5129;
     params.fwhm_ref = 3.5;
-    % params.fwhm_instr = 4.9;
+    params.fwhm_instr = 12;
 
     % Paramètres de prétraitement
     params.x1_s = 90; params.x1_e = 95;
@@ -76,7 +76,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.Imin = -10;
     params.Imax = 10;
     params.diff_min = -5;
-    params.diff_min = 5;
+    params.diff_max = 5;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -97,7 +97,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.nu_LB = [1084,   1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1088, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [0.5, 1, 3, 10, 3, 3];
-    params.FWHM_UB = [10 , 4, 10, 50, 10, 10];
+    params.FWHM_UB = [15 , 4, 10, 50, 10, 10];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -136,7 +136,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
+    params.load_pixel_fit = false;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

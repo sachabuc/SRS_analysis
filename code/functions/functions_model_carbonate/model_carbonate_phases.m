@@ -73,8 +73,8 @@ phase_model(3).ratio = [0.45 0.28 1];
 phase_model(3).use   = use_VAT;
  
 phase_model(4).name  = "ACC";
-phase_model(4).nu    = 1077;
-% phase_model(4).nu    = 1073;
+% phase_model(4).nu    = 1077;
+phase_model(4).nu    = 1081;
 phase_model(4).FWHM  = 30;
 % phase_model(4).FWHM  = 21.5;
 phase_model(4).ratio = 1;

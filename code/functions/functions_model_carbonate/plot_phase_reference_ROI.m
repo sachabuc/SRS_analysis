@@ -49,7 +49,7 @@ function ref_roi = plot_phase_reference_ROI( ...
 %   .norm_factor
 
 
-plot_error_bar = true;
+plot_error_bar = false;
 
 %% Paramètres de l'axe des abscisses
 x_auto = true;       % true : limites automatiques ; false : limites manuelles
@@ -110,16 +110,16 @@ n_roi = 1 + has_roi2;
 
 %% ------------------------------------------------------------
 % Vérification des phases
-
-assert(numel(active_idx) >= n_roi, ...
-    'active_idx doit contenir au moins autant de phases que de ROI.');
-
-active_idx = active_idx(1:n_roi);
-
-assert(size(colors_roi,1) >= n_roi, ...
-    'colors_roi doit contenir au moins une couleur par ROI.');
-
-colors_roi = colors_roi(1:n_roi,:);
+% 
+% assert(numel(active_idx) >= n_roi, ...
+%     'active_idx doit contenir au moins autant de phases que de ROI.');
+% 
+% active_idx = active_idx(1:n_roi);
+% 
+% assert(size(colors_roi,1) >= n_roi, ...
+%     'colors_roi doit contenir au moins une couleur par ROI.');
+% 
+% colors_roi = colors_roi(1:n_roi,:);
 
 
 %% ================================================================
