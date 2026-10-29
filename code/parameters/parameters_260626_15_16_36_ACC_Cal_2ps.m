@@ -10,7 +10,7 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
 
     % Data to compare 
     day_folder_data_2compare = '260626';
-    folder_data_2compare = '16-25-59_ACC_Cal_7ps';
+    folder_data_2compare = '16-16-16_ACC_Cal_7ps';
 
     params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
         day_folder_data, folder_data);
@@ -29,7 +29,7 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
 
     % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'pixel_fit');
+    day_folder_data,folder_data,'pixel_fit_wMHC');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_roi');
@@ -59,13 +59,13 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 10.1;
+    params.fwhm_mesure = 9.9;
     params.fwhm_ref = 3.5;
     % params.fwhm_instr = 10;
 
     % Paramètres de prétraitement
-    params.x1_s = 90; params.x1_e = 95;
-    params.x2_s = 75; params.x2_e = 80;
+    params.x1_s = 25; params.x1_e = 30;
+    params.x2_s = 25; params.x2_e = 30;
     params.wi = 4;
     params.idl = 100; params.idc = 97;
     params.xl_s = 100; params.xl_e = 110;
@@ -93,11 +93,11 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
 
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [false params.use_ARA params.use_VAT false params.use_CCHH params.use_MHC];
     params.nu_LB = [1084,   1084, 1073, 1073, 1097, 1064];
-    params.nu_UB = [1088, 1086.5, 1093, 1082, 1102, 1072];
-    params.FWHM_LB = [0.5, 1, 3, 10, 3, 1];
-    params.FWHM_UB = [15 , 4, 10, 50, 10, 13];
+    params.nu_UB = [1087, 1086.5, 1093, 1084, 1102, 1072];
+    params.FWHM_LB = [1, 1, 3, 25, 3, 1];
+    params.FWHM_UB = [8 , 4, 10, 60, 10, 13];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -118,17 +118,31 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
     params.shift_row = 0;
     params.shift_col = 0;
     
+    % params.roi1 = [58+params.shift_row 60+params.shift_row...
+    % 66+params.shift_col 68+params.shift_col]; 
+    % params.roi2 = [44+params.shift_row 48+params.shift_row...
+    % 73+params.shift_col 80+params.shift_col]; 
+
     params.roi1 = [58+params.shift_row 60+params.shift_row...
         66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [44+params.shift_row 48+params.shift_row...
-        73+params.shift_col 80+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi2 = [43+params.shift_row 46+params.shift_row...
+        74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi_alone = [80+params.shift_row 85+params.shift_row...
         100+params.shift_col 105+params.shift_col];
 
 
+    % params.roi1 = [58+params.shift_row 60+params.shift_row...
+    %     66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
+    % params.roi2 = [98+params.shift_row 105+params.shift_row...
+    %     4+params.shift_col 8+params.shift_col]; %[row_start row_end col_start col_end]
 
-%      params.colors_roi = [0.85 0.20 0.10];
-%      params.phase_colors = [0, 0.4470, 0.7410];
+    params.roi_alone = [46+params.shift_row 50+params.shift_row...
+        95+params.shift_col 100+params.shift_col];
+
+
+
+    % params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
+    % params.phase_colors = [0, 0.4470, 0.7410; 1, 0.5, 0];
     params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
     params.phase_colors = [
         0, 0.4470, 0.7410;  % Bleu 
@@ -152,7 +166,7 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
     params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
     params.do_ref_roi_alone_analysis = false;
-    params.compare_2ps_7ps = false;
+    params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;

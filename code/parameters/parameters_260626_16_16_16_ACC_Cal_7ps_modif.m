@@ -1,0 +1,170 @@
+function params = parameters_260626_16_16_16_ACC_Cal_7ps_modif()
+
+    % Chemin des dossiers
+    this_dir     = fileparts(mfilename('fullpath'));
+    project_root = fileparts(fileparts(this_dir));
+
+    % Data 
+    day_folder_data = '260626';
+    folder_data = '16-16-16_ACC_Cal_7ps_modif';
+
+    % Data to compare 
+    day_folder_data_2compare = '260626';
+    folder_data_2compare = '15-16-36_ACC_Cal_2ps';
+
+    params.main_dir = fullfile(project_root, 'data', 'raw', 'data_chirp', ...
+        day_folder_data, folder_data);
+    params.sub_dir = fullfile(project_root, 'data', 'processed', 'data_chirp', ...
+        day_folder_data, folder_data);
+
+    params.results_dir = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data);
+
+    params.figures_dir = fullfile(project_root, 'results', 'figures', ...
+    day_folder_data,folder_data);
+
+    if ~exist(params.results_dir, 'dir')
+        mkdir(params.results_dir);
+    end
+
+    % Chemins pour les données à comparer
+    params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data,folder_data,'pixel_fit');
+
+    params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data_2compare,folder_data_2compare,'ref_roi');
+
+    params.path2phase_model_7ps = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data_2compare,folder_data_2compare,'phase_model');
+
+    params.path2ref_spectra_compare = fullfile(project_root, 'results', 'extracted_data', ...
+    day_folder_data_2compare,folder_data_2compare,'ref_spectra');
+
+    % Chemins des fonctions
+    params.function_paths = {
+        fullfile(project_root, 'code', 'functions', 'functions_model_carbonate'), ...
+        fullfile(project_root, 'code', 'utils') ...
+    };
+
+
+    % Paramètres d'acquisition
+    params.n_depart = 3;
+    params.n_ch = 1;
+    % params.wavelengths = [929.1,928.7,928.5,928.1,927.7,927.4,926.7,926.4,926,929.5,930,927.1];
+
+    params.wavelengths = [929.1,928.7,928.5,927.7,927.4,926.7,926.4,926,929.5,930,927.1];
+
+    params.wavelengths_7ps = [928.6, 929.1, 929.5, 929.8, 930.2, 930.6, 931.1, 928, 927.6, ...
+                               927.2, 926.8, 926.4, 926, 925.5, 928.3];
+    params.pompe = 1031;
+    params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
+    params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
+
+    params.fwhm_mesure = 4.4;
+    params.fwhm_ref = 3.5;
+    % params.fwhm_instr = 10;
+
+    % Paramètres de prétraitement
+    params.x1_s = 18; params.x1_e = 23;
+    params.x2_s = 18; params.x2_e = 23;
+    params.wi = 4;
+    params.idl = 100; params.idc = 97;
+    params.xl_s = 100; params.xl_e = 110;
+    params.xc_s = 109; params.xc_e = 115;
+      
+    % Paramètres d'affichage (pour plot_srs_images)
+    params.ni = [8, 6, 2, 3]; % [n1, n2, n3, n4]
+    params.Imin = -10;
+    params.Imax = 10;
+    params.diff_min = -5;
+    params.diff_max = 5;
+    params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
+
+    % Paramètres du modèle théorique
+    params.use_CAL = true;
+    params.use_ARA = false;
+    params.use_VAT = false;
+    params.use_ACC = true;
+    params.use_CCHH = false;
+    params.use_MHC = true;
+
+    % Paramètres d'initialisation linéaire
+    params.R2_init = 0.5;
+    params.threshold_sigma_init = 1;
+
+    % Paramètres de fit non linéaire
+    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT true params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [true params.use_ARA params.use_VAT false params.use_CCHH params.use_MHC];
+    params.nu_LB = [1084,   1084, 1073, 1078, 1097, 1064];
+    params.nu_UB = [1088, 1086.5, 1093, 1084, 1102, 1072];
+    params.FWHM_LB = [0.5, 1, 3, 10, 3, 1];
+    params.FWHM_UB = [6 , 4, 10, 50, 10, 13];
+    params.lineshape_type = 'gaussian';
+    params.ci_alpha = 0.5;
+
+    % Paramètres de segmentation
+    params.R2_min_final = 0.5;
+    params.threshold_sigma_final = 1;
+    params.min_points_above_noise = 1;
+    params.alpha_dominance = 1;
+    params.dominance_phases = [false false false false false false];
+    params.detection_method = 'significance';
+    params.threshold_A = 10;
+    params.nbr_pix_per_phase = [30 90];
+    params.priority_phases =       [false false false false false false];
+    params.priority_min_fraction = [0 0 0 0 0 0];
+    params.methode_ref_spectra = 'amplitude';
+
+    % Paramètres spectres ROI 
+    params.shift_row = 0;
+    params.shift_col = -10;
+
+
+
+    
+
+    
+    params.roi1 = [58+params.shift_row 60+params.shift_row...
+        66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi2 = [43+params.shift_row 46+params.shift_row...
+        74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi_alone = [80+params.shift_row 85+params.shift_row...
+        100+params.shift_col 105+params.shift_col];
+
+
+
+
+    % params.colors_roi = [0.85 0.20 0.10];
+    % params.phase_colors = [0, 0.4470, 0.7410;1, 0.5, 0];
+    params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
+    params.phase_colors = [
+        0, 0.4470, 0.7410;  % Bleu 
+        1, 0.5, 0;         % Orange 
+        0, 0.7, 0.3        % Vert 
+    ];
+
+
+    params.nu_interval = [1075 1095];
+
+    % Paramètres d'affichage
+    params.load_pixel_fit = true;
+    params.calcul_fwhm_instr = false;
+    params.do_noise_study = true;
+    params.do_lsqnonneg_treatment = false;
+    params.display_intensity_maps = true;
+    params.display_figures = true;
+    params.plot_ref_spectra = true;
+    params.plot_pixel_fits = true;
+    params.display_fit = true;
+    params.do_ref_spectrum_analysis = false; 
+    params.do_ref_roi_analysis = true;
+    params.do_ref_roi_alone_analysis = false;
+    params.compare_2ps_7ps = true;
+    params.compare_acquisition = true;
+    params.display_fit_stat = true;
+    params.display_R2_stat = false;
+
+    %sauvegarde
+    params.exportgraphics_segm_roi = false;
+
+end

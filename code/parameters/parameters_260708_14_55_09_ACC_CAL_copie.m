@@ -59,9 +59,9 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 14.5129;
+    params.fwhm_mesure = 14.215;
     params.fwhm_ref = 3.5;
-    params.fwhm_instr = 12;
+    % params.fwhm_instr = 14;
 
     % Paramètres de prétraitement
     params.x1_s = 90; params.x1_e = 95;
@@ -93,7 +93,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
 
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [false params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
     params.nu_LB = [1084,   1084, 1073, 1073, 1097, 1066];
     params.nu_UB = [1088, 1086.5, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [0.5, 1, 3, 10, 3, 3];
@@ -118,8 +118,8 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.shift_row = 0;
     params.shift_col = 0;
     
-    params.roi1 = [80+params.shift_row 83+params.shift_row...
-        97+params.shift_col 100+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi1 = [95+params.shift_row 97+params.shift_row...
+        108+params.shift_col 110+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi2 = [23+params.shift_row 30+params.shift_row...
         60+params.shift_col 69+params.shift_col]; %[row_start row_end col_start col_end]
     params.roi_alone = [80+params.shift_row 85+params.shift_row...
@@ -136,7 +136,7 @@ function params = parameters_260708_14_55_09_ACC_CAL_copie()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

@@ -57,7 +57,7 @@ function params = parameters_260715_corals_2ps()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 10.1;
+    params.fwhm_mesure = 10;
     params.fwhm_ref = 3.5;
     % params.fwhm_instr = 7;
 
@@ -91,7 +91,7 @@ function params = parameters_260715_corals_2ps()
     
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [false false params.use_VAT false params.use_CCHH params.use_MHC];
     params.nu_LB = [1084, 1084, 1073, 1070, 1097, 1066];
     params.nu_UB = [1088, 1088, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1,  3, 20,  3,  3];
@@ -121,9 +121,11 @@ function params = parameters_260715_corals_2ps()
     70+params.shift_col 71+params.shift_col]; 
     params.roi2 = [110+params.shift_row 113+params.shift_row...
     14+params.shift_col 15+params.shift_col];
-    params.roi_alone = [114 126 49 76];
-%     params.roi_alone = [108 125 80 96];
-%     params.roi_alone = [75 91 38 49];
+    % params.roi_alone = [114 126 49 76];
+
+    % params.roi_alone = [76 107 36 48];
+    params.roi_alone = [108 125 80 96];
+    % params.roi_alone = [75 91 38 49];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];
     params.phase_colors = [0.4660, 0.6740, 0.1880; 0.4940, 0.1840, 0.5560];
@@ -141,10 +143,10 @@ function params = parameters_260715_corals_2ps()
     params.plot_ref_spectra = true;
     params.plot_pixel_fits = true;
     params.display_fit = true;
-    params.do_ref_spectrum_analysis = true; 
-    params.do_ref_roi_analysis = true;
+    params.do_ref_spectrum_analysis = false; 
+    params.do_ref_roi_analysis = false;
     params.do_ref_roi_alone_analysis = true;
-    params.compare_2ps_7ps = false;
+    params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;

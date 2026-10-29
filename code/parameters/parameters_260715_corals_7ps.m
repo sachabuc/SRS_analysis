@@ -91,7 +91,7 @@ function params = parameters_260715_corals_7ps()
 
     % Paramètres de fit non linéaire
     params.nu_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL true params.use_VAT true params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [params.use_CAL false params.use_VAT false params.use_CCHH params.use_MHC];
     params.nu_LB = [1084, 1084, 1073, 1070, 1097, 1066];
     params.nu_UB = [1088, 1088, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1,  3, 20,  3,  3];
@@ -140,9 +140,9 @@ function params = parameters_260715_corals_7ps()
     params.plot_pixel_fits = true;
     params.display_fit = true;
     params.do_ref_spectrum_analysis = false; 
-    params.do_ref_roi_analysis = true;
+    params.do_ref_roi_analysis = false;
     params.do_ref_roi_alone_analysis = true;
-    params.compare_2ps_7ps = false;
+    params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;

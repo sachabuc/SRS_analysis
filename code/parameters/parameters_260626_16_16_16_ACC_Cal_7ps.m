@@ -50,6 +50,8 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     % Paramètres d'acquisition
     params.n_depart = 3;
     params.n_ch = 1;
+    % params.wavelengths = [929.1,928.7,928.5,928.1,927.7,927.4,926.7,926.4,926,929.5,930,927.1];
+
     params.wavelengths = [929.1,928.7,928.5,928.1,927.7,927.4,926.7,926.4,926,929.5,930,927.1];
 
     params.wavelengths_7ps = [928.6, 929.1, 929.5, 929.8, 930.2, 930.6, 931.1, 928, 927.6, ...
@@ -58,13 +60,13 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 4.5;
+    params.fwhm_mesure = 4.3;
     params.fwhm_ref = 3.5;
     % params.fwhm_instr = 10;
 
     % Paramètres de prétraitement
-    params.x1_s = 90; params.x1_e = 95;
-    params.x2_s = 75; params.x2_e = 80;
+    params.x1_s = 18; params.x1_e = 23;
+    params.x2_s = 18; params.x2_e = 23;
     params.wi = 4;
     params.idl = 100; params.idc = 97;
     params.xl_s = 100; params.xl_e = 110;
@@ -91,12 +93,12 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.nu_LB = [1084,   1084, 1073, 1073, 1097, 1064];
-    params.nu_UB = [1088, 1086.5, 1093, 1082, 1102, 1072];
+    params.nu_is_variable = [true    params.use_ARA params.use_VAT true  params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [false  params.use_ARA params.use_VAT false params.use_CCHH params.use_MHC];
+    params.nu_LB = [1084,   1084, 1073, 1075, 1097, 1064];
+    params.nu_UB = [1087, 1086.5, 1093, 1084, 1102, 1072];
     params.FWHM_LB = [0.5, 1, 3, 10, 3, 1];
-    params.FWHM_UB = [15 , 4, 10, 50, 10, 13];
+    params.FWHM_UB = [6 , 4, 10, 50, 10, 13];
     params.lineshape_type = 'gaussian';
     params.ci_alpha = 0.5;
 
@@ -116,19 +118,24 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     % Paramètres spectres ROI 
     params.shift_row = 0;
     params.shift_col = -10;
+
+
+
+    
+
     
     params.roi1 = [58+params.shift_row 60+params.shift_row...
         66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [44+params.shift_row 48+params.shift_row...
-        73+params.shift_col 80+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi_alone = [80+params.shift_row 85+params.shift_row...
-        100+params.shift_col 105+params.shift_col];
+    params.roi2 = [43+params.shift_row 46+params.shift_row...
+        74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi_alone = [43+params.shift_row 46+params.shift_row...
+        74+params.shift_col 77+params.shift_col];
 
 
 
 
-%      params.colors_roi = [0.85 0.20 0.10];
-%      params.phase_colors = [0, 0.4470, 0.7410];
+    % params.colors_roi = [0.85 0.20 0.10];
+    % params.phase_colors = [0, 0.4470, 0.7410;1, 0.5, 0];
     params.colors_roi = [0.85 0.20 0.10; 0.10 0.10 0.10];
     params.phase_colors = [
         0, 0.4470, 0.7410;  % Bleu 
@@ -152,7 +159,7 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
     params.do_ref_roi_alone_analysis = false;
-    params.compare_2ps_7ps = false;
+    params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;

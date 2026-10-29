@@ -49,7 +49,7 @@ function ref_roi = plot_phase_reference_ROI( ...
 %   .norm_factor
 
 
-plot_error_bar = false;
+plot_error_bar = true;
 
 %% Paramètres de l'axe des abscisses
 x_auto = true;       % true : limites automatiques ; false : limites manuelles
@@ -248,7 +248,11 @@ for j = 1:n_roi
     %% ------------------------------------------------------------
     % Écart-type entre pixels
 
-    std_spectrum = std(I_roi_2D,0,1,'omitnan');
+    % std_spectrum = std(I_roi_2D,0,1,'omitnan');
+    % std_spectrum = std_spectrum(:);
+
+    std_spectrum = std(I_roi_2D, 0, 1, 'omitnan') ./ ...
+               sqrt(sum(~isnan(I_roi_2D), 1));
     std_spectrum = std_spectrum(:);
 
 
@@ -760,7 +764,7 @@ plotSegmentation_ROI( ...
 %% ================================================================
 % 9. Display stat
 
-fprintf('\nCompare_spectrums_advance STATS\n');
+fprintf('\nCompare_spectrums_ROIs STATS\n');
 
     for i = 1:numel(ref_roi)
 

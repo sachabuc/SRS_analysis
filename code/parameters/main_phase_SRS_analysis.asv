@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260708_14_55_09_ACC_CAL_copie_7ps();
+params = parameters_260715_corals_7ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -20,14 +20,17 @@ if params.calcul_fwhm_instr
     [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
         measure_reference_FWHM(I_raw, params.wavenumber);
 
-    [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
+    [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0); 
+    % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
 else 
     FWHM_mesure = params.fwhm_mesure;
 
     [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
+    % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
 end
 
-% fwhm_instr = 7;
+% fwhm_instr = params.fwhm_instr;
+
 %% 3. Soustraction du fond
 [I_corr, background_spectrum, noise_map, spatial_dispersion_bg_global, spatial_dispersion_bg] = ...
     estimate_background_noise_roi(I_raw, params.wavenumber,...
@@ -37,7 +40,14 @@ figure('Color','white','Position',[100 100 1300 850]);axis image;
 
 hold on;
 
-imagesc(sum(I_corr,3));
+nu_min = 1050;
+nu_max = 1100;
+
+idx_nu = params.wavenumber >= nu_min & params.wavenumber <= nu_max;
+I_sum = sum(I_corr(:,:,idx_nu), 3, 'omitnan');
+
+imagesc(I_sum);
+axis ij;
 drawROI([params.x1_s params.x1_e params.x2_s params.x2_e],params.colors_roi(1,:),...
     'background analysis');
 
@@ -51,10 +61,10 @@ if params.do_noise_study
 end
 
 %% 5. Affichage des images principales
-% if params.display_intensity_maps
-%     plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
-%         params.titles, params.diff_min,params.diff_min);
-% end
+if params.display_intensity_maps
+    plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
+        params.titles, params.diff_min,params.diff_max,params);
+end
 
 %% 6. Modèle théorique des phases
 [phase_model] = model_carbonate_phases(...
@@ -138,15 +148,21 @@ if params.do_ref_spectrum_analysis
 end
 
 
-%% 11. Spectres ROI 
+%% 11. Spectres ROIs 
 
 if params.do_ref_roi_analysis 
 
-    ref_roi = plot_phase_reference_ROI( ...
+    ref_roi = plot_phase_reference_ROI_scaled( ...
         I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
         params.roi1, params.roi2,fwhm_instr, active_idx, ...
         params.phase_colors, params.colors_roi, params.figures_dir, ...
         params.exportgraphics_segm_roi, 500, params.results_dir,params);
+
+    % ref_roi = plot_phase_reference_ROI( ...
+    %     I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
+    %     params.roi1, params.roi2,fwhm_instr, active_idx, ...
+    %     params.phase_colors, params.colors_roi, params.figures_dir, ...
+    %     params.exportgraphics_segm_roi, 500, params.results_dir,params);
 
     I_sum = plot_wavenumber_sum_ROI( ...
         I_corr, params. ...
@@ -164,6 +180,7 @@ if params.do_ref_roi_analysis
     end
     
 end
+%% One ROI 
 
 if params.do_ref_roi_alone_analysis 
 
@@ -176,6 +193,13 @@ if params.do_ref_roi_alone_analysis
     I_sum_alone = plot_wavenumber_sum_ROI( ...
         I_corr, params.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
 
+        if params.compare_2ps_7ps
+    
+        loaded_data = load(params.path2ref_roi_compare);
+        ref_roi_compare = loaded_data.ref_roi;
+        plot_compare_ref_roi(ref_roi,ref_roi_compare,params) 
+    
+    end
 end
 
 
@@ -183,16 +207,16 @@ end
 
 %% 12. Compare
 
-% roi_fits = get_roi_pixel_fits( ...
-%     pixel_fit, ...
-%     phase_model, ...
-%     params.wavenumber, ...
-%     fwhm_instr, ...
-%     params.roi1, ...
-%     params.roi2, ...
-%     active_idx, ...
-%     I_corr, ...
-%     true);
+roi_fits = get_roi_pixel_fits( ...
+    pixel_fit, ...
+    phase_model, ...
+    params.wavenumber, ...
+    fwhm_instr, ...
+    params.roi1, ...
+    params.roi2, ...
+    active_idx, ...
+    I_corr, ...
+    true);
 
 % if params.compare_acquisition 
 %     ref_spectra_7ps = load(params.path2ref_spectra_7ps);

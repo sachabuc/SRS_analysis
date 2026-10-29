@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260626_16_16_16_ACC_Cal_7ps();
+params = parameters_260715_corals_2ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -40,7 +40,14 @@ figure('Color','white','Position',[100 100 1300 850]);axis image;
 
 hold on;
 
-imagesc(sum(I_corr,3));
+nu_min = 1050;
+nu_max = 1100;
+
+idx_nu = params.wavenumber >= nu_min & params.wavenumber <= nu_max;
+I_sum = sum(I_corr(:,:,idx_nu), 3, 'omitnan');
+
+imagesc(I_sum);
+axis ij;
 drawROI([params.x1_s params.x1_e params.x2_s params.x2_e],params.colors_roi(1,:),...
     'background analysis');
 
@@ -141,15 +148,21 @@ if params.do_ref_spectrum_analysis
 end
 
 
-%% 11. Spectres ROI 
+%% 11. Spectres ROIs 
 
 if params.do_ref_roi_analysis 
 
-    ref_roi = plot_phase_reference_ROI( ...
+    ref_roi = plot_phase_reference_ROI_scaled( ...
         I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
         params.roi1, params.roi2,fwhm_instr, active_idx, ...
         params.phase_colors, params.colors_roi, params.figures_dir, ...
         params.exportgraphics_segm_roi, 500, params.results_dir,params);
+
+    % ref_roi = plot_phase_reference_ROI( ...
+    %     I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
+    %     params.roi1, params.roi2,fwhm_instr, active_idx, ...
+    %     params.phase_colors, params.colors_roi, params.figures_dir, ...
+    %     params.exportgraphics_segm_roi, 500, params.results_dir,params);
 
     I_sum = plot_wavenumber_sum_ROI( ...
         I_corr, params. ...
@@ -167,18 +180,30 @@ if params.do_ref_roi_analysis
     end
     
 end
+%% One ROI 
 
 if params.do_ref_roi_alone_analysis 
 
-    roi_alone_result = plot_single_ROI_fit( ...
+    % roi_alone_result = plot_single_ROI_fit( ...
+    %     I_corr, params.wavenumber, phase_model, params.roi_alone, ...
+    %     fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
+    %     params.phase_colors, params);
+
+    roi_alone_result = plot_single_ROI_fit_errorbars( ...
         I_corr, params.wavenumber, phase_model, params.roi_alone, ...
         fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
         params.phase_colors, params);
 
-
     I_sum_alone = plot_wavenumber_sum_ROI( ...
         I_corr, params.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
 
+    % if params.compare_2ps_7ps
+    % 
+    %     loaded_data = load(params.path2ref_roi_compare);
+    %     ref_roi_compare = loaded_data.ref_roi;
+    %     plot_compare_ref_roi(roi_alone_result,ref_roi_compare,params) 
+    % 
+    % end
 end
 
 
