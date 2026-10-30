@@ -5,6 +5,21 @@ close all;
 %% Charger les paramètres
 params = parameters_260715_corals_2ps();
 
+%%
+
+% cfd = struct();
+% 
+% filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261029\scanXYL_timepoint\261029_111204_XYL_0000";
+% 
+% data = load_SRS_TIFF(filename, cfd);
+% 
+% wavelengths_data = linspace(926.5000,928.5000,21);
+% wavenumber_data = 1e7 ./ wavelengths_data - 1e7 ./ params.pompe;
+% 
+% [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
+%         measure_reference_FWHM(I_data, wavenumber_data);
+
+
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
     addpath(params.function_paths{i});
@@ -15,7 +30,11 @@ end
     params.n_depart, params.wavenumber);
 I_raw = squeeze(imgs);
 
+
 %% 2. Mesure de la FWHM 
+
+
+
 if params.calcul_fwhm_instr
     [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
         measure_reference_FWHM(I_raw, params.wavenumber);
