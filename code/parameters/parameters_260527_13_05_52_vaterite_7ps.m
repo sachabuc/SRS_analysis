@@ -72,7 +72,7 @@ function params = parameters_260527_13_05_52_vaterite_7ps()
     params.Imin = -10;
     params.Imax = 10;
     params.diff_min = -5;
-    params.diff_min = 5;
+    params.diff_max = 5;
     params.titles = {'ACC Chahira (I1)', 'inf ACC (I2)', 'Calcite (I3)', 'ACC (I4)'};
 
     % Paramètres du modèle théorique
@@ -128,7 +128,7 @@ function params = parameters_260527_13_05_52_vaterite_7ps()
     params.nu_interval = [min(params.wavenumber) max(params.wavenumber)];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

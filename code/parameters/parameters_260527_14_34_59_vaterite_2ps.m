@@ -133,7 +133,7 @@ function params = parameters_260527_14_34_59_vaterite_2ps()
 
     % Paramètres d'affichage
     params.load_pixel_fit = true;
-    params.calcul_fwhm_instr = true;
+    params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;
     params.display_intensity_maps = true;
