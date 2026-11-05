@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260527_13_05_52_vaterite_7ps();
+params = parameters_260626_15_16_36_ACC_Cal_2ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -11,18 +11,18 @@ for i = 1:length(params.function_paths)
 end
 
 %%
-
-cfd = struct();
-
-filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261029\scanXYL_timepoint\261029_111204_XYL_0000";
-
-data = load_SRS_TIFF(filename, cfd);
-
-wavelengths_data = linspace(926.5000,928.5000,21);
-wavenumber_data = 1e7 ./ wavelengths_data - 1e7 ./ 1031.3;
-
-[FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
-        measure_reference_FWHM(I_data, wavenumber_data);
+% 
+% cfd = struct();
+% 
+% filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261029\scanXYL_timepoint\261029_111204_XYL_0000";
+% 
+% data = load_SRS_TIFF(filename, cfd);
+% 
+% wavelengths_data = linspace(926.5000,928.5000,21);
+% wavenumber_data = 1e7 ./ wavelengths_data - 1e7 ./ 1031.3;
+% 
+% [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
+%         measure_reference_FWHM(I_data, wavenumber_data);
 
 
 
@@ -172,17 +172,17 @@ end
 
 if params.do_ref_roi_analysis 
 
-    % ref_roi = plot_phase_reference_ROI_scaled( ...
-    %     I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
-    %     params.roi1, params.roi2,fwhm_instr, active_idx, ...
-    %     params.phase_colors, params.colors_roi, params.figures_dir, ...
-    %     params.exportgraphics_segm_roi, 500, params.results_dir,params);
-
-    ref_roi = plot_phase_reference_ROI_VAT( ...
+    ref_roi = plot_phase_reference_ROI_scaled( ...
         I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
         params.roi1, params.roi2,fwhm_instr, active_idx, ...
         params.phase_colors, params.colors_roi, params.figures_dir, ...
         params.exportgraphics_segm_roi, 500, params.results_dir,params);
+
+%     ref_roi = plot_phase_reference_ROI_VAT( ...
+%         I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
+%         params.roi1, params.roi2,fwhm_instr, active_idx, ...
+%         params.phase_colors, params.colors_roi, params.figures_dir, ...
+%         params.exportgraphics_segm_roi, 500, params.results_dir,params);
 
     I_sum = plot_wavenumber_sum_ROI( ...
         I_corr, params. ...

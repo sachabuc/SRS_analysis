@@ -90,8 +90,9 @@ function params = parameters_260715_corals_2ps()
     params.threshold_sigma_init = 1;
     
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [params.use_CAL params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [false false params.use_VAT false params.use_CCHH params.use_MHC];
+    params.nu_is_variable = [params.use_CAL   params.use_ARA params.use_VAT params.use_ACC params.use_CCHH params.use_MHC];
+    params.FWHM_is_variable = [params.use_CAL false
+        params.use_VAT false params.use_CCHH params.use_MHC];
     params.nu_LB = [1084, 1084, 1073, 1070, 1097, 1066];
     params.nu_UB = [1088, 1088, 1093, 1082, 1102, 1070];
     params.FWHM_LB = [1, 1,  3, 20,  3,  3];
@@ -121,10 +122,10 @@ function params = parameters_260715_corals_2ps()
     70+params.shift_col 71+params.shift_col]; 
     params.roi2 = [110+params.shift_row 113+params.shift_row...
     14+params.shift_col 15+params.shift_col];
-    % params.roi_alone = [114 126 49 76];
+    params.roi_alone = [114 126 49 76];
 
     % params.roi_alone = [76 107 36 48];
-    params.roi_alone = [108 125 80 96];
+%     params.roi_alone = [108 125 80 96];
     % params.roi_alone = [75 91 38 49];
 
     params.colors_roi = [0, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980];

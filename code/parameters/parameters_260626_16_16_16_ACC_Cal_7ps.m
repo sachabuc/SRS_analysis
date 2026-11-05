@@ -120,16 +120,19 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.shift_col = -10;
 
 
-
-    
-
-    
     params.roi1 = [58+params.shift_row 60+params.shift_row...
-        66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [43+params.shift_row 46+params.shift_row...
-        74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi_alone = [43+params.shift_row 46+params.shift_row...
-        74+params.shift_col 77+params.shift_col];
+    66+params.shift_col 68+params.shift_col]; 
+    params.roi2 = [44+params.shift_row 50+params.shift_row...
+    71+params.shift_col 78+params.shift_col];
+    
+
+%     
+%     params.roi1 = [58+params.shift_row 60+params.shift_row...
+%         66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
+%     params.roi2 = [43+params.shift_row 46+params.shift_row...
+%         74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
+%     params.roi_alone = [43+params.shift_row 46+params.shift_row...
+%         74+params.shift_col 77+params.shift_col];
 
 
 
@@ -147,7 +150,7 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = true;
+    params.load_pixel_fit = false;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

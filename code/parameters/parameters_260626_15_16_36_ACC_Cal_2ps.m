@@ -29,7 +29,7 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
 
     % Chemins pour les données à comparer
     params.path2pixel_fit = fullfile(project_root, 'results', 'extracted_data', ...
-    day_folder_data,folder_data,'pixel_fit_wMHC');
+    day_folder_data,folder_data,'pixel_fit');
 
     params.path2ref_roi_compare = fullfile(project_root, 'results', 'extracted_data', ...
     day_folder_data_2compare,folder_data_2compare,'ref_roi');
@@ -117,19 +117,16 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
     % Paramètres spectres ROI 
     params.shift_row = 0;
     params.shift_col = 0;
+
+%      params.roi1 = [58+params.shift_row 60+params.shift_row...
+%         66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
+%     params.roi2 = [43+params.shift_row 46+params.shift_row...
+%         74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
     
-    % params.roi1 = [58+params.shift_row 60+params.shift_row...
-    % 66+params.shift_col 68+params.shift_col]; 
-    % params.roi2 = [44+params.shift_row 48+params.shift_row...
-    % 73+params.shift_col 80+params.shift_col]; 
-
     params.roi1 = [58+params.shift_row 60+params.shift_row...
-        66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi2 = [43+params.shift_row 46+params.shift_row...
-        74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
-    params.roi_alone = [80+params.shift_row 85+params.shift_row...
-        100+params.shift_col 105+params.shift_col];
-
+    66+params.shift_col 68+params.shift_col]; 
+    params.roi2 = [44+params.shift_row 50+params.shift_row...
+    71+params.shift_col 78+params.shift_col]; 
 
     % params.roi1 = [58+params.shift_row 60+params.shift_row...
     %     66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
@@ -166,8 +163,8 @@ function params = parameters_260626_15_16_36_ACC_Cal_2ps()
     params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
     params.do_ref_roi_alone_analysis = false;
-    params.compare_2ps_7ps = true;
-    params.compare_acquisition = true;
+    params.compare_2ps_7ps = false;
+    params.compare_acquisition = false;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
 
