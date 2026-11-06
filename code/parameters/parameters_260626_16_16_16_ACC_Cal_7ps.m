@@ -60,7 +60,7 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.wavenumber = 1e7 ./ params.wavelengths - 1e7 ./ params.pompe;
     params.wavenumber_7ps = 1e7 ./ params.wavelengths_7ps - 1e7 ./ params.pompe;
 
-    params.fwhm_mesure = 4.3;
+    params.fwhm_mesure = 4.25;
     params.fwhm_ref = 3.5;
     % params.fwhm_instr = 10;
 
@@ -93,8 +93,8 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [true    params.use_ARA params.use_VAT true  params.use_CCHH params.use_MHC];
-    params.FWHM_is_variable = [false  params.use_ARA params.use_VAT false params.use_CCHH params.use_MHC];
+    params.nu_is_variable = [true    params.use_ARA params.use_VAT true  params.use_CCHH false];
+    params.FWHM_is_variable = [false  params.use_ARA params.use_VAT true params.use_CCHH false];
     params.nu_LB = [1084,   1084, 1073, 1075, 1097, 1064];
     params.nu_UB = [1087, 1086.5, 1093, 1084, 1102, 1072];
     params.FWHM_LB = [0.5, 1, 3, 10, 3, 1];
@@ -110,7 +110,7 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.dominance_phases = [false false false false false false];
     params.detection_method = 'significance';
     params.threshold_A = 10;
-    params.nbr_pix_per_phase = [30 90];
+    params.nbr_pix_per_phase = [30 90 10];
     params.priority_phases =       [false false false false false false];
     params.priority_min_fraction = [0 0 0 0 0 0];
     params.methode_ref_spectra = 'amplitude';
@@ -120,19 +120,26 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.shift_col = -10;
 
 
-    params.roi1 = [58+params.shift_row 60+params.shift_row...
-    66+params.shift_col 68+params.shift_col]; 
-    params.roi2 = [44+params.shift_row 50+params.shift_row...
-    71+params.shift_col 78+params.shift_col];
-    
+    % params.roi1 = [58+params.shift_row 60+params.shift_row...
+    % 66+params.shift_col 68+params.shift_col]; 
+    % params.roi2 = [44+params.shift_row 50+params.shift_row...
+    % 71+params.shift_col 77+params.shift_col];
 
-%     
-%     params.roi1 = [58+params.shift_row 60+params.shift_row...
-%         66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
-%     params.roi2 = [43+params.shift_row 46+params.shift_row...
-%         74+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
-%     params.roi_alone = [43+params.shift_row 46+params.shift_row...
-%         74+params.shift_col 77+params.shift_col];
+
+    
+        params.roi1 = [58+params.shift_row 60+params.shift_row...
+        66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi2 = [43+params.shift_row 49+params.shift_row...
+        73+params.shift_col 77+params.shift_col]; %[row_start row_end col_start col_end]
+    params.roi_alone = [43+params.shift_row 46+params.shift_row...
+        73+params.shift_col 77+params.shift_col];
+
+    % params.roi1 = [58+params.shift_row 60+params.shift_row...
+    %     66+params.shift_col 68+params.shift_col]; %[row_start row_end col_start col_end]
+    % params.roi2 = [44+params.shift_row 48+params.shift_row...
+    %     97+params.shift_col 99+params.shift_col]; %[row_start row_end col_start col_end]
+    % params.roi_alone = [43+params.shift_row 46+params.shift_row...
+    %     73+params.shift_col 77+params.shift_col];
 
 
 
@@ -150,7 +157,7 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.nu_interval = [1075 1095];
 
     % Paramètres d'affichage
-    params.load_pixel_fit = false;
+    params.load_pixel_fit = true;
     params.calcul_fwhm_instr = false;
     params.do_noise_study = true;
     params.do_lsqnonneg_treatment = false;

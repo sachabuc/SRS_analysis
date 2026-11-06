@@ -52,8 +52,8 @@ function [phase_model] = model_carbonate_phases( ...
 % (ordre reel utilise ici : 1=CAL 2=ARA 3=VAT 4=ACC 5=CCHH 6=MHC)
  
 phase_model(1).name  = "CAL";
-phase_model(1).nu    = 1085.5;
-% phase_model(1).nu    = 1085.8;
+% phase_model(1).nu    = 1085.5;
+phase_model(1).nu    = 1086.9;
 phase_model(1).FWHM  = 3.5;
 % phase_model(1).FWHM  = 1 ;
 phase_model(1).ratio = 1;
@@ -87,8 +87,8 @@ phase_model(5).ratio = 1;
 phase_model(5).use   = use_CCHH;
  
 phase_model(6).name  = "MHC";
-phase_model(6).nu    = 1067.5;
-phase_model(6).FWHM  = 5.8;
+phase_model(6).nu    = 1067.8;
+phase_model(6).FWHM  = 9.9;
 phase_model(6).ratio = 1;
 phase_model(6).use   = use_MHC;
  

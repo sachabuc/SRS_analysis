@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260626_15_16_36_ACC_Cal_2ps();
+params = parameters_260626_16_16_16_ACC_Cal_7ps();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -11,21 +11,18 @@ for i = 1:length(params.function_paths)
 end
 
 %%
-% 
-% cfd = struct();
-% 
-% filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261029\scanXYL_timepoint\261029_111204_XYL_0000";
-% 
-% data = load_SRS_TIFF(filename, cfd);
-% 
-% wavelengths_data = linspace(926.5000,928.5000,21);
-% wavenumber_data = 1e7 ./ wavelengths_data - 1e7 ./ 1031.3;
-% 
-% [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
-%         measure_reference_FWHM(I_data, wavenumber_data);
+filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
 
+cfg = struct();
+% cfg.ROI_signal     = [100 110 100 110];
+% cfg.ROI_background = [20 40 20 40];
+cfg.ROI_signal     = [];
+cfg.ROI_background = [];
+cfg.pageOrder = 'auto';
+cfg.nGauss = 1;
+cfg.fitRange = [1050 1120];
 
-
+results = analyze_SRS_TIFF_ROI(filename, cfg);
 %% 1. Chargement des données
 [imgs, acq] = loadSRSImageStack(params.main_dir, params.sub_dir, ...
     params.n_depart, params.wavenumber);
