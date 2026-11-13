@@ -10,8 +10,8 @@ for i = 1:length(params.function_paths)
     addpath(params.function_paths{i});
 end
 
-%%
-filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
+%
+filename = "C:\Users\Spectroscopie Raman\SRS_analysis\data\raw\data_test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
 
 cfg = struct();
 % cfg.ROI_signal     = [100 110 100 110];
