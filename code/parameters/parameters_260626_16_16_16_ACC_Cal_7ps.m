@@ -93,8 +93,8 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.threshold_sigma_init = 1;
 
     % Paramètres de fit non linéaire
-    params.nu_is_variable = [true    params.use_ARA params.use_VAT true  params.use_CCHH false];
-    params.FWHM_is_variable = [false  params.use_ARA params.use_VAT true params.use_CCHH false];
+    params.nu_is_variable = [true    params.use_ARA params.use_VAT true  params.use_CCHH true];
+    params.FWHM_is_variable = [false  params.use_ARA params.use_VAT false params.use_CCHH false];
     params.nu_LB = [1084,   1084, 1073, 1075, 1097, 1064];
     params.nu_UB = [1087, 1086.5, 1093, 1084, 1102, 1072];
     params.FWHM_LB = [0.5, 1, 3, 10, 3, 1];
@@ -168,11 +168,13 @@ function params = parameters_260626_16_16_16_ACC_Cal_7ps()
     params.display_fit = true;
     params.do_ref_spectrum_analysis = false; 
     params.do_ref_roi_analysis = true;
+    params.show_figures = false;
     params.do_ref_roi_alone_analysis = false;
     params.compare_2ps_7ps = true;
     params.compare_acquisition = true;
     params.display_fit_stat = true;
     params.display_R2_stat = false;
+
 
     %sauvegarde
     params.exportgraphics_segm_roi = false;

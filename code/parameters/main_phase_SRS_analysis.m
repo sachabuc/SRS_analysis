@@ -11,18 +11,18 @@ for i = 1:length(params.function_paths)
 end
 
 %%
-filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
-
-cfg = struct();
-% cfg.ROI_signal     = [100 110 100 110];
-% cfg.ROI_background = [20 40 20 40];
-cfg.ROI_signal     = [];
-cfg.ROI_background = [];
-cfg.pageOrder = 'auto';
-cfg.nGauss = 1;
-cfg.fitRange = [1050 1120];
-
-results = analyze_SRS_TIFF_ROI(filename, cfg);
+% filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
+% 
+% cfg = struct();
+% % cfg.ROI_signal     = [100 110 100 110];
+% % cfg.ROI_background = [20 40 20 40];
+% cfg.ROI_signal     = [];
+% cfg.ROI_background = [];
+% cfg.pageOrder = 'auto';
+% cfg.nGauss = 1;
+% cfg.fitRange = [1050 1120];
+% 
+% results = analyze_SRS_TIFF_ROI(filename, cfg);
 %% 1. Chargement des données
 [imgs, acq] = loadSRSImageStack(params.main_dir, params.sub_dir, ...
     params.n_depart, params.wavenumber);
@@ -185,15 +185,15 @@ if params.do_ref_roi_analysis
         I_corr, params. ...
         wavenumber, params.nu_interval, ...
         ref_roi, params.colors_roi);
-    
+
     saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
 
     if params.compare_2ps_7ps
-    
+
         loaded_data = load(params.path2ref_roi_compare);
         ref_roi_compare = loaded_data.ref_roi;
         plot_compare_ref_roi(ref_roi,ref_roi_compare,params) 
-    
+
     end
     
 end
