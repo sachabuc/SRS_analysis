@@ -10,8 +10,10 @@ for i = 1:length(params.function_paths)
     addpath(params.function_paths{i});
 end
 
-<<<<<<< HEAD
 %%
+
+filename = "C:\Users\Spectroscopie Raman\SRS_analysis\data\raw\data_test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
+
 % filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
 % 
 % cfg = struct();
@@ -24,21 +26,7 @@ end
 % cfg.fitRange = [1050 1120];
 % 
 % results = analyze_SRS_TIFF_ROI(filename, cfg);
-=======
-%
-filename = "C:\Users\Spectroscopie Raman\SRS_analysis\data\raw\data_test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
 
-cfg = struct();
-% cfg.ROI_signal     = [100 110 100 110];
-% cfg.ROI_background = [20 40 20 40];
-cfg.ROI_signal     = [];
-cfg.ROI_background = [];
-cfg.pageOrder = 'auto';
-cfg.nGauss = 1;
-cfg.fitRange = [1050 1120];
-
-results = analyze_SRS_TIFF_ROI(filename, cfg);
->>>>>>> d01ed1ac956d36c8e2718c0bf451670188f220cd
 %% 1. Chargement des données
 [imgs, acq] = loadSRSImageStack(params.main_dir, params.sub_dir, ...
     params.n_depart, params.wavenumber);
@@ -85,6 +73,14 @@ drawROI([params.x1_s params.x1_e params.x2_s params.x2_e],params.colors_roi(1,:)
     'background analysis');
 
 hold off;
+
+%% 3.1 Image bin
+% Blocs 3x3, en conservant l'intensité moyenne
+[I_binned, fig] = bin_pixels_ND(I_raw, 2, ...
+    'show_image', true, ...
+    'method', 'mean', ...
+    'wavenumber', params.wavenumber, ...
+    'spectral_dim', 3);
 
 %% 4. Étude du bruit 
 if params.do_noise_study
