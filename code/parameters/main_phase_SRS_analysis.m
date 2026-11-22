@@ -10,23 +10,6 @@ for i = 1:length(params.function_paths)
     addpath(params.function_paths{i});
 end
 
-%%
-
-filename = "C:\Users\Spectroscopie Raman\SRS_analysis\data\raw\data_test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
-
-% filename = "C:\Users\sacha.bucourt\Documents\SRS_analysis\data\raw\test_laser\261106\XYL_calcite\261106_130909_XYL_0000.tiff";
-% 
-% cfg = struct();
-% % cfg.ROI_signal     = [100 110 100 110];
-% % cfg.ROI_background = [20 40 20 40];
-% cfg.ROI_signal     = [];
-% cfg.ROI_background = [];
-% cfg.pageOrder = 'auto';
-% cfg.nGauss = 1;
-% cfg.fitRange = [1050 1120];
-% 
-% results = analyze_SRS_TIFF_ROI(filename, cfg);
-
 %% 1. Chargement des données
 [imgs, acq] = loadSRSImageStack(params.main_dir, params.sub_dir, ...
     params.n_depart, params.wavenumber);
@@ -34,8 +17,6 @@ I_raw = squeeze(imgs);
 
 
 %% 2. Mesure de la FWHM 
-
-
 
 if params.calcul_fwhm_instr
     [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...

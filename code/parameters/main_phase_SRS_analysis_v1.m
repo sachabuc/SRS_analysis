@@ -3,286 +3,241 @@ clear all;
 close all;
 
 %% Charger les paramètres
-% params = parameters_260626_16_16_16_ACC_Cal_7ps();
+params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000();
 
 %% Ajouter les chemins des fonctions
-
-% Chemin des dossiers
-project_root = 'C:\Users\Spectroscopie Raman\SRS_analysis';
-
-% Chemins des fonctions
-function_paths = {
-    fullfile(project_root, 'code', 'functions', 'functions_model_carbonate'), ...
-    fullfile(project_root, 'code', 'utils') ...
-};
-
-for i = 1:length(function_paths)
-    addpath(function_paths{i});
+for i = 1:length(params.function_paths)
+    addpath(params.function_paths{i});
 end
 
 %% 1. Chargement des données
 
-filename = "C:\Users\Spectroscopie Raman\SRS_analysis\data\raw\data_test_laser\261118\test4_drift_table_pump_XY\261118_172543_XY_0001.tiff";
 
-cfg = struct();
-
-% cfg.ROI_signal     = [100 110 100 110];
-% cfg.ROI_background = [20 40 20 40];
-% cfg.ROI_signal     = [];
-% cfg.ROI_background = [];
-% cfg.nGauss = 1;
-% cfg.fitRange = [1050 1120];
-
-cfg.pageOrder = 'auto';
-cfg.wavenumber = [];      % Axe Raman directement en cm-1
-cfg.wl_ir_nm   = 1031.3;  % Longueur d'onde IR/Stokes en nm
-
-
-% 
-% results = analyze_SRS_TIFF_ROI(filename, cfg);
-
-SRS = load_SRS_TIFF_only(filename, cfg);
+SRS = load_SRS_TIFF_only(params.main_dir, params.cfg);
 
 
 %%
-results = analyze_XY_image_drift(SRS.data);
+
+fig = display_SRS_images(SRS.data, params);
 
 
-%% 2. Mesure de la FWHM 
+%% Noise study 
 
-if params.calcul_fwhm_instr
-    [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
-        measure_reference_FWHM(I_raw, params.wavenumber);
+% ROI rectangulaire : [x1 x2 y1 y2]
 
-    [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0); 
-    % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
-else 
-    FWHM_mesure = params.fwhm_mesure;
+[data_corr, noise_matrix, background_matrix] = ...
+    correct_SRS_background(SRS.data, params.ROI_background, params);
+%%
 
-    [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
-    % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
-end
+fig = display_SRS_images(data_corr, params);
 
-% fwhm_instr = params.fwhm_instr;
+%%
 
-%% 3. Soustraction du fond
-[I_corr, background_spectrum, noise_map, spatial_dispersion_bg_global, spatial_dispersion_bg] = ...
-    estimate_background_noise_roi(I_raw, params.wavenumber,...
-    params.x1_s, params.x1_e, params.x2_s, params.x2_e);
+[results, fig] = compare_carbonate_images( ...
+    data_corr, SRS.wavenumber, params.intervals, params);
 
-figure('Color','white','Position',[100 100 1300 850]);axis image;
-
-hold on;
-
-nu_min = 1050;
-nu_max = 1100;
-
-idx_nu = params.wavenumber >= nu_min & params.wavenumber <= nu_max;
-I_sum = sum(I_corr(:,:,idx_nu), 3, 'omitnan');
-
-imagesc(I_sum);
-axis ij;
-drawROI([params.x1_s params.x1_e params.x2_s params.x2_e],params.colors_roi(1,:),...
-    'background analysis');
-
-hold off;
-
-%% 4. Étude du bruit 
-if params.do_noise_study
-    [fit_params, mean_noise] = noise_study(I_corr, params.wavenumber,...
-        background_spectrum, params.idl, params.idc, params.wi, ...
-        params.xl_s, params.xl_e, params.xc_s, params.xc_e);
-end
-
-%% 5. Affichage des images principales
-if params.display_intensity_maps
-    plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
-        params.titles, params.diff_min,params.diff_max,params);
-end
-
-%% 6. Modèle théorique des phases
-[phase_model] = model_carbonate_phases(...
-    fwhm_instr, params.use_CAL, params.use_ARA, params.use_VAT, ...
-    params.use_ACC, params.use_CCHH, params.use_MHC, true);
-
-%% 7. Initialisation linéaire
-pixel_init = init_pixel_amplitudes(...
-    I_corr, phase_model, params.wavenumber, ...
-    params.R2_init, params.threshold_sigma_init, true);
-
-%% 8. Fit non linéaire
-if params.load_pixel_fit
-    % Vérifier si le fichier existe
-    loaded_data = load(params.path2pixel_fit);
-    pixel_fit = loaded_data.pixel_fit;
-else
-    % Si params.load_pixel_fit est false, calculer pixel_fit avec fit_pixel_phases
-    pixel_fit = fit_pixel_phases(...
-        I_corr, phase_model, params.wavenumber, pixel_init, ...
-        params.nu_is_variable, params.FWHM_is_variable, fwhm_instr, ...
-        params.nu_LB, params.nu_UB, params.FWHM_LB, params.FWHM_UB, ...
-        params.lineshape_type, params.ci_alpha, params.display_figures);
-
-        saveDataOrImage(pixel_fit, params.results_dir, 'Name', 'pixel_fit');
-
-end
-
-active_idx = find([phase_model.use]);
-plotFitMaps(pixel_fit, phase_model, active_idx);
-
-%% 9. Segmentation / quantification
-[phase_map, composition_map] = segment_carbonate_phases(...
-    I_corr, pixel_fit, phase_model, noise_map, ...
-    params.R2_min_final, params.threshold_sigma_final, ...
-    params.min_points_above_noise,params.alpha_dominance,...
-    params.dominance_phases,params.priority_phases,...
-    params.priority_min_fraction, params.display_figures, ...
-    params.phase_colors);
+%% drift analysis 
+% results = analyze_XY_image_drift(SRS.data);
 
 
-%% 10. Spectres de référence
-
-if params.do_ref_spectrum_analysis
-
-    ref_spectra = plot_phase_reference_spectra(...
-        params,I_corr, params.wavenumber, pixel_fit, phase_map, phase_model, spatial_dispersion_bg_global, ...
-        active_idx, params.nbr_pix_per_phase, fwhm_instr,...
-        true,'',params.methode_ref_spectra,params.priority_phases);
-
-    plot_pixel_fits_from_ref_spectra( ...
-          ref_spectra, I_corr, params.wavenumber, pixel_fit, phase_model, ...
-          fwhm_instr, 12);
-
-    saveDataOrImage(ref_spectra, params.results_dir, 'Name', 'ref_spectra');
-
-    if params.compare_2ps_7ps
-
-        loaded_data = load(params.path2ref_spectra_compare);
-        ref_spectra_compare = loaded_data.ref_spectra;
-        plot_compare_ref_roi(ref_spectra,ref_spectra_compare) 
-
-
-    end
-
-    if params.display_fit_stat
-        fprintf('\n============================================================\n');
-        fprintf('          STATISTIQUES DES SPECTRES DE REFERENCE\n');
-        fprintf('============================================================\n');
-        display_reference_statistics(ref_spectra, fwhm_instr);
-    
-        if params.compare_2ps_7ps
-            fprintf('\n============================================================\n');
-            fprintf('      STATISTIQUES DES SPECTRES DE REFERENCE SHIFTED\n');
-            fprintf('============================================================\n');
-            display_reference_statistics(ref_spectra_compare, ref_spectra_compare(1).fwhm_instr);
-        end
-    
-    end
-
-end
-
-
-%% 11. Spectres ROIs 
-
-if params.do_ref_roi_analysis 
-
-    ref_roi = plot_phase_reference_ROI_scaled( ...
-        I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
-        params.roi1, params.roi2,fwhm_instr, active_idx, ...
-        params.phase_colors, params.colors_roi, params.figures_dir, ...
-        params.exportgraphics_segm_roi, 500, params.results_dir,params);
-
-%     ref_roi = plot_phase_reference_ROI_VAT( ...
-%         I_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
+% %% 2. Mesure de la FWHM 
+% 
+% if params.calcul_fwhm_instr
+%     [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
+%         measure_reference_FWHM(data_corr, SRS.wavenumber);
+% 
+%     [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0); 
+%     % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
+% else 
+%     FWHM_mesure = params.fwhm_mesure;
+% 
+%     [~,fwhm_instr] = deconvolve(FWHM_mesure, params.fwhm_ref, 0);
+%     % deconvolve(fwhm_mesure, fwhm_phase, fwhm_inst)
+% end
+% 
+% % fwhm_instr = params.fwhm_instr;
+% 
+% 
+% %% 5. Affichage des images principales
+% if params.display_intensity_maps
+%     plot_srs_images(data_corr, params.ni, params.Imin, params.Imax,...
+%         params.titles, params.diff_min,params.diff_max,params);
+% end
+% 
+% %% 6. Modèle théorique des phases
+% [phase_model] = model_carbonate_phases(...
+%     fwhm_instr, params.use_CAL, params.use_ARA, params.use_VAT, ...
+%     params.use_ACC, params.use_CCHH, params.use_MHC, true);
+% 
+% %% 7. Initialisation linéaire
+% pixel_init = init_pixel_amplitudes(...
+%     data_corr, phase_model, SRS.wavenumber, ...
+%     params.R2_init, params.threshold_sigma_init, true);
+% 
+% %% 8. Fit non linéaire
+% if params.load_pixel_fit
+%     % Vérifier si le fichier existe
+%     loaded_data = load(params.path2pixel_fit);
+%     pixel_fit = loaded_data.pixel_fit;
+% else
+%     % Si params.load_pixel_fit est false, calculer pixel_fit avec fit_pixel_phases
+%     pixel_fit = fit_pixel_phases(...
+%         data_corr, phase_model, SRS.wavenumber, pixel_init, ...
+%         params.nu_is_variable, params.FWHM_is_variable, fwhm_instr, ...
+%         params.nu_LB, params.nu_UB, params.FWHM_LB, params.FWHM_UB, ...
+%         params.lineshape_type, params.ci_alpha, params.display_figures);
+% 
+%         saveDataOrImage(pixel_fit, params.results_dir, 'Name', 'pixel_fit');
+% 
+% end
+% 
+% active_idx = find([phase_model.use]);
+% plotFitMaps(pixel_fit, phase_model, active_idx);
+% 
+% %% 9. Segmentation / quantification
+% [phase_map, composition_map] = segment_carbonate_phases(...
+%     data_corr, pixel_fit, phase_model, noise_map, ...
+%     params.R2_min_final, params.threshold_sigma_final, ...
+%     params.min_points_above_noise,params.alpha_dominance,...
+%     params.dominance_phases,params.priority_phases,...
+%     params.priority_min_fraction, params.display_figures, ...
+%     params.phase_colors);
+% 
+% 
+% %% 10. Spectres de référence
+% 
+% if params.do_ref_spectrum_analysis
+% 
+%     ref_spectra = plot_phase_reference_spectra(...
+%         params,data_corr, SRS.wavenumber, pixel_fit, phase_map, phase_model, spatial_dispersion_bg_global, ...
+%         active_idx, params.nbr_pix_per_phase, fwhm_instr,...
+%         true,'',params.methode_ref_spectra,params.priority_phases);
+% 
+%     plot_pixel_fits_from_ref_spectra( ...
+%           ref_spectra, data_corr, SRS.wavenumber, pixel_fit, phase_model, ...
+%           fwhm_instr, 12);
+% 
+%     saveDataOrImage(ref_spectra, params.results_dir, 'Name', 'ref_spectra');
+% 
+% 
+%     if params.display_fit_stat
+%         fprintf('\n============================================================\n');
+%         fprintf('          STATISTIQUES DES SPECTRES DE REFERENCE\n');
+%         fprintf('============================================================\n');
+%         display_reference_statistics(ref_spectra, fwhm_instr);
+%     
+%         if params.compare_2ps_7ps
+%             fprintf('\n============================================================\n');
+%             fprintf('      STATISTIQUES DES SPECTRES DE REFERENCE SHIFTED\n');
+%             fprintf('============================================================\n');
+%             display_reference_statistics(ref_spectra_compare, ref_spectra_compare(1).fwhm_instr);
+%         end
+%     
+%     end
+% 
+% end
+% 
+% 
+% %% 11. Spectres ROIs 
+% 
+% if params.do_ref_roi_analysis 
+% 
+%     ref_roi = plot_phase_reference_ROI_scaled( ...
+%         data_corr,SRS.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
 %         params.roi1, params.roi2,fwhm_instr, active_idx, ...
 %         params.phase_colors, params.colors_roi, params.figures_dir, ...
 %         params.exportgraphics_segm_roi, 500, params.results_dir,params);
-
-    I_sum = plot_wavenumber_sum_ROI( ...
-        I_corr, params. ...
-        wavenumber, params.nu_interval, ...
-        ref_roi, params.colors_roi);
-    
-    saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
-
-    if params.compare_2ps_7ps
-    
-        loaded_data = load(params.path2ref_roi_compare);
-        ref_roi_compare = loaded_data.ref_roi;
-        plot_compare_ref_roi(ref_roi,ref_roi_compare,params) 
-    
-    end
-    
-end
-%% One ROI 
-
-if params.do_ref_roi_alone_analysis 
-
-    % roi_alone_result = plot_single_ROI_fit( ...
-    %     I_corr, params.wavenumber, phase_model, params.roi_alone, ...
-    %     fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
-    %     params.phase_colors, params);
-
-    roi_alone_result = plot_single_ROI_fit_errorbars( ...
-        I_corr, params.wavenumber, phase_model, params.roi_alone, ...
-        fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
-        params.phase_colors, params);
-
-    I_sum_alone = plot_wavenumber_sum_ROI( ...
-        I_corr, params.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
-
-    % if params.compare_2ps_7ps
-    % 
-    %     loaded_data = load(params.path2ref_roi_compare);
-    %     ref_roi_compare = loaded_data.ref_roi;
-    %     plot_compare_ref_roi(roi_alone_result,ref_roi_compare,params) 
-    % 
-    % end
-end
-
-
-
-
-%% 12. Compare
-
-roi_fits = get_roi_pixel_fits( ...
-    pixel_fit, ...
-    phase_model, ...
-    params.wavenumber, ...
-    fwhm_instr, ...
-    params.roi1, ...
-    params.roi2, ...
-    active_idx, ...
-    I_corr, ...
-    true);
-
-% if params.compare_acquisition 
-%     ref_spectra_7ps = load(params.path2ref_spectra_7ps);
-%     ref_spectra_shifted = extract_shifted_reference_spectra(...
-%         ref_spectra_7ps, params.wavenumber_7ps, I_corr, params.wavenumber, ...
-%         phase_model, params.shift_row, params.shift_col, fwhm_instr, pixel_fit, ...
-%         false, false);
+% 
+% %     ref_roi = plot_phase_reference_ROI_VAT( ...
+% %         data_corr,params.wavenumber, phase_model, phase_map,spatial_dispersion_bg_global, ...
+% %         params.roi1, params.roi2,fwhm_instr, active_idx, ...
+% %         params.phase_colors, params.colors_roi, params.figures_dir, ...
+% %         params.exportgraphics_segm_roi, 500, params.results_dir,params);
+% 
+%     I_sum = plot_wavenumber_sum_ROI( ...
+%         data_corr, SRS.wavenumber, params.nu_interval, ...
+%         ref_roi, params.colors_roi);
+%     
+%     saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
+% 
+%     if params.compare_2ps_7ps
+%     
+%         loaded_data = load(params.path2ref_roi_compare);
+%         ref_roi_compare = loaded_data.ref_roi;
+%         plot_compare_ref_roi(ref_roi,ref_roi_compare,params) 
+%     
+%     end
+%     
 % end
-
-%% 13. Statistiques sur R²
-if params.display_R2_stat
-    stats = analyze_R2(pixel_fit, phase_model, params.display_figures);
-end
-
-%% 14. Traitement lsqnonneg (si activé)
-if params.do_lsqnonneg_treatment
-    [phase_map, A_maps, ratio_maps] = ...
-        map_carbonate_phases(...
-        I_corr, params.wavenumber, params.n_ch, fwhm_instr, ...
-        true, false, false, false, false, true, ...
-        params.threshold_sigma, 3, 0.5, true, params.sub_dir_save, ...
-        params.R2_min, 10);
-end
-
-%% 15. Sauvegarde des résultats
-    %saveDataOrImage(myStruct, 'results/structures', 'Name', 'my_struct', 'Format', 'mat');
-    %saveDataOrImage(myImage, 'results/images', 'Name', 'my_image', 'Format', 'png');
-
-saveDataOrImage(phase_model, params.results_dir, 'Name', 'phase_model');
+% %% One ROI 
+% 
+% if params.do_ref_roi_alone_analysis 
+% 
+%     % roi_alone_result = plot_single_ROI_fit( ...
+%     %     data_corr, params.wavenumber, phase_model, params.roi_alone, ...
+%     %     fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
+%     %     params.phase_colors, params);
+% 
+%     roi_alone_result = plot_single_ROI_fit_errorbars( ...
+%         data_corr, SRS.wavenumber, phase_model, params.roi_alone, ...
+%         fwhm_instr, spatial_dispersion_bg_global, spatial_dispersion_bg,active_idx,...
+%         params.phase_colors, params);
+% 
+%     I_sum_alone = plot_wavenumber_sum_ROI( ...
+%         data_corr, SRS.wavenumber, params.nu_interval, roi_alone_result, params.colors_roi);
+% 
+%     % if params.compare_2ps_7ps
+%     % 
+%     %     loaded_data = load(params.path2ref_roi_compare);
+%     %     ref_roi_compare = loaded_data.ref_roi;
+%     %     plot_compare_ref_roi(roi_alone_result,ref_roi_compare,params) 
+%     % 
+%     % end
+% end
+% 
+% 
+% 
+% 
+% %% 12. Compare
+% 
+% roi_fits = get_roi_pixel_fits( ...
+%     pixel_fit, ...
+%     phase_model, ...
+%     SRS.wavenumber, ...
+%     fwhm_instr, ...
+%     params.roi1, ...
+%     params.roi2, ...
+%     active_idx, ...
+%     data_corr, ...
+%     true);
+% 
+% % if params.compare_acquisition 
+% %     ref_spectra_7ps = load(params.path2ref_spectra_7ps);
+% %     ref_spectra_shifted = extract_shifted_reference_spectra(...
+% %         ref_spectra_7ps, params.wavenumber_7ps, data_corr, params.wavenumber, ...
+% %         phase_model, params.shift_row, params.shift_col, fwhm_instr, pixel_fit, ...
+% %         false, false);
+% % end
+% 
+% %% 13. Statistiques sur R²
+% if params.display_R2_stat
+%     stats = analyze_R2(pixel_fit, phase_model, params.display_figures);
+% end
+% 
+% %% 14. Traitement lsqnonneg (si activé)
+% if params.do_lsqnonneg_treatment
+%     [phase_map, A_maps, ratio_maps] = ...
+%         map_carbonate_phases(...
+%         data_corr, SRS.wavenumber, fwhm_instr, ...
+%         true, false, false, false, false, true, ...
+%         params.threshold_sigma, 3, 0.5, true, params.sub_dir_save, ...
+%         params.R2_min, 10);
+% end
+% 
+% %% 15. Sauvegarde des résultats
+%     %saveDataOrImage(myStruct, 'results/structures', 'Name', 'my_struct', 'Format', 'mat');
+%     %saveDataOrImage(myImage, 'results/images', 'Name', 'my_image', 'Format', 'png');
+% 
+% saveDataOrImage(phase_model, params.results_dir, 'Name', 'phase_model');
 
 

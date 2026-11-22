@@ -1,4 +1,4 @@
-function params = parameters_260626_15_16_36_ACC_Cal_2ps()
+function params = parameters_SRS_v1()
 
     % Chemin des dossiers
     this_dir     = fileparts(mfilename('fullpath'));
