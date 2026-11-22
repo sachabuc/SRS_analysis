@@ -18,7 +18,7 @@ SRS = load_SRS_TIFF_only(params.main_dir, params.cfg);
 
 %%
 
-fig = display_SRS_images(SRS.data, params);
+fig = display_SRS_images(SRS.data,SRS.metadata, params);
 
 
 %% Noise study 

@@ -1,5 +1,5 @@
 
-function fig = display_SRS_images(data, params)
+function fig = display_SRS_images(data,metadata, params)
 % DISPLAY_SRS_IMAGES
 % Affiche les images SRS d'un tableau de dimensions [Y X L Z T].
 %
@@ -36,6 +36,8 @@ function fig = display_SRS_images(data, params)
 %       L varie en premier, puis Z, puis T.
 
     %% 1. Paramètres
+
+
 
     if nargin < 2 || isempty(params)
         params = struct();
@@ -80,23 +82,24 @@ function fig = display_SRS_images(data, params)
     % params.Labview_data
     % params.metadata directement
 
-    metadata = struct();
+%     metadata = struct();
+% 
+%     if isfield(params,'metadata') && isstruct(params.metadata)
+% 
+%         metadata = params.metadata;
+% 
+%         if isfield(metadata,'Labview_data') && ...
+%                 isstruct(metadata.Labview_data)
+%             metadata = metadata.Labview_data;
+%         end
+% 
+%     elseif isfield(params,'Labview_data') && ...
+%             isstruct(params.Labview_data)
+% 
+%         metadata = params.Labview_data;
+% 
+%     end
 
-    if isfield(params,'metadata') && isstruct(params.metadata)
-
-        metadata = params.metadata;
-
-        if isfield(metadata,'Labview_data') && ...
-                isstruct(metadata.Labview_data)
-            metadata = metadata.Labview_data;
-        end
-
-    elseif isfield(params,'Labview_data') && ...
-            isstruct(params.Labview_data)
-
-        metadata = params.Labview_data;
-
-    end
 
     % Taille du pixel en X (µm)
     pixelSizeX = getMetadataScalar(metadata, 'pixel_size_X_um');
@@ -166,6 +169,7 @@ function fig = display_SRS_images(data, params)
     ax = axes('Parent',fig, ...
               'Units','normalized', ...
               'Position',[0.10 0.32 0.80 0.63]);
+    
 
     I = data(:,:,iL,iZ,iT);
 
@@ -174,7 +178,7 @@ function fig = display_SRS_images(data, params)
     axis(ax,'image');
     axis(ax,'tight');
 
-    set(ax,'YDir','reverse');
+    set(ax, 'YDir', 'normal');
 
     colormap(ax,params.colormap);
     caxis(ax,clim);

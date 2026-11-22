@@ -1,7 +1,7 @@
 function params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000()
 
 
-    %% Chemin des dossiers
+    %% Paths to folders
 
     this_dir     = fileparts(mfilename('fullpath'));
     project_root = fileparts(fileparts(this_dir));
@@ -32,6 +32,8 @@ function params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000()
     params.show_nois_figures = true;
     params.ROI_background = [10 15 10 15];
 
+    %% First analysis - images soustraction 
+
     params.intervals.aragonite = [1084 1086];
     params.intervals.acc = [1072 1080];
     params.intervals.cchh = [1097 1102];
@@ -52,9 +54,10 @@ function params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000()
     params.caxis.cchh_minus_aragonite = [-3 3];
     params.caxis.cchh_minus_background = [-3 3];
 
+%% Cabonate mapping
 
     params.cfg = struct();
-%     params.cfg.acquisition =;
+
 
 
 

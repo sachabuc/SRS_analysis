@@ -50,6 +50,30 @@ function params = parameters_260713_corals_2ps_ter()
         fullfile(project_root, 'code', 'utils') ...
     };
 
+        %% First analysis - images soustraction 
+
+    params.intervals.aragonite = [1084 1086];
+    params.intervals.acc = [1072 1080];
+    params.intervals.cchh = [1097 1105];
+    params.intervals.background = [1040 1050];
+    
+    params.Z = 1;
+    params.T = 1;
+    params.title = 'Comparaison des phases';
+    
+    % Réglage indépendant des huit caxis
+    params.caxis.aragonite = [];
+    params.caxis.acc = [];
+    params.caxis.cchh = [];
+    params.caxis.background = [];
+    
+    params.caxis.acc_minus_background = [-3 3];
+    params.caxis.acc_minus_aragonite = [-3 3];
+    params.caxis.cchh_minus_aragonite = [-3 3];
+    params.caxis.cchh_minus_background = [-3 3];
+
+    %% Carbonate mapping
+
     % Paramètres d'acquisition
     params.n_depart = 3;
     params.n_ch = 1;

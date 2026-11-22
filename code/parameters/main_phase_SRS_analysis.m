@@ -3,7 +3,7 @@ clear all;
 close all;
 
 %% Charger les paramètres
-params = parameters_260626_16_16_16_ACC_Cal_7ps();
+params = parameters_260713_corals_2ps_ter();
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -15,6 +15,9 @@ end
     params.n_depart, params.wavenumber);
 I_raw = squeeze(imgs);
 
+
+[results, fig] = compare_carbonate_images( ...
+    I_raw, params.wavenumber, params.intervals, params);
 
 %% 2. Mesure de la FWHM 
 
@@ -54,6 +57,9 @@ drawROI([params.x1_s params.x1_e params.x2_s params.x2_e],params.colors_roi(1,:)
     'background analysis');
 
 hold off;
+
+[results, fig] = compare_carbonate_images( ...
+    I_corr, params.wavenumber, params.intervals, params);
 
 %% 3.1 Image bin
 % Blocs 3x3, en conservant l'intensité moyenne
