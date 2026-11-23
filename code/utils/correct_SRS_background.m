@@ -319,7 +319,7 @@ function sigma = robust_sigma(values)
 
     if isempty(values)
         sigma = NaN;
-        return;
+        return;Je 
     end
 
     med = median(values);

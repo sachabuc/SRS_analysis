@@ -87,6 +87,10 @@ function plotSegmentation_ROI(phase_map, phase_model, active_idx, ...
     imagesc(labels_display);
 
     axis image;
+    set(gca, 'YDir', 'normal');   % origine en bas à gauche
+    hold on;
+
+    axis image;
     hold on;
 
     %% ================================================================

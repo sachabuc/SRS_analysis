@@ -16,9 +16,6 @@ end
 I_raw = squeeze(imgs);
 
 
-[results, fig] = compare_carbonate_images( ...
-    I_raw, params.wavenumber, params.intervals, params);
-
 %% 2. Mesure de la FWHM 
 
 if params.calcul_fwhm_instr
@@ -58,8 +55,7 @@ drawROI([params.x1_s params.x1_e params.x2_s params.x2_e],params.colors_roi(1,:)
 
 hold off;
 
-[results, fig] = compare_carbonate_images( ...
-    I_corr, params.wavenumber, params.intervals, params);
+
 
 %% 3.1 Image bin
 % Blocs 3x3, en conservant l'intensité moyenne
@@ -77,10 +73,8 @@ if params.do_noise_study
 end
 
 %% 5. Affichage des images principales
-if params.display_intensity_maps
-    plot_srs_images(I_corr, params.ni, params.Imin, params.Imax,...
-        params.titles, params.diff_min,params.diff_max,params);
-end
+[results, fig] = compare_carbonate_images( ...
+    I_corr, params.wavenumber, params.intervals, params);
 
 %% 6. Modèle théorique des phases
 [phase_model] = model_carbonate_phases(...

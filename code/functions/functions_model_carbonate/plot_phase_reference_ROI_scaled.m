@@ -756,7 +756,7 @@ if show_figures
     else
         xlim([x_min, x_max]);
     end
-
+    axis xy;   % équivalent à 'YDir','normal'
     %% ------------------------------------------------------------
     % Personnalisation des axes et de la légende
     xlabel( ...
@@ -780,7 +780,9 @@ if show_figures
     set(gca, ...
         'FontSize', 14, ...
         'LineWidth', 1.5, ...
-        'TickDir', 'out');
+        'TickDir', 'out', ...
+        'YDir', 'normal', ...   % origine en bas à gauche (utile pour imagesc/imshow)
+        'XDir', 'normal');      % axe X croissant vers la droite (valeur par défaut)
 
     %% ================================================================
     % 8. Affichage : ROI sur la carte de segmentation

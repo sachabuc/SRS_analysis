@@ -60,6 +60,7 @@ figure('Name','Selection des ROI','Color','w');
 
 imagesc(sum_img);
 axis image;
+set(gca, 'YDir', 'normal');   % origine en bas à gauche
 colormap parula;
 colorbar;
 
