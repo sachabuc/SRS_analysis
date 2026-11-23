@@ -1,423 +1,484 @@
 
-function results = analyze_SRS_TIFF_ROI(filename, cfg)
+
+function results = analyze_SRS_TIFF_ROI(SRS, cfg)
 % ANALYZE_SRS_TIFF_ROI
-% Première analyse interactive d'un fichier TIFF SRS multipage.
+% Analyse des ROI et fits spectraux à partir de la structure SRS
+% renvoyée par load_SRS_TIFF_only.
 %
-% Fonctionnalités :
-%   1. Lecture du TIFF et des métadonnées LabVIEW/ImageJ.
-%   2. Réorganisation des pages en [Y X L Z].
-%   3. Sélection manuelle d'une ROI background et d'une ROI signal.
-%   4. Extraction des spectres moyens pour chaque position Z.
-%   5. Soustraction du background.
-%   6. Fit de 3 gaussiennes libres + fond linéaire.
-%   7. Visualisation interactive des spectres avec un curseur Z.
+% Entrée :
+%   SRS : structure issue de load_SRS_TIFF_only
+%         SRS.data       : [Y x X x L x Z x T]
+%         SRS.wavenumber : axe Raman [L]
+%         SRS.metadata   : métadonnées
+%         SRS.scan_type  : type de scan
+%         SRS.filename   : nom du fichier (facultatif)
 %
-% Utilisation :
-%   results = analyze_SRS_TIFF_ROI;
-%   results = analyze_SRS_TIFF_ROI(filename);
-%   results = analyze_SRS_TIFF_ROI(filename, cfg);
+%   cfg : structure de configuration facultative
 %
-% Configuration facultative :
-%   cfg.pageOrder = 'auto';   % 'auto', 'LZ' ou 'ZL'
-%   cfg.wavenumber = [];      % Axe Raman directement en cm-1
-%   cfg.wl_ir_nm = [];        % Longueur d'onde du faisceau IR/Stokes
-%   cfg.fitRange = [1050 1120];
-%   cfg.nGauss = 3;
+% Configuration :
+%   cfg.T                   = 1;          % 1, n ou -1 (tous les T)
+%   cfg.ROI_signal          = [];         % [x1 x2 y1 y2]
+%   cfg.ROI_background      = [];         % [x1 x2 y1 y2]
+%   cfg.fitRange            = [1050 1120];
+%   cfg.nGauss              = 3;
+%   cfg.showIndividualFits  = true;       % conservé pour compatibilité
+%   cfg.subtractBackground  = true;       % soustraire ou non le background
+%   cfg.fitStep             = 0.1;         % pas de l'axe fin des fits (cm-1)
 %
-% Sortie :
-%   results.spectrum_signal       [L x Z]
-%   results.spectrum_bg           [L x Z]
-%   results.spectrum_corrected    [L x Z]
-%   results.fit.parameters        [Z x 3 x 3]
-%   results.fit.fitted             [L x Z]
-%   results.fit.components        [L x Z x 3]
+% Sorties :
+%   results.spectrum_signal    [L x Z x Tsel]
+%   results.spectrum_bg        [L x Z x Tsel]
+%   results.spectrum_corrected [L x Z x Tsel]
+%
+%   results.fit.parameters     [Tsel x Z x nGauss x 3]
+%   results.fit.fitted          [Lfine x Z x Tsel]
+%   results.fit.components      [Lfine x Z x Tsel x nGauss]
+%
+%   results.timeIndices         indices T réellement analysés
 %
 % Convention :
-%   Les données sont organisées en [Y X L Z].
-%   T = 1 pour cette version.
+%   data = [Y x X x L x Z x T]
+%
+% cfg.T = -1 analyse tous les timepoints.
 
-if nargin < 1 || isempty(filename)
-    [file, path] = uigetfile( ...
-        {'*.tif;*.tiff', 'TIFF files (*.tif, *.tiff)'}, ...
-        'Sélectionner une acquisition SRS');
+%% ============================================================
+% 1. VERIFICATION DES ENTREES
+% =============================================================
 
-    if isequal(file, 0)
-        error('Aucun fichier sélectionné.');
-    end
-
-    filename = fullfile(path, file);
+if nargin < 1 || isempty(SRS) || ~isstruct(SRS)
+    error('La fonction attend en entrée la structure SRS.');
 end
 
 if nargin < 2 || isempty(cfg)
     cfg = struct();
 end
 
+if ~isfield(SRS, 'data') || isempty(SRS.data)
+    error('SRS.data est absent ou vide.');
+end
+
+if ~isfield(SRS, 'wavenumber') || isempty(SRS.wavenumber)
+    error('SRS.wavenumber est absent ou vide.');
+end
+
+data = double(SRS.data);
+
+if ndims(data) > 5
+    error('SRS.data doit être organisé en [Y X L Z T].');
+end
+
+[nY, nX, nL, nZ, nT] = size(data);
+
+wavenumber = double(SRS.wavenumber(:));
+
+if numel(wavenumber) ~= nL
+    error(['Le nombre de valeurs de SRS.wavenumber (%d) ne correspond ', ...
+        'pas à la dimension spectrale L (%d).'], ...
+        numel(wavenumber), nL);
+end
+
 %% ============================================================
-% 1. CONFIGURATION
+% 2. CONFIGURATION
 % =============================================================
 
-cfg = setDefault(cfg, 'pageOrder', 'auto');
-cfg = setDefault(cfg, 'wavenumber', []);
-cfg = setDefault(cfg, 'wl_ir_nm', []);
+cfg = setDefault(cfg, 'T', 1);
+cfg = setDefault(cfg, 'ROI_signal', []);
+cfg = setDefault(cfg, 'ROI_background', []);
 cfg = setDefault(cfg, 'fitRange', [1050 1120]);
 cfg = setDefault(cfg, 'nGauss', 3);
 cfg = setDefault(cfg, 'showIndividualFits', true);
+cfg = setDefault(cfg, 'subtractBackground', true);
+cfg = setDefault(cfg, 'fitStep', 0.1);
 
-if cfg.nGauss < 1 || cfg.nGauss ~= round(cfg.nGauss)
+if ~islogical(cfg.subtractBackground) || ...
+        ~isscalar(cfg.subtractBackground)
+    error('cfg.subtractBackground doit être un booléen true ou false.');
+end
+
+if ~isnumeric(cfg.fitStep) || ~isscalar(cfg.fitStep) || ...
+        ~isfinite(cfg.fitStep) || cfg.fitStep <= 0
+    error('cfg.fitStep doit être un nombre strictement positif.');
+end
+
+if ~isnumeric(cfg.nGauss) || ~isscalar(cfg.nGauss) || ...
+        ~isfinite(cfg.nGauss) || cfg.nGauss < 1 || ...
+        cfg.nGauss ~= round(cfg.nGauss)
+
     error('cfg.nGauss doit être un entier positif.');
 end
 
-fprintf('\n========================================\n');
-fprintf(' Analyse SRS TIFF - ROI et fits spectraux\n');
-fprintf('========================================\n');
+if numel(cfg.fitRange) ~= 2 || ...
+        any(~isfinite(cfg.fitRange)) || ...
+        cfg.fitRange(1) >= cfg.fitRange(2)
 
-%% ============================================================
-% 2. LECTURE DU TIFF ET DES METADONNEES
-% =============================================================
-
-fprintf('\nLecture du fichier TIFF...\n');
-
-info = imfinfo(filename);
-nPages = numel(info);
-
-if nPages < 1
-    error('Le fichier TIFF ne contient aucune image.');
+    error('cfg.fitRange doit être [borne_min borne_max].');
 end
 
-meta = extractSRSMetadata(info(1));
+% Sélection des timepoints
+if ~isnumeric(cfg.T) || ~isscalar(cfg.T) || ...
+        ~isfinite(cfg.T) || cfg.T ~= round(cfg.T)
 
-% Dimensions spatiales
-nX = getMetaNumber(meta, {'X'}, info(1).Width);
-nY = getMetaNumber(meta, {'Y'}, info(1).Height);
-
-% Dimensions spectrale et Z
-scanType = upper(char(getMetaValue(meta, ...
-    {'scan_type'}, 'XYL')));
-
-nL = getMetaNumber(meta, {'L'}, 1);
-nZ = getMetaNumber(meta, {'Z'}, 1);
-
-% Certaines métadonnées contiennent "N/A"
-if nL < 1
-    nL = 1;
+    error('cfg.T doit être un entier ou -1.');
 end
 
-if nZ < 1
-    nZ = 1;
-end
+if cfg.T == -1
 
-% Timepoints : on conserve uniquement T = 1
-nT = getMetaNumber(meta, {'timepoints'}, 1);
+    timeIndices = 1:nT;
 
-fprintf('Type de scan : %s\n', scanType);
-fprintf('Dimensions : X=%d, Y=%d, L=%d, Z=%d, T=%d\n', ...
-    nX, nY, nL, nZ, nT);
-fprintf('Nombre de pages TIFF : %d\n', nPages);
+elseif cfg.T >= 1 && cfg.T <= nT
 
-if nT > 1
-    warning(['Acquisition avec %d timepoints détectée. ', ...
-        'Seul T=1 sera conservé.'], nT);
-end
-
-%% ============================================================
-% 3. DETERMINATION DE L'ORDRE DES PAGES
-% =============================================================
-
-if strcmpi(cfg.pageOrder, 'auto')
-
-    % L'ordre de stockage est déduit directement du scan_type LabVIEW.
-    % XYLZ : L varie avant Z ; XYZL : Z varie avant L.
-    switch scanType
-        case 'XYLZ'
-            pageOrder = 'LZ';
-        case 'XYZL'
-            pageOrder = 'ZL';
-        case 'XYL'
-            pageOrder = 'LZ';
-        case 'XYZ'
-            pageOrder = 'ZL';
-        otherwise
-            error('scan_type non reconnu dans les métadonnées : %s', scanType);
-    end
+    timeIndices = cfg.T;
 
 else
-    pageOrder = upper(cfg.pageOrder);
+
+    error('cfg.T doit être compris entre 1 et %d, ou égal à -1.', nT);
+
 end
 
-if ~ismember(pageOrder, {'LZ', 'ZL'})
-    error('pageOrder doit être ''auto'', ''LZ'' ou ''ZL''.');
+nTselected = numel(timeIndices);
+
+% Métadonnées facultatives
+if isfield(SRS, 'metadata')
+    meta = SRS.metadata;
+else
+    meta = struct();
 end
 
-fprintf('Ordre des pages utilisé : %s\n', pageOrder);
-
-nPagesPerT = nL * nZ;
-
-if nPages < nPagesPerT
-    error(['Nombre de pages insuffisant : %d pages disponibles, ', ...
-        '%d nécessaires pour L=%d et Z=%d.'], ...
-        nPages, nPagesPerT, nL, nZ);
+if isfield(SRS, 'scan_type')
+    scanType = SRS.scan_type;
+else
+    scanType = '';
 end
+
+if isfield(SRS, 'filename')
+    filename = SRS.filename;
+else
+    filename = '';
+end
+
+fprintf('\n========================================\n');
+fprintf(' Analyse SRS - ROI et fits spectraux\n');
+fprintf('========================================\n');
+
+fprintf('Dimensions : X=%d, Y=%d, L=%d, Z=%d, T=%d\n', ...
+    nX, nY, nL, nZ, nT);
+
+fprintf('Timepoints analysés : %s\n', mat2str(timeIndices));
+fprintf('Nombre de gaussiennes : %d\n', cfg.nGauss);
+if cfg.subtractBackground
+    fprintf('Soustraction background : activée\n');
+else
+    fprintf('Soustraction background : désactivée\n');
+end
+fprintf('Pas de l''axe fin des fits : %.4g cm-1\n', cfg.fitStep);
 
 %% ============================================================
-% 4. LECTURE DES IMAGES
+% 3. IMAGE DE REFERENCE POUR CHAQUE TIMEPOINT
 % =============================================================
 
-fprintf('\nChargement des images...\n');
+fprintf('\nCalcul des images de référence...\n');
 
-% Format canonique : [Y X L Z]
-data = zeros(nY, nX, nL, nZ, 'double');
+% Image de référence : moyenne sur L et Z
+% referenceImages = [Y x X x Tsel]
 
-for k = 1:nPagesPerT
+referenceImages = nan(nY, nX, nTselected);
 
-    I = double(imread(filename, k));
+for it = 1:nTselected
 
-    if ~isequal(size(I), [nY nX])
-        error('Dimensions incorrectes pour la page TIFF %d.', k);
-    end
+    iT = timeIndices(it);
 
-    if strcmp(pageOrder, 'LZ')
+    currentData = data(:,:,:,:,iT);
 
-        % L varie le plus rapidement
-        [iL, iZ] = ind2sub([nL nZ], k);
-
-    else
-
-        % Z varie le plus rapidement
-        [iZ, iL] = ind2sub([nZ nL], k);
-
-    end
-
-    data(:, :, iL, iZ) = I;
+    referenceImages(:,:,it) = ...
+        mean(currentData, [3 4], 'omitnan');
 
 end
 
-fprintf('Chargement terminé.\n');
+% Image utilisée pour la sélection des ROI
+referenceImage = referenceImages(:,:,1);
 
 %% ============================================================
-% 5. AXE RAMAN
+% 4. SELECTION DES ROI
 % =============================================================
 
-wavenumber = getRamanAxis(meta, cfg, nL);
+% Le ROI background n'est nécessaire que si la soustraction est activée.
+% Si subtractBackground=false, ROI_background est totalement ignoré.
 
-% Tri croissant de l'axe Raman
-[wavenumber, sortIdx] = sort(wavenumber(:));
+needBackground = cfg.subtractBackground;
 
-data = data(:, :, sortIdx, :);
+manualSignal = ~isempty(cfg.ROI_signal);
+manualBackground = ~isempty(cfg.ROI_background);
+manualROI = manualSignal && (~needBackground || manualBackground);
 
-if numel(wavenumber) ~= nL
-    error('La taille de l''axe Raman ne correspond pas à L.');
-end
-
-fprintf('Axe Raman : %.2f à %.2f cm-1\n', ...
-    min(wavenumber), max(wavenumber));
-
-%% ============================================================
-% 6. IMAGE DE REFERENCE ET SELECTION DES ROI
-% =============================================================
-
-manualROI = ~isempty(cfg.ROI_signal) && ...
-            ~isempty(cfg.ROI_background);
+% Initialisation systématique des variables ROI background
+maskBG = false(nY, nX);
+posBG = [];
+roiBG = [];
+nPixBG = 0;
 
 if manualROI
 
-    roi_signal = cfg.ROI_signal;
-    roi_bg     = cfg.ROI_background;
+    roiSignal = double(cfg.ROI_signal(:).');
 
-    posSignal = [roi_signal(1), roi_signal(3), ...
-             roi_signal(2)-roi_signal(1)+1, ...
-             roi_signal(4)-roi_signal(3)+1];
-
-    posBG = [roi_bg(1), roi_bg(3), ...
-                 roi_bg(2)-roi_bg(1)+1, ...
-                 roi_bg(4)-roi_bg(3)+1];
-
-    referenceImage = mean(data(:,:,:,1), 3, 'omitnan');
-
-    % Vérification des coordonnées
-    roiList = {roi_signal, roi_bg};
-    roiNames = {'signal', 'background'};
-
-    for k = 1:2
-        roi = roiList{k};
-
-        if numel(roi) ~= 4 || any(~isfinite(roi)) || ...
-           roi(1) < 1 || roi(3) < 1 || ...
-           roi(2) > size(data,2) || ...
-           roi(4) > size(data,1) || ...
-           roi(1) > roi(2) || roi(3) > roi(4)
-
-            error('Coordonnées invalides pour la ROI %s.', roiNames{k});
-        end
+    if numel(roiSignal) ~= 4
+        error('cfg.ROI_signal doit être au format [x1 x2 y1 y2].');
     end
 
-    % Création des masques
-    maskSignal = false(size(data,1), size(data,2));
-    maskBG     = false(size(data,1), size(data,2));
+    if any(~isfinite(roiSignal)) || ...
+            any(roiSignal ~= round(roiSignal)) || ...
+            roiSignal(1) < 1 || roiSignal(3) < 1 || ...
+            roiSignal(2) > nX || roiSignal(4) > nY || ...
+            roiSignal(1) > roiSignal(2) || roiSignal(3) > roiSignal(4)
+        error('Coordonnées invalides pour la ROI signal.');
+    end
 
-    maskSignal(roi_signal(3):roi_signal(4), ...
-                   roi_signal(1):roi_signal(2)) = true;
+    posSignal = [roiSignal(1), roiSignal(3), ...
+        roiSignal(2)-roiSignal(1)+1, ...
+        roiSignal(4)-roiSignal(3)+1];
 
-    maskBG(roi_bg(3):roi_bg(4), ...
-               roi_bg(1):roi_bg(2)) = true;
+    maskSignal = false(nY, nX);
+    maskSignal(roiSignal(3):roiSignal(4), ...
+        roiSignal(1):roiSignal(2)) = true;
 
-    fprintf('\nROI définies manuellement :\n');
-    fprintf('  Signal     : [%d %d %d %d]\n', roi_signal);
-    fprintf('  Background : [%d %d %d %d]\n', roi_bg);
+    if needBackground
+        roiBG = double(cfg.ROI_background(:).');
+
+        if numel(roiBG) ~= 4
+            error('cfg.ROI_background doit être au format [x1 x2 y1 y2].');
+        end
+
+        if any(~isfinite(roiBG)) || ...
+                any(roiBG ~= round(roiBG)) || ...
+                roiBG(1) < 1 || roiBG(3) < 1 || ...
+                roiBG(2) > nX || roiBG(4) > nY || ...
+                roiBG(1) > roiBG(2) || roiBG(3) > roiBG(4)
+            error('Coordonnées invalides pour la ROI background.');
+        end
+
+        posBG = [roiBG(1), roiBG(3), ...
+            roiBG(2)-roiBG(1)+1, ...
+            roiBG(4)-roiBG(3)+1];
+
+        maskBG(roiBG(3):roiBG(4), ...
+            roiBG(1):roiBG(2)) = true;
+    end
 
 else
 
-
     fprintf('\nSélection des ROI...\n');
-    
-    % Image moyenne sur L et Z
-    referenceImage = mean(data, [3 4], 'omitnan');
-    
+
     figROI = figure( ...
         'Name', 'Sélection des ROI', ...
         'NumberTitle', 'off', ...
         'Color', 'w');
-    
+
     axROI = axes(figROI);
-    
+
     imagesc(axROI, referenceImage);
     axis(axROI, 'image');
+    set(axROI, 'YDir', 'normal');
     colormap(axROI, parula(256));
     colorbar(axROI);
-    
     xlabel(axROI, 'X (pixels)');
     ylabel(axROI, 'Y (pixels)');
-    title(axROI, ...
-        {'Sélectionner le ROI background', ...
-        'Double-cliquer pour valider le rectangle'});
-    
-    % ROI background
-    hBG = drawrectangle(axROI, ...
-        'Color', 'cyan', ...
-        'LineWidth', 1.5);
-    
-    wait(hBG);
-    
-    posBG = hBG.Position;
-    
-    title(axROI, ...
-        {'Sélectionner le ROI signal', ...
-        'Double-cliquer pour valider le rectangle'});
-    
-    % ROI signal
-    hSignal = drawrectangle(axROI, ...
-        'Color', 'red', ...
-        'LineWidth', 1.5);
-    
-    wait(hSignal);
-    
-    posSignal = hSignal.Position;
-    
-    % Conversion des rectangles en masques
-    maskBG = rectangleToMask(posBG, nY, nX);
-    maskSignal = rectangleToMask(posSignal, nY, nX);
-    
-    if ~any(maskBG(:)) || ~any(maskSignal(:))
-        error('Une des ROI est vide.');
-    end
-    
-    if any(maskBG(:) & maskSignal(:))
-        warning('Les deux ROI se chevauchent.');
-    end
-    
-    nPixBG = nnz(maskBG);
-    nPixSignal = nnz(maskSignal);
-    
-    fprintf('ROI background : %d pixels\n', nPixBG);
-    fprintf('ROI signal : %d pixels\n', nPixSignal);
 
+    if needBackground
+        title(axROI, { ...
+            'Sélectionner le ROI background', ...
+            'Cliquer-glisser puis relâcher pour valider'});
+
+        % getrect évite la dépendance à drawrectangle / Image Processing Toolbox.
+        posBG = getrect(axROI);
+
+        if isempty(posBG) || numel(posBG) ~= 4 || ...
+                any(~isfinite(posBG)) || posBG(3) <= 0 || posBG(4) <= 0
+            error('Sélection du ROI background annulée ou invalide.');
+        end
+
+        maskBG = rectangleToMask(posBG, nY, nX);
+        if ~any(maskBG(:))
+            error('Le ROI background est vide ou hors de l''image.');
+        end
+
+        hold(axROI, 'on');
+        rectangle(axROI, 'Position', posBG, ...
+            'EdgeColor', 'c', 'LineWidth', 1.5);
+    else
+        title(axROI, { ...
+            'Sélectionner le ROI signal', ...
+            'Cliquer-glisser puis relâcher pour valider'});
+    end
+
+    title(axROI, { ...
+        'Sélectionner le ROI signal', ...
+        'Cliquer-glisser puis relâcher pour valider'});
+
+    posSignal = getrect(axROI);
+
+    if isempty(posSignal) || numel(posSignal) ~= 4 || ...
+            any(~isfinite(posSignal)) || ...
+            posSignal(3) <= 0 || posSignal(4) <= 0
+        error('Sélection du ROI signal annulée ou invalide.');
+    end
+
+    maskSignal = rectangleToMask(posSignal, nY, nX);
+
+    if ~any(maskSignal(:))
+        error('Le ROI signal est vide ou hors de l''image.');
+    end
+
+    hold(axROI, 'on');
+    rectangle(axROI, 'Position', posSignal, ...
+        'EdgeColor', 'r', 'LineWidth', 1.5);
+end
+
+if needBackground && any(maskBG(:) & maskSignal(:))
+    warning('Les deux ROI se chevauchent.');
+end
+
+nPixBG = nnz(maskBG);
+nPixSignal = nnz(maskSignal);
+
+fprintf('\nROI utilisées :\n');
+fprintf('  Signal     : %d pixels\n', nPixSignal);
+if needBackground
+    fprintf('  Background : %d pixels\n', nPixBG);
+else
+    fprintf('  Background : non utilisé (soustraction désactivée)\n');
 end
 
 %% ============================================================
-% 7. EXTRACTION DES SPECTRES POUR CHAQUE Z
+% 5. EXTRACTION DES SPECTRES POUR CHAQUE Z ET T
 % =============================================================
 
 fprintf('\nExtraction des spectres...\n');
 
-spectrumSignal = zeros(nL, nZ);
-spectrumBG = zeros(nL, nZ);
+% Dimensions : [L x Z x Tsel]
+spectrumSignal = nan(nL, nZ, nTselected);
 
-for iz = 1:nZ
+% Le tableau background est conservé pour compatibilité des sorties.
+% Il reste à NaN si la soustraction est désactivée.
+spectrumBG = nan(nL, nZ, nTselected);
 
-    currentData = data(:, :, :, iz);
+for it = 1:nTselected
 
-    for iL = 1:nL
+    iT = timeIndices(it);
 
-        currentImage = currentData(:, :, iL);
+    fprintf('  Extraction T=%d (%d/%d)\n', ...
+        iT, it, nTselected);
 
-        spectrumSignal(iL, iz) = ...
-            mean(currentImage(maskSignal), 'omitnan');
+    for iz = 1:nZ
 
-        spectrumBG(iL, iz) = ...
-            mean(currentImage(maskBG), 'omitnan');
+        for iL = 1:nL
 
+            currentImage = data(:,:,iL,iz,iT);
+
+            valuesSignal = currentImage(maskSignal);
+            spectrumSignal(iL,iz,it) = ...
+                mean(valuesSignal, 'omitnan');
+
+            if needBackground
+                valuesBG = currentImage(maskBG);
+                spectrumBG(iL,iz,it) = ...
+                    mean(valuesBG, 'omitnan');
+            end
+
+        end
     end
-
 end
 
-% Soustraction du background
-spectrumCorrected = spectrumSignal - spectrumBG;
+% Correction éventuelle du background
+if needBackground
+    spectrumCorrected = spectrumSignal - spectrumBG;
+else
+    spectrumCorrected = spectrumSignal;
+end
 
 %% ============================================================
-% 8. FIT MULTI-GAUSSIEN
+% 6. FIT MULTI-GAUSSIEN POUR CHAQUE Z ET T
 % =============================================================
 
 fprintf('\nAjustement des spectres...\n');
 
+nG = cfg.nGauss;
+
 fit = struct();
 
-fit.parameters = nan(nZ, cfg.nGauss, 3);
-fit.fitted = nan(nL, nZ);
-fit.components = nan(nL, nZ, cfg.nGauss);
+% Paramètres : [Tsel x Z x nGauss x 3]
+% 3 paramètres par gaussienne : amplitude, centre, FWHM
+fit.parameters = nan(nTselected, nZ, nG, 3);
 
-fit.R2 = nan(nZ, 1);
-fit.RMSE = nan(nZ, 1);
-fit.AUC = nan(nZ, 1);
-fit.peakAmplitude = nan(nZ, 1);
-fit.FWHM_total = nan(nZ, 1);
-fit.success = false(nZ, 1);
+% Axe spectral fin pour l'évaluation et l'affichage des modèles
+wavenumberFit = (min(wavenumber):cfg.fitStep:max(wavenumber)).';
+if isempty(wavenumberFit)
+    wavenumberFit = [min(wavenumber); max(wavenumber)];
+elseif wavenumberFit(end) < max(wavenumber)
+    wavenumberFit(end+1,1) = max(wavenumber);
+end
+fit.wavenumber = wavenumberFit;
 
-fit.background = nan(nL, nZ);
+% Modèles et composantes évalués sur l'axe fin : [Lfine x Z x Tsel]
+fit.fitted = nan(numel(wavenumberFit), nZ, nTselected);
+fit.components = nan(numel(wavenumberFit), nZ, nTselected, nG);
+fit.background = nan(numel(wavenumberFit), nZ, nTselected);
 
-for iz = 1:nZ
+fit.R2 = nan(nZ, nTselected);
+fit.RMSE = nan(nZ, nTselected);
+fit.AUC = nan(nZ, nTselected);
+fit.peakAmplitude = nan(nZ, nTselected);
+fit.FWHM_total = nan(nZ, nTselected);
+fit.success = false(nZ, nTselected);
 
-    y = spectrumCorrected(:, iz);
+for it = 1:nTselected
 
-    try
+    iT = timeIndices(it);
 
-        fitResult = fitCarbonateSpectrum( ...
-            wavenumber, y, cfg);
+    fprintf('\nTimepoint T=%d (%d/%d)\n', iT, it, nTselected);
 
-        fit.parameters(iz, :, :) = fitResult.parameters;
-        fit.fitted(:, iz) = fitResult.fitted;
-        fit.components(:, iz, :) = fitResult.components;
+    for iz = 1:nZ
 
-        fit.R2(iz) = fitResult.R2;
-        fit.RMSE(iz) = fitResult.RMSE;
-        fit.AUC(iz) = fitResult.AUC;
-        fit.peakAmplitude(iz) = fitResult.peakAmplitude;
-        fit.FWHM_total(iz) = fitResult.FWHM_total;
-        fit.success(iz) = true;
+        y = spectrumCorrected(:,iz,it);
 
-        fit.background(:, iz) = fitResult.background;
+        try
 
-    catch ME
+            fitResult = fitCarbonateSpectrum(wavenumber, y, cfg, wavenumberFit);
 
-        warning('Fit échoué pour Z=%d : %s', iz, ME.message);
+            fit.parameters(it,iz,:,:) = ...
+                reshape(fitResult.parameters, [1 1 nG 3]);
 
+            fit.fitted(:,iz,it) = fitResult.fitted;
+
+            fit.components(:,iz,it,:) = ...
+                reshape(fitResult.components, [numel(wavenumberFit) 1 1 nG]);
+
+            fit.background(:,iz,it) = fitResult.background;
+
+            fit.R2(iz,it) = fitResult.R2;
+            fit.RMSE(iz,it) = fitResult.RMSE;
+            fit.AUC(iz,it) = fitResult.AUC;
+            fit.peakAmplitude(iz,it) = fitResult.peakAmplitude;
+            fit.FWHM_total(iz,it) = fitResult.FWHM_total;
+
+            fit.success(iz,it) = true;
+
+        catch ME
+
+            warning('Fit échoué pour T=%d, Z=%d : %s', ...
+                iT, iz, ME.message);
+
+        end
     end
+
+    fprintf('Fits réussis pour T=%d : %d/%d\n', ...
+        iT, nnz(fit.success(:,it)), nZ);
 
 end
 
-fprintf('Fits terminés : %d/%d réussis.\n', ...
-    nnz(fit.success), nZ);
+fprintf('\nFits terminés : %d/%d réussis.\n', ...
+    nnz(fit.success), numel(fit.success));
 
 %% ============================================================
-% 8.bis ANALYSE STATISTIQUE DES FITS
+% 7. ANALYSE STATISTIQUE DES FITS
 % =============================================================
 
 fprintf('\n');
@@ -425,33 +486,35 @@ fprintf('============================================================\n');
 fprintf('             ANALYSE STATISTIQUE DES FITS\n');
 fprintf('============================================================\n');
 
-% Positions Z pour lesquelles le fit a réussi
-validFits = fit.success;
-nValid = nnz(validFits);
+metricNames = {'R2', 'RMSE', 'AUC', ...
+    'Peak amplitude', 'FWHM total'};
 
-fprintf('\nNombre de fits réussis : %d / %d (%.1f %%)\n', ...
-    nValid, nZ, 100*nValid/max(nZ,1));
+for it = 1:nTselected
 
-if nValid == 0
-    warning('Aucun fit valide : analyse statistique impossible.');
+    iT = timeIndices(it);
 
-else
+    validFits = fit.success(:,it);
+    nValid = nnz(validFits);
 
-    %% --------------------------------------------------------
-    % 1. Statistiques globales
-    % ---------------------------------------------------------
+    fprintf('\n============================================================\n');
+    fprintf('TIMEPOINT T=%d\n', iT);
+    fprintf('Fits réussis : %d / %d (%.1f %%)\n', ...
+        nValid, nZ, 100*nValid/max(nZ,1));
 
-    metricNames = {'R2', 'RMSE', 'AUC', ...
-                   'Peak amplitude', 'FWHM total'};
+    if nValid == 0
+        fprintf('Aucun fit valide pour ce timepoint.\n');
+        continue
+    end
 
     metricData = { ...
-        fit.R2(validFits), ...
-        fit.RMSE(validFits), ...
-        fit.AUC(validFits), ...
-        fit.peakAmplitude(validFits), ...
-        fit.FWHM_total(validFits)};
+        fit.R2(validFits,it), ...
+        fit.RMSE(validFits,it), ...
+        fit.AUC(validFits,it), ...
+        fit.peakAmplitude(validFits,it), ...
+        fit.FWHM_total(validFits,it)};
 
     fprintf('\n--- STATISTIQUES GLOBALES ---\n');
+
     fprintf('%-20s %12s %12s %12s %12s %8s\n', ...
         'Paramètre', 'Moyenne', 'Médiane', 'Std', 'SEM', 'N');
 
@@ -476,32 +539,20 @@ else
 
     end
 
-
-    %% --------------------------------------------------------
-    % 2. Statistiques des composantes gaussiennes
-    % ---------------------------------------------------------
+    %% Statistiques des gaussiennes
 
     fprintf('\n--- STATISTIQUES DES GAUSSIENNES ---\n');
 
-    for iG = 1:cfg.nGauss
+    for iG = 1:nG
 
-        % Extraction des paramètres :
-        % colonne 1 = amplitude
-        % colonne 2 = centre
-        % colonne 3 = FWHM
-
-        amplitudes = squeeze(fit.parameters(validFits, iG, 1));
-        centers = squeeze(fit.parameters(validFits, iG, 2));
-        widths = squeeze(fit.parameters(validFits, iG, 3));
-
-        amplitudes = amplitudes(:);
-        centers = centers(:);
-        widths = widths(:);
-
-        fprintf('\nGaussienne %d\n', iG);
+        amplitudes = reshape(fit.parameters(it,validFits,iG,1), [], 1);
+        centers = reshape(fit.parameters(it,validFits,iG,2), [], 1);
+        widths = reshape(fit.parameters(it,validFits,iG,3), [], 1);
 
         parameterNames = {'Amplitude', 'Centre (cm-1)', 'FWHM (cm-1)'};
         parameterData = {amplitudes, centers, widths};
+
+        fprintf('\nGaussienne %d\n', iG);
 
         fprintf('%-18s %12s %12s %12s %12s %8s\n', ...
             'Paramètre', 'Moyenne', 'Médiane', 'Std', 'SEM', 'N');
@@ -526,13 +577,9 @@ else
                 parameterNames{k}, avg, med, sd, sem, N);
 
         end
-
     end
 
-
-    %% --------------------------------------------------------
-    % 3. Tableau récapitulatif pour chaque position Z
-    % ---------------------------------------------------------
+    %% Résultats individuels selon Z
 
     fprintf('\n--- RESULTATS INDIVIDUELS SELON Z ---\n');
 
@@ -541,14 +588,14 @@ else
 
     for iz = 1:nZ
 
-        if fit.success(iz)
+        if fit.success(iz,it)
 
             fprintf('%5d %10s %12.4f %12.4g %12.4g %12.4f\n', ...
                 iz, 'OK', ...
-                fit.R2(iz), ...
-                fit.RMSE(iz), ...
-                fit.AUC(iz), ...
-                fit.FWHM_total(iz));
+                fit.R2(iz,it), ...
+                fit.RMSE(iz,it), ...
+                fit.AUC(iz,it), ...
+                fit.FWHM_total(iz,it));
 
         else
 
@@ -556,17 +603,15 @@ else
                 iz, 'FAILED', '-', '-', '-', '-');
 
         end
-
     end
-
 end
 
 fprintf('\n============================================================\n');
 fprintf('                 FIN DE L''ANALYSE\n');
-fprintf('============================================================\n\n');
+fprintf('============================================================\n');
 
 %% ============================================================
-% 9. STRUCTURE DE SORTIE
+% 8. STRUCTURE DE SORTIE
 % =============================================================
 
 results = struct();
@@ -574,36 +619,59 @@ results = struct();
 results.filename = filename;
 results.metadata = meta;
 results.scan_type = scanType;
-results.pageOrder = pageOrder;
+
+if isfield(SRS, 'pageOrder')
+    results.pageOrder = SRS.pageOrder;
+elseif isfield(SRS, 'page_order')
+    results.pageOrder = SRS.page_order;
+else
+    results.pageOrder = '';
+end
 
 results.dimensions = struct( ...
     'X', nX, ...
     'Y', nY, ...
     'L', nL, ...
     'Z', nZ, ...
-    'T', 1);
+    'T', nT);
 
-results.wavenumber = wavenumber;
+results.selected_T = cfg.T;
+results.timeIndices = timeIndices;
 
+results.wavenumber = wavenumber;          % axe expérimental
+results.wavenumber_fit = fit.wavenumber;  % axe fin pour les modèles ajustés
+results.subtractBackground = cfg.subtractBackground;
+results.fitStep = cfg.fitStep;
+
+% Données complètes de l'acquisition
 results.data = data;
 
+% Images de référence : [Y x X x Tsel]
+results.referenceImages = referenceImages;
+
+% ROI
 results.roi_signal = maskSignal;
 results.roi_background = maskBG;
 
 results.roi_position_signal = posSignal;
 results.roi_position_background = posBG;
 
+results.nPixels_signal = nPixSignal;
+results.nPixels_background = nPixBG;
+
+% Spectres : [L x Z x Tsel]
 results.spectrum_signal = spectrumSignal;
 results.spectrum_bg = spectrumBG;
 results.spectrum_corrected = spectrumCorrected;
 
+% Fits
 results.fit = fit;
 
 %% ============================================================
-% 10. INTERFACE GRAPHIQUE INTERACTIVE
+% 9. INTERFACE GRAPHIQUE INTERACTIVE
 % =============================================================
 
-createInteractivePlot(results, referenceImage);
+createInteractivePlot(results);
 
 fprintf('\nAnalyse terminée.\n');
 
@@ -622,178 +690,6 @@ end
 
 end
 
-
-%% ------------------------------------------------------------
-function meta = extractSRSMetadata(info)
-
-meta = struct();
-
-if ~isfield(info, 'ImageDescription')
-    return
-end
-
-description = char(info.ImageDescription);
-
-% Extraction du nombre de timepoints ImageJ
-tokens = regexp(description, 'frames=(\d+)', ...
-    'tokens', 'once');
-
-if ~isempty(tokens)
-    meta.timepoints = str2double(tokens{1});
-else
-    meta.timepoints = 1;
-end
-
-% Extraction du JSON LabVIEW
-marker = 'Info=LABVIEW_RAMAN|';
-
-idx = strfind(description, marker);
-
-if isempty(idx)
-    return
-end
-
-startIndex = idx(1) + length(marker);
-
-jsonText = strtrim(description(startIndex:end));
-
-endJSON = find(jsonText == '}', 1, 'last');
-
-if ~isempty(endJSON)
-    jsonText = jsonText(1:endJSON);
-end
-
-try
-
-    labviewMeta = jsondecode(jsonText);
-
-    fields = fieldnames(labviewMeta);
-
-    for k = 1:numel(fields)
-        meta.(fields{k}) = labviewMeta.(fields{k});
-    end
-
-catch ME
-
-    warning('Impossible de décoder les métadonnées LabVIEW : %s', ...
-        ME.message);
-
-end
-
-end
-
-
-%% ------------------------------------------------------------
-function value = getMetaValue(meta, names, defaultValue)
-
-value = defaultValue;
-
-for k = 1:numel(names)
-
-    if isfield(meta, names{k})
-
-        candidate = meta.(names{k});
-
-        if ~isempty(candidate)
-            value = candidate;
-            return
-        end
-
-    end
-
-end
-
-end
-
-
-%% ------------------------------------------------------------
-function value = getMetaNumber(meta, names, defaultValue)
-
-rawValue = getMetaValue(meta, names, defaultValue);
-
-if isnumeric(rawValue) && isscalar(rawValue)
-
-    value = double(rawValue);
-
-elseif ischar(rawValue) || isstring(rawValue)
-
-    value = str2double(rawValue);
-
-else
-
-    value = defaultValue;
-
-end
-
-if ~isfinite(value) || value < 1
-    value = defaultValue;
-end
-
-value = round(value);
-
-end
-
-
-%% ------------------------------------------------------------
-function wavenumber = getRamanAxis(meta, cfg, nL)
-
-% Priorité 1 : axe Raman fourni directement
-if ~isempty(cfg.wavenumber)
-    wavenumber = cfg.wavenumber(:);
-    if numel(wavenumber) ~= nL
-        error('cfg.wavenumber doit contenir exactement L valeurs.');
-    end
-    return
-end
-
-% Bornes spectrales lues directement dans les métadonnées.
-% On ne passe pas par getMetaNumber car cette fonction arrondit les valeurs,
-% ce qui serait incorrect pour des longueurs d'onde décimales.
-min_wl = getMetaScalar(meta, {'min_wl', 'Lambda_min_nm'}, NaN);
-max_wl = getMetaScalar(meta, {'max_wl', 'Lambda_max_nm'}, NaN);
-
-if ~isfinite(min_wl) || ~isfinite(max_wl)
-    error(['Impossible de construire l''axe spectral : les métadonnées ', ...
-        'doivent contenir min_wl et max_wl (ou Lambda_min_nm et ', ...
-        'Lambda_max_nm).']);
-end
-
-% Longueurs d'onde échantillonnées
-wavelengths_data = linspace(min_wl, max_wl, nL);
-
-% Conversion en décalage Raman, avec lambda Stokes/IR fixé à 1031.3 nm
-wavenumber_data = 1e7 ./ wavelengths_data - 1e7 ./ 1031.3;
-
-wavenumber = wavenumber_data(:);
-
-end
-
-
-%% ------------------------------------------------------------
-function value = getMetaScalar(meta, names, defaultValue)
-
-value = defaultValue;
-
-for k = 1:numel(names)
-    if isfield(meta, names{k})
-        candidate = meta.(names{k});
-
-        if isnumeric(candidate) && isscalar(candidate)
-            candidate = double(candidate);
-        elseif ischar(candidate) || (isstring(candidate) && isscalar(candidate))
-            candidate = str2double(candidate);
-        else
-            continue
-        end
-
-        if isfinite(candidate)
-            value = candidate;
-            return
-        end
-    end
-end
-
-end
 
 %% ------------------------------------------------------------
 function mask = rectangleToMask(position, nY, nX)
@@ -816,7 +712,7 @@ end
 
 
 %% ------------------------------------------------------------
-function result = fitCarbonateSpectrum(x, y, cfg)
+function result = fitCarbonateSpectrum(x, y, cfg, xFine)
 
 x = x(:);
 y = y(:);
@@ -862,7 +758,7 @@ if ~isfinite(signalMax) || signalMax <= 0
     signalMax = max(abs(yFit));
 end
 
-if signalMax <= 0
+if ~isfinite(signalMax) || signalMax <= 0
     signalMax = 1;
 end
 
@@ -885,8 +781,10 @@ end
 
 p0(end-1:end) = [B0_0, B1_0];
 
-% Modèle de fit
-model = @(p, xx) carbonateModel(p, xx, nG);
+% Le centre du fond linéaire est fixé à mean(xFit), y compris
+% lors de l'évaluation ultérieure sur l'axe spectral fin.
+backgroundCenter = mean(xFit);
+model = @(p, xx) carbonateModel(p, xx, nG, backgroundCenter);
 
 % Optimisation
 if exist('lsqcurvefit', 'file') == 2
@@ -903,7 +801,6 @@ if exist('lsqcurvefit', 'file') == 2
 
     catch
 
-        % Repli en cas d'erreur de lsqcurvefit
         p = boundedFitFminsearch( ...
             model, p0, xFit, yFit, lb, ub);
 
@@ -919,40 +816,40 @@ end
 % Trier les composantes par centre spectral
 parameters = reshape(p(1:3*nG), 3, nG).';
 
-[~, order] = sort(parameters(:, 2));
-
-parameters = parameters(order, :);
+[~, order] = sort(parameters(:,2));
+parameters = parameters(order,:);
 
 % Reconstruire le vecteur de paramètres trié
 pSorted = zeros(size(p));
 
 for i = 1:nG
-    pSorted(3*(i-1)+(1:3)) = parameters(i, :);
+    pSorted(3*(i-1)+(1:3)) = parameters(i,:);
 end
 
 pSorted(end-1:end) = p(end-1:end);
 
-% Calcul sur tout l'axe spectral
-fitted = carbonateModel(pSorted, x, nG);
+% Evaluation du modèle et des composantes sur l'axe fin.
+% L'optimisation, elle, reste réalisée sur les points expérimentaux xFit.
+fitted = carbonateModel(pSorted, xFine, nG, backgroundCenter);
 
-components = zeros(numel(x), nG);
+components = zeros(numel(xFine), nG);
 
 for i = 1:nG
 
-    A = parameters(i, 1);
-    mu = parameters(i, 2);
-    w = parameters(i, 3);
+    A = parameters(i,1);
+    mu = parameters(i,2);
+    w = parameters(i,3);
 
-    components(:, i) = A .* exp( ...
-        -4*log(2) .* ((x-mu)./w).^2);
+    components(:,i) = A .* exp( ...
+        -4*log(2) .* ((xFine-mu)./w).^2);
 
 end
 
 background = pSorted(end-1) + ...
-    pSorted(end) .* (x - mean(xFit));
+    pSorted(end) .* (xFine - backgroundCenter);
 
 % Qualité du fit sur la zone sélectionnée
-yModel = carbonateModel(pSorted, xFit, nG);
+yModel = carbonateModel(pSorted, xFit, nG, backgroundCenter);
 
 residual = yFit - yModel;
 
@@ -968,13 +865,13 @@ end
 RMSE = sqrt(mean(residual.^2));
 
 % Aire totale des composantes
-AUC = trapz(x, sum(components, 2));
+AUC = trapz(xFine, sum(components,2));
 
 % Amplitude maximale de la contribution carbonatée
-peakAmplitude = max(sum(components, 2));
+peakAmplitude = max(sum(components,2));
 
 % FWHM de l'enveloppe totale autour de son maximum global
-FWHMtotal = calculateTotalFWHM(x, sum(components, 2));
+FWHMtotal = calculateTotalFWHM(xFine, sum(components,2));
 
 result = struct();
 
@@ -993,7 +890,7 @@ end
 
 
 %% ------------------------------------------------------------
-function y = carbonateModel(p, x, nG)
+function y = carbonateModel(p, x, nG, backgroundCenter)
 
 x = x(:);
 
@@ -1015,7 +912,7 @@ end
 B0 = p(end-1);
 B1 = p(end);
 
-y = y + B0 + B1 .* (x - mean(x));
+y = y + B0 + B1 .* (x - backgroundCenter);
 
 end
 
@@ -1045,14 +942,11 @@ end
 %% ------------------------------------------------------------
 function value = boundedObjective(p, model, x, y, lb, ub)
 
-penalty = 0;
-
 below = max(lb-p, 0);
 above = max(p-ub, 0);
 
 penalty = 1e6 * sum(below.^2 + above.^2);
 
-% Empêcher les valeurs non physiques
 if any(~isfinite(p))
     value = realmax;
     return
@@ -1121,114 +1015,178 @@ end
 
 
 %% ------------------------------------------------------------
-function createInteractivePlot(results, referenceImage)
+function createInteractivePlot(results)
 
 nZ = results.dimensions.Z;
-x = results.wavenumber;
+nT = numel(results.timeIndices);
+
+x = results.wavenumber;             % axe expérimental
+xFit = results.fit.wavenumber;       % axe fin des courbes ajustées
 
 fig = figure( ...
     'Name', 'SRS - Analyse spectrale interactive', ...
     'NumberTitle', 'off', ...
     'Color', 'w', ...
-    'Position', [100 100 1250 750]);
+    'Position', [100 100 1250 780]);
 
 % Axes
-axImage = axes(fig, 'Position', [0.07 0.56 0.30 0.36]);
-axRaw = axes(fig, 'Position', [0.47 0.56 0.46 0.36]);
+axImage = axes(fig, 'Position', [0.07 0.57 0.30 0.35]);
+axRaw = axes(fig, 'Position', [0.47 0.57 0.46 0.35]);
 axFit = axes(fig, 'Position', [0.07 0.13 0.56 0.32]);
 axInfo = axes(fig, 'Position', [0.70 0.13 0.25 0.32]);
 
-% Image de référence
-imagesc(axImage, referenceImage);
-axis(axImage, 'image');
-colormap(axImage, parula(256));
-colorbar(axImage);
+%% Curseur Z
 
-hold(axImage, 'on');
-
-rectangle(axImage, ...
-    'Position', results.roi_position_background, ...
-    'EdgeColor', 'c', ...
-    'LineWidth', 1.5);
-
-rectangle(axImage, ...
-    'Position', results.roi_position_signal, ...
-    'EdgeColor', 'r', ...
-    'LineWidth', 1.5);
-
-title(axImage, 'Image de référence et ROI');
-xlabel(axImage, 'X (pixels)');
-ylabel(axImage, 'Y (pixels)');
-
-% Curseur Z
-slider = uicontrol(fig, ...
+sliderZ = uicontrol(fig, ...
     'Style', 'slider', ...
     'Units', 'normalized', ...
-    'Position', [0.20 0.045 0.60 0.035], ...
+    'Position', [0.20 0.065 0.60 0.025], ...
     'Min', 1, ...
-    'Max', max(1, nZ), ...
+    'Max', max(1,nZ), ...
     'Value', 1, ...
     'SliderStep', [ ...
         1/max(1,nZ-1), ...
         min(1,5/max(1,nZ-1))]);
 
 if nZ == 1
-    set(slider, 'Enable', 'off');
+    set(sliderZ, 'Enable', 'off');
 end
 
 txtZ = uicontrol(fig, ...
     'Style', 'text', ...
     'Units', 'normalized', ...
-    'Position', [0.82 0.035 0.12 0.05], ...
+    'Position', [0.82 0.057 0.12 0.04], ...
     'String', sprintf('Z = 1/%d', nZ), ...
     'BackgroundColor', 'w', ...
     'FontSize', 11);
 
+%% Curseur T
+
+sliderT = uicontrol(fig, ...
+    'Style', 'slider', ...
+    'Units', 'normalized', ...
+    'Position', [0.20 0.025 0.60 0.025], ...
+    'Min', 1, ...
+    'Max', max(1,nT), ...
+    'Value', 1, ...
+    'SliderStep', [ ...
+        1/max(1,nT-1), ...
+        min(1,5/max(1,nT-1))]);
+
+if nT == 1
+    set(sliderT, 'Enable', 'off');
+end
+
+txtT = uicontrol(fig, ...
+    'Style', 'text', ...
+    'Units', 'normalized', ...
+    'Position', [0.82 0.017 0.12 0.04], ...
+    'String', sprintf('T = %d/%d', ...
+        results.timeIndices(1), results.dimensions.T), ...
+    'BackgroundColor', 'w', ...
+    'FontSize', 11);
+
 % Actualisation
-slider.Callback = @updatePlot;
+sliderZ.Callback = @updatePlot;
+sliderT.Callback = @updatePlot;
 
 % Affichage initial
 updatePlot();
 
-    function updatePlot(~, ~)
 
-        iz = round(slider.Value);
-        slider.Value = iz;
+    %% ========================================================
+    % Fonction interne d'actualisation
+    % =========================================================
+
+    function updatePlot(~,~)
+
+        iz = round(sliderZ.Value);
+        it = round(sliderT.Value);
+
+        sliderZ.Value = iz;
+        sliderT.Value = it;
+
+        actualT = results.timeIndices(it);
 
         set(txtZ, 'String', sprintf('Z = %d/%d', iz, nZ));
+        set(txtT, 'String', sprintf('T = %d/%d', ...
+            actualT, results.dimensions.T));
+
+        %% Image de référence
+
+        cla(axImage);
+
+        imagesc(axImage, results.referenceImages(:,:,it));
+
+        axis(axImage, 'image');
+        set(axImage, 'YDir', 'normal');
+
+        colormap(axImage, parula(256));
+        colorbar(axImage);
+
+        hold(axImage, 'on');
+
+        if results.subtractBackground && ...
+                ~isempty(results.roi_position_background)
+            rectangle(axImage, ...
+                'Position', results.roi_position_background, ...
+                'EdgeColor', 'c', ...
+                'LineWidth', 1.5);
+        end
+
+        rectangle(axImage, ...
+            'Position', results.roi_position_signal, ...
+            'EdgeColor', 'r', ...
+            'LineWidth', 1.5);
+
+        title(axImage, sprintf('Image de référence - T=%d', actualT));
+        xlabel(axImage, 'X (pixels)');
+        ylabel(axImage, 'Y (pixels)');
 
         %% Spectres signal et background
+
         cla(axRaw);
 
-        plot(axRaw, x, results.spectrum_signal(:, iz), ...
+        plot(axRaw, x, results.spectrum_signal(:,iz,it), ...
             'ro-', 'MarkerSize', 4, 'MarkerFaceColor', 'r', ...
             'LineWidth', 1.0);
 
         hold(axRaw, 'on');
 
-        plot(axRaw, x, results.spectrum_bg(:, iz), ...
-            'o-', 'Color', [0.2 0.6 0.7], ...
-            'MarkerSize', 4, 'LineWidth', 1.0);
+        if results.subtractBackground
+            plot(axRaw, x, results.spectrum_bg(:,iz,it), ...
+                'o-', 'Color', [0.2 0.6 0.7], ...
+                'MarkerSize', 4, 'LineWidth', 1.0);
 
-        plot(axRaw, x, results.spectrum_corrected(:, iz), ...
-            'ko-', 'MarkerSize', 4, 'MarkerFaceColor', 'k', ...
-            'LineWidth', 1.0);
+            plot(axRaw, x, results.spectrum_corrected(:,iz,it), ...
+                'ko-', 'MarkerSize', 4, 'MarkerFaceColor', 'k', ...
+                'LineWidth', 1.0);
+
+            legend(axRaw, ...
+                'Signal', 'Background', 'Signal corrigé', ...
+                'Location', 'best');
+        else
+            plot(axRaw, x, results.spectrum_corrected(:,iz,it), ...
+                'ko-', 'MarkerSize', 4, 'MarkerFaceColor', 'k', ...
+                'LineWidth', 1.0);
+
+            legend(axRaw, 'Signal (sans soustraction background)', ...
+                'Location', 'best');
+        end
 
         xlabel(axRaw, 'Raman shift (cm^{-1})');
         ylabel(axRaw, 'Intensity (a.u.)');
 
-        title(axRaw, 'Spectres extraits des ROI');
-
-        legend(axRaw, ...
-            'Signal', 'Background', 'Signal corrigé', ...
-            'Location', 'best');
+        title(axRaw, sprintf('Spectres extraits des ROI - Z=%d, T=%d', ...
+            iz, actualT));
 
         grid(axRaw, 'on');
 
         %% Spectre corrigé et fit
+
         cla(axFit);
 
-        y = results.spectrum_corrected(:, iz);
+        y = results.spectrum_corrected(:,iz,it);
 
         plot(axFit, x, y, ...
             'ko-', 'MarkerSize', 4, 'MarkerFaceColor', 'k', ...
@@ -1236,38 +1194,28 @@ updatePlot();
 
         hold(axFit, 'on');
 
-        if results.fit.success(iz)
+        if results.fit.success(iz,it)
 
-            plot(axFit, x, results.fit.fitted(:, iz), ...
+            plot(axFit, xFit, results.fit.fitted(:,iz,it), ...
                 'r-', 'LineWidth', 2);
 
-            if results.fit.success(iz)
+            nGauss = size(results.fit.components,4);
 
-                nG = size(results.fit.components, 3);
+            for i = 1:nGauss
 
-                for i = 1:nG
-
-                    if isgraphics(axFit)
-
-                        plot(axFit, x, ...
-                            results.fit.components(:, iz, i), ...
-                            '--', 'LineWidth', 1);
-
-                    end
-
-                end
+                plot(axFit, xFit, ...
+                    results.fit.components(:,iz,it,i), ...
+                    '--', 'LineWidth', 1);
 
             end
 
-            legendEntries = [{'Spectre corrigé', 'Fit total'}];
+            legendEntries = {'Spectre corrigé', 'Fit total'};
 
-            for i = 1:size(results.fit.components, 3)
-                legendEntries{end+1} = ...
-                    sprintf('Gaussienne %d', i);
+            for i = 1:nGauss
+                legendEntries{end+1} = sprintf('Gaussienne %d',i);
             end
 
-            legend(axFit, legendEntries, ...
-                'Location', 'best');
+            legend(axFit, legendEntries, 'Location', 'best');
 
         else
 
@@ -1278,43 +1226,46 @@ updatePlot();
         xlabel(axFit, 'Raman shift (cm^{-1})');
         ylabel(axFit, 'Intensity (a.u.)');
 
-        title(axFit, 'Fit multi-gaussien');
+        title(axFit, sprintf('Fit multi-gaussien - Z=%d, T=%d', ...
+            iz, actualT));
+
         grid(axFit, 'on');
 
         %% Informations numériques
+
         cla(axInfo);
         axis(axInfo, 'off');
 
-        if results.fit.success(iz)
+        if results.fit.success(iz,it)
 
-            % Conserver systématiquement la forme [nGauss x 3].
-            % squeeze peut supprimer une dimension lorsque nGauss = 1.
-            nGauss = size(results.fit.parameters, 2);
-            p = reshape(results.fit.parameters(iz, :, :), nGauss, 3);
+            nGauss = size(results.fit.parameters,3);
+
+            p = reshape( ...
+                results.fit.parameters(it,iz,:,:), nGauss, 3);
 
             text(axInfo, 0, 1.0, ...
-                sprintf('R^2 = %.4f', results.fit.R2(iz)), ...
+                sprintf('R^2 = %.4f', results.fit.R2(iz,it)), ...
                 'FontSize', 11);
 
             text(axInfo, 0, 0.91, ...
-                sprintf('RMSE = %.4g', results.fit.RMSE(iz)), ...
+                sprintf('RMSE = %.4g', results.fit.RMSE(iz,it)), ...
                 'FontSize', 11);
 
             text(axInfo, 0, 0.82, ...
-                sprintf('AUC = %.4g', results.fit.AUC(iz)), ...
+                sprintf('AUC = %.4g', results.fit.AUC(iz,it)), ...
                 'FontSize', 11);
 
             text(axInfo, 0, 0.73, ...
                 sprintf('Amplitude max = %.4g', ...
-                results.fit.peakAmplitude(iz)), ...
+                results.fit.peakAmplitude(iz,it)), ...
                 'FontSize', 11);
 
             text(axInfo, 0, 0.64, ...
                 sprintf('FWHM totale = %.3f cm^{-1}', ...
-                results.fit.FWHM_total(iz)), ...
+                results.fit.FWHM_total(iz,it)), ...
                 'FontSize', 11);
 
-            for i = 1:size(p, 1)
+            for i = 1:nGauss
 
                 str = sprintf( ...
                     'G%d : A=%.3g | Centre=%.2f | FWHM=%.2f', ...

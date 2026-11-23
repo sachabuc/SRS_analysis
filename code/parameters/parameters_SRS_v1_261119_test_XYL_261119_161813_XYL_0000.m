@@ -7,8 +7,8 @@ function params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000()
     project_root = fileparts(fileparts(this_dir));
 
     %%%%%% Data 
-    day_folder_data = '261119'; 
-    folder_data = 'test_XYL'; 
+    day_folder_data = '261123'; 
+    folder_data = 'test_XYLZ'; 
     %%%%%% 
 
     % if different acquisition in the same folder_data, add \acquisition_name

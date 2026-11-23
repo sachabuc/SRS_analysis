@@ -12,8 +12,9 @@ end
 
 %% 1. Chargement des données
 
-
 SRS = load_SRS_TIFF_only(params.main_dir, params.cfg);
+
+
 
 
 %% 2. Display Images 
@@ -30,8 +31,17 @@ fig = display_SRS_images(SRS.data,SRS.metadata, params);
 
 %% 4. First analysis - Images subtraction 
 
-[results, fig] = compare_carbonate_images( ...
+[results_compare, fig] = compare_carbonate_images( ...
     data_corr, SRS.wavenumber, params.intervals, params);
+
+%%
+
+cfg.T = -1;
+cfg.nGauss=1;
+cfg.subtractBackground  = false;
+
+
+results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 
 %% 5. drift analysis 
 % image de dimension X Y 1 1 T
