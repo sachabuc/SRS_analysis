@@ -16,29 +16,29 @@ end
 SRS = load_SRS_TIFF_only(params.main_dir, params.cfg);
 
 
-%%
+%% 2. Display Images 
 
 fig = display_SRS_images(SRS.data,SRS.metadata, params);
 
 
-%% Noise study 
+%% 3. Noise study 
 
-% ROI rectangulaire : [x1 x2 y1 y2]
+% ROI rectangular : [x1 x2 y1 y2]
 
 [data_corr, noise_matrix, background_matrix] = ...
     correct_SRS_background(SRS.data, params.ROI_background, params);
-%%
 
-fig = display_SRS_images(data_corr, params);
-
-%%
+%% 4. First analysis - Images subtraction 
 
 [results, fig] = compare_carbonate_images( ...
     data_corr, SRS.wavenumber, params.intervals, params);
 
-%% drift analysis 
-% results = analyze_XY_image_drift(SRS.data);
+%% 5. drift analysis 
+% image de dimension X Y 1 1 T
+% results = analyze_XY_image_drift(data_corr(:,:,1,1,1));
 
+
+%% 5. Fit and segmentation 
 
 % %% 2. Mesure de la FWHM 
 % 
