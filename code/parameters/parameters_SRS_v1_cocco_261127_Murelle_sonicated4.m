@@ -48,7 +48,7 @@ function params = parameters_SRS_v1_cocco_261127_Murelle_sonicated4()
     params.contourColor = 'k';        % Couleur des lignes
     params.contourLineWidth = 0.75;   % Épaisseur des lignes
 
-    params.alpha = 0.5;
+    params.alpha = 1;
     
     % Réglage indépendant des huit caxis
     params.caxis.aragonite = [];

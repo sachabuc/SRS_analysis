@@ -106,8 +106,9 @@ function [data_corrected, noise_matrix, background_matrix] = ...
 
     data_corrected = nan(size(data5D));
 
-    noise_matrix = nan(nL, nZ, nT);
-    background_matrix = nan(nL, nZ, nT);
+    % Dimensions logiques [L Z T]
+    noise_matrix = reshape(nan(nL, nZ, nT), [nL nZ nT]);
+    background_matrix = reshape(nan(nL, nZ, nT), [nL nZ nT]);
 
     %% 5. Correction du background et estimation du bruit
 

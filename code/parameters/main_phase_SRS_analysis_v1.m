@@ -3,7 +3,7 @@ clear all;
 close all;
    
 %% Charger les paramètres
-params = parameters_SRS_v1_cocco_261127_Hux_cell(); 
+params = parameters_SRS_v1_cocco_261127_Murelle_sonicated4(); 
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
@@ -32,10 +32,10 @@ fig = display_SRS_images(SRS.data,SRS.metadata, params);
  
 %% 4. First analysis - Images subtraction 
 % 
-[results_compare, fig] = compare_carbonate_images( ...
-    data_corr, SRS.wavenumber, params.intervals, params);
+% [results_compare, fig] = compare_carbonate_images( ...
+%     data_corr, SRS.wavenumber, params.intervals, params);
 
-% [results_compare, fig] = compare_carbonate_images_v2(data_corr, SRS.wavenumber, params.intervals,  background_matrix,params);
+[results_compare, fig] = compare_carbonate_images_v2(data_corr, SRS.wavenumber, params.intervals,  background_matrix,params);
  
 %%
 
