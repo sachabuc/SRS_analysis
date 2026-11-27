@@ -8,7 +8,7 @@ function params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000()
 
     %%%%%% Data 
     day_folder_data = '261123'; 
-    folder_data = 'test_XYLZ'; 
+    folder_data = 'CCHH_dried_XYL2_NV'; 
     %%%%%% 
 
     % if different acquisition in the same folder_data, add \acquisition_name

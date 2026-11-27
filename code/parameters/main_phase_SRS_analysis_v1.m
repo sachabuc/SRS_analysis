@@ -1,45 +1,49 @@
 %% Initialisation
 clear all;
 close all;
-
+   
 %% Charger les paramètres
-params = parameters_SRS_v1_261119_test_XYL_261119_161813_XYL_0000();
+params = parameters_SRS_v1_cocco_261127_Hux_cell(); 
 
 %% Ajouter les chemins des fonctions
 for i = 1:length(params.function_paths)
     addpath(params.function_paths{i});
 end
-
+ 
 %% 1. Chargement des données
 
 SRS = load_SRS_TIFF_only(params.main_dir, params.cfg);
 
-
+ 
 
 
 %% 2. Display Images 
 
 fig = display_SRS_images(SRS.data,SRS.metadata, params);
 
-
 %% 3. Noise study 
 
-% ROI rectangular : [x1 x2 y1 y2]
+% ROI rectangular : [x1 x2 y1 y2] 
 
 [data_corr, noise_matrix, background_matrix] = ...
     correct_SRS_background(SRS.data, params.ROI_background, params);
 
-%% 4. First analysis - Images subtraction 
 
+ 
+%% 4. First analysis - Images subtraction 
+% 
 [results_compare, fig] = compare_carbonate_images( ...
     data_corr, SRS.wavenumber, params.intervals, params);
 
+% [results_compare, fig] = compare_carbonate_images_v2(data_corr, SRS.wavenumber, params.intervals,  background_matrix,params);
+ 
 %%
 
 cfg.T = -1;
 cfg.nGauss=1;
 cfg.subtractBackground  = false;
 
+SRS.data = data_corr;
 
 results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 
@@ -48,9 +52,11 @@ results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 % results = analyze_XY_image_drift(data_corr(:,:,1,1,1));
 
 
-%% 5. Fit and segmentation 
+%%%%%%%%%%%%%%%%%%%%% 6. Fit and segmentation %%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-% %% 2. Mesure de la FWHM 
+%% 2. Mesure de la FWHM 
+
+% data_corr = data_corr(:,:,:,7,1);
 % 
 % if params.calcul_fwhm_instr
 %     [FWHM_mesure, FWHM_error, fit_result, ROI_background, ROI_phase] = ...
@@ -68,11 +74,10 @@ results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 % % fwhm_instr = params.fwhm_instr;
 % 
 % 
-% %% 5. Affichage des images principales
-% if params.display_intensity_maps
-%     plot_srs_images(data_corr, params.ni, params.Imin, params.Imax,...
-%         params.titles, params.diff_min,params.diff_max,params);
-% end
+% %%
+% [I_corr, background_spectrum, noise_map, spatial_dispersion_bg_global, spatial_dispersion_bg] = ...
+%     estimate_background_noise_roi(I_raw, params.wavenumber,...
+%     params.x1_s, params.x1_e, params.x2_s, params.x2_e);
 % 
 % %% 6. Modèle théorique des phases
 % [phase_model] = model_carbonate_phases(...
@@ -135,14 +140,14 @@ results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 %         fprintf('          STATISTIQUES DES SPECTRES DE REFERENCE\n');
 %         fprintf('============================================================\n');
 %         display_reference_statistics(ref_spectra, fwhm_instr);
-%     
+% 
 %         if params.compare_2ps_7ps
 %             fprintf('\n============================================================\n');
 %             fprintf('      STATISTIQUES DES SPECTRES DE REFERENCE SHIFTED\n');
 %             fprintf('============================================================\n');
 %             display_reference_statistics(ref_spectra_compare, ref_spectra_compare(1).fwhm_instr);
 %         end
-%     
+% 
 %     end
 % 
 % end
@@ -167,17 +172,17 @@ results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 %     I_sum = plot_wavenumber_sum_ROI( ...
 %         data_corr, SRS.wavenumber, params.nu_interval, ...
 %         ref_roi, params.colors_roi);
-%     
+% 
 %     saveDataOrImage(ref_roi, params.results_dir, 'Name', 'ref_roi');
 % 
 %     if params.compare_2ps_7ps
-%     
+% 
 %         loaded_data = load(params.path2ref_roi_compare);
 %         ref_roi_compare = loaded_data.ref_roi;
 %         plot_compare_ref_roi(ref_roi,ref_roi_compare,params) 
-%     
+% 
 %     end
-%     
+% 
 % end
 % %% One ROI 
 % 
@@ -249,5 +254,5 @@ results_analyze_roi = analyze_SRS_TIFF_ROI(SRS,cfg);
 %     %saveDataOrImage(myImage, 'results/images', 'Name', 'my_image', 'Format', 'png');
 % 
 % saveDataOrImage(phase_model, params.results_dir, 'Name', 'phase_model');
-
+% 
 

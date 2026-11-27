@@ -181,7 +181,7 @@ function fig = display_SRS_images(data,metadata, params)
     set(ax, 'YDir', 'normal');
 
     colormap(ax,params.colormap);
-    caxis(ax,clim);
+    % caxis(ax,clim);
     colorbar(ax);
 
     xlabel(ax,'X (pixel)');
